@@ -9,12 +9,14 @@
     body: "Source Serif 4",
     heading: "Jost*",
   ),
+  heading_fonts: (
+    (size: 12pt, weight: "bold", spacing: (above: 1.5em, below: 1em)),       // Level 1
+    (size: 12pt, weight: "semibold", spacing: (above: 1.0em, below: 1em)),  // Level 2
+    (size: 12pt, weight: "medium", spacing: (above: 0.8em, below: 1em)),    // Level 3
+    (size: 11pt, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),      // Level 4
+  ),
   font_sizes: (
     body: 12pt,
-    heading_1: 12pt,
-    heading_2: 12pt,
-    heading_3: 12pt,
-    heading_4: 11pt,
   ),
   weights: (
     body: 400,
@@ -25,10 +27,6 @@
   ),
   spacing: (
     paragraph_leading: 2.0em,
-    heading_1: (above: 1.5em, below: 3em),
-    heading_2: (above: 1.0em, below: 4.5em),
-    heading_3: (above: 0.8em, below: 5em),
-    heading_4_block: (above: 0.5em, below: 0.2em),
     signature_line_length: 3.7in,
   ),
   margins: (
@@ -93,32 +91,38 @@
     font: thesis_styling.fonts.body,
     size: thesis_styling.font_sizes.body,
     weight: thesis_styling.weights.body,
-    hyphenate: false
+    hyphenate: false,
   )
-  set par(justify: true, leading: thesis_styling.spacing.paragraph_leading)
+  set par(justify: true, leading: thesis_styling.spacing.paragraph_leading, spacing: 3em)
 
   let heading_font_family = thesis_styling.fonts.heading
   let current_primary_color = thesis_styling.colors.primary
 
-  show heading: set text(font: heading_font_family, weight: "bold")
-  show heading.where(level: 1): it => {
-    set text(fill: current_primary_color, size: thesis_styling.font_sizes.heading_1, weight: "bold")
-    block(above: thesis_styling.spacing.heading_1.above, below: thesis_styling.spacing.heading_1.below, it)
+  show heading: it => {
+    let level_idx = it.level - 1
+    let style_props = thesis_styling.heading_fonts.at(level_idx)
+    let text_color = (
+      current_primary_color, // Level 1
+      current_primary_color.lighten(20%), // Level 2
+      current_primary_color.lighten(30%), // Level 3
+      black // Level 4 (default color)
+    ).at(level_idx)
+
+    block(
+      above: style_props.spacing.above,
+      below: style_props.spacing.below,
+      text(
+        font: heading_font_family,
+        weight: style_props.weight,
+        size: style_props.size,
+        fill: text_color,
+        it
+      )
+    )
   }
-  show heading.where(level: 2): it => {
-    set text(fill: current_primary_color.lighten(20%), size: thesis_styling.font_sizes.heading_2, weight: "semibold")
-     block(above: thesis_styling.spacing.heading_2.above, below: thesis_styling.spacing.heading_2.below, it)
-  }
-  show heading.where(level: 3): it => {
-    set text(fill: current_primary_color.lighten(30%), size: thesis_styling.font_sizes.heading_3, weight: "medium")
-     block(above: thesis_styling.spacing.heading_3.above, below: thesis_styling.spacing.heading_3.below, it)
-  }
-   show heading.where(level: 4): it => {
-     block(above: thesis_styling.spacing.heading_4_block.above, below: thesis_styling.spacing.heading_4_block.below, [
-        #box(inset: (right: 0.1em))[#text(font: heading_font_family, weight: "bold", size: thesis_styling.font_sizes.heading_4, it)]
-        #box(inset: (right: 0em))[#text(font: heading_font_family, weight: "bold", size: thesis_styling.font_sizes.heading_4, ":")]
-     ])
-   }
+
+  // Commented out old/specific heading rules, including special L4 formatting
+  // show heading.where(level: 4): it => { ... }
 
   set heading(numbering: "1.1")
   set math.equation(numbering: "(1)")
@@ -269,10 +273,7 @@
     #text(thesis_styling.font_sizes.body, weight: "bold")[ABSTRACT] // Restored original line
   ]
   v(1.5em) // Spacing after ABSTRACT heading, before the body
-  block({ // Ensure abstract body also adheres to document par settings
-    set par(justify: true, leading: thesis_styling.spacing.paragraph_leading)
-    abstract_body_content
-  })
+  abstract_body_content
 }
 
 #let make_table_of_contents(title: "Contents", depth: 2) = {
@@ -303,16 +304,14 @@
 
 #let format_bibliography(file_path, options: none, title: "Bibliography") = {
   if file_path != none {
-    block({
-       heading(level: 1, numbering: none)[#title]
-       let style = options.at("style", default: none)
-       let bib_title_opt = options.at("title", default: none)
-       bibliography(
-           file_path,
-           title: if bib_title_opt != none {bib_title_opt} else {none},
-           style: if style != none {style} else {"ieee"}
-       )
-    })
+    heading(level: 1, numbering: none)[#title]
+    let style = options.at("style", default: none)
+    let bib_title_opt = options.at("title", default: none)
+    bibliography(
+        file_path,
+        title: if bib_title_opt != none {bib_title_opt} else {none},
+        style: if style != none {style} else {"ieee"}
+    )
   } else {[]}
 }
 

@@ -123,6 +123,3 @@
   bibliography: bibliography,
   vita: vita,
 )
-
-// Removed old direct calls and #show rule that was here previously
-// ... old content like #pagebreak() calls, set heading, etc. are now handled by assemble_thesis_document
