@@ -26,6 +26,7 @@
           "${pkgs.crimson-pro}/share/fonts"
           "${pkgs.source-serif}/share/fonts"
           "${pkgs.jost}/share/fonts"
+          "${pkgs.libre-baskerville}/share/fonts"
         ];
       in
       {
