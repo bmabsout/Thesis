@@ -1,4 +1,4 @@
-#import "src/lib_cv.typ": primary_color, long_line, diamond
+#import "src/lib_cv.typ": primary_color, long_line, diamond, state_color, action_color, reward_color
 #import "@preview/cetz:0.3.1"
 #import "thesis_template.typ": (
     // Import component creation functions
@@ -6,6 +6,7 @@
     make_bu_copyright_page,
     make_bu_approval_page,
     make_bu_abstract_section,
+    make_major_professor_block,
     make_table_of_contents,
     make_list_of_figures,
     make_list_of_tables,
@@ -19,12 +20,14 @@
     BU_NAME, GRS_NAME
 )
 
-// ===== Thesis Metadata =====
-#let thesis_title_val = "From Intent to Reality: Finding Faithful Policies through Expressive Specifications"
-#let author_name_val = "BASSEL EL MABSOUT"
+#let thesis_title_val = par(leading: 1em, [
+  Minimizing the _#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality]_ Gap in Robot Learning:\
+  A Fulfillment-Centric Perspective
+])
+
+#let author_name_val = "Bassel EL Mabsout"
 #let submission_year_val = "2025"
 #let degree_type_val = "Doctor of Philosophy"
-#let department_name_val = "Department of Computer Science"
 
 #let prospectus_committee_val = (
   (name: "DR. RENATO MANCUSO", role: "First Reader"),
@@ -40,9 +43,7 @@
   (ordinal: "Fourth", name: "Dr. Bingzhuo Zhong", academic_title: "Assistant Professor of Computer Science", institution: none)
 )
 
-#let major_professors_val = (
-  (name: "Dr. Renato Mancuso", title: "Professor of Computer Science"),
-)
+#let major_professors_val = (name: "Renato Mancuso, Ph.D.", title: "Professor of Computer Science")
 
 // ===== Generate Thesis Components =====
 
@@ -53,8 +54,7 @@
   submission_year_val,
   BU_NAME, // School name for title page
   GRS_NAME, // GRS name for title page
-  department_name_val,
-  degree_submission_text: "A Prospectus for Ph.D. Dissertation"
+  degree_submission_text: "Dissertation"
 )
 
 #let copyright_page = make_bu_copyright_page(author_name_val, submission_year_val)
@@ -68,7 +68,7 @@
   GRS_NAME, // GRS name for abstract
   degree_type_val,
   submission_year_val,
-  major_professors_val,
+  make_major_professor_block(major_professors_val),
   [#include "src/chapters/abstract.typ"] // Abstract body content
 )
 

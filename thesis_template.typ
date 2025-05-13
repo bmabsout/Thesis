@@ -6,17 +6,17 @@
 
 #let thesis_styling = (
   fonts: (
-    body: "Source Serif 4",
-    heading: "Jost*",
+    body: "New Computer Modern",
+    heading: "Source Serif 4",
   ),
   heading_fonts: (
-    (size: 12pt, weight: "bold", spacing: (above: 1.5em, below: 1em)),       // Level 1
-    (size: 12pt, weight: "semibold", spacing: (above: 1.0em, below: 1em)),  // Level 2
-    (size: 12pt, weight: "medium", spacing: (above: 0.8em, below: 1em)),    // Level 3
-    (size: 11pt, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),      // Level 4
+    (size: 17pt, weight: "bold", spacing: (above: 1.5em, below: 1em)),       // Level 1 (Chapter ~ \Large, \bf)
+    (size: 14pt, weight: "bold", spacing: (above: 1.0em, below: 1em)),  // Level 2 (Section ~ \large, \bf)
+    (size: 12pt, weight: "bold", spacing: (above: 0.8em, below: 1em)),    // Level 3 (Subsection ~ \normalsize, \bf)
+    (size: 11pt, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),      // Level 4 (Subsubsection - kept)
   ),
   font_sizes: (
-    body: 12pt,
+    body: 12.2pt,
   ),
   weights: (
     body: 400,
@@ -26,13 +26,19 @@
     primary: primary_color,
   ),
   spacing: (
-    paragraph_leading: 2.0em,
+    paragraph_leading: 1.5em,
     signature_line_length: 3.7in,
   ),
   margins: (
     left: 1.5in, right: 1in, top: 1.5in, bottom: 1in,
   ),
 )
+
+#let font_override(thesis_styling, font_name, font_size) = {
+  thesis_styling.fonts.body = font_name
+  thesis_styling.font_sizes.body = font_size
+  thesis_styling
+}
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -166,11 +172,10 @@
   submission_year,
   school_name_on_title_page, 
   grs_name_on_title_page,    
-  department_name_on_title_page,
   degree_submission_text: "Dissertation submitted in partial fulfillment" // Default, can be overridden
 ) = {
   // This content will be on page 'i', number not printed due to footer logic in setup_thesis_document
-  set text(font: thesis_styling.fonts.heading, features: ("dlig": 1, "liga": 1, "calt": 1, "clig": 1))
+  set text(font: thesis_styling.fonts.heading, features: ("dlig": 0, "liga": 1, "calt": 1, "clig": 0))
   align(center, stack(
     spacing: 0pt,
     text(size: 18pt)[#upper(school_name_on_title_page)],
@@ -179,7 +184,7 @@
     v(0.6fr),
     text(size: 14pt)[#degree_submission_text], 
     v(0.6fr),
-    text(size: 25pt, weight: 800, font:thesis_styling.fonts.heading)[#title_text],
+    text(size: 22pt, weight: 800, font:thesis_styling.fonts.heading, title_text),
     v(0.3fr),
     text(size: 14pt)[By],
     v(0.3fr),
@@ -188,8 +193,7 @@
     text(size: 12pt)[
       Submitted in Partial Fulfillment of the\
       Requirements for the Degree of\
-      #degree_type\
-      In the #department_name_on_title_page
+      #degree_type
     ],
     v(0.6fr),
     text(size: 12pt)[#submission_year]
@@ -197,36 +201,53 @@
 }
 
 #let make_bu_copyright_page(author_name, copyright_year) = {
-  set text(size: thesis_styling.font_sizes.body, font: thesis_styling.fonts.heading)
+  set text(size: thesis_styling.font_sizes.body+3pt, font: thesis_styling.fonts.heading)
   // This content will be on page 'ii', number not printed
-  v(2fr) 
-  align(center)[
-    © Copyright by #author_name \
-    #copyright_year
-  ]
   v(1fr)
+  align(center,
+    stack(
+      dir: ltr,
+      spacing: 10pt,
+      h(1fr),
+      sym.copyright,
+      align(left,par(leading: 10pt)[
+        #copyright_year by\
+        #author_name\
+        all rights reserved
+      ]),
+      h(0.3fr)
+    )
+  )
 }
 
-#let make_reader_block(reader) = [
-  #v(1.3em)
-  #line(length: thesis_styling.spacing.signature_line_length, stroke: 0.5pt)
-  #v(-0.5em)
-  #reader.name\
-  #reader.academic_title
-  #if "institution" in reader and reader.institution != none [
-    , #reader.institution
-  ]
-]
+#let make_reader_block(reader) = {
+  v(1.3em)
+  line(length: thesis_styling.spacing.signature_line_length, stroke: 0.5pt)
+  v(-2em)
+  stack(spacing: 10pt, reader.name, reader.academic_title, reader.institution)
+}
 #let make_bu_approval_page(readers_list) = {
   set text(size: thesis_styling.font_sizes.body, font: thesis_styling.fonts.heading)
   align(center)[#text(20pt, weight: "bold")[Approved by]]
   v(1fr)
   grid(
-    columns: (1.2in, auto),
+    columns: (1.7in, auto),
     rows: 8em,
     ..readers_list.map(reader => (reader.ordinal + " Reader", make_reader_block(reader))).flatten()
   )
   v(1fr)
+}
+
+#let make_major_professor_block(professor) = {
+  stack(
+    dir: ltr,
+    spacing: 10pt,
+    [*Major Professor:*],
+    par(leading: 10pt)[
+      #professor.name\
+      #professor.title
+    ]
+  )
 }
 
 #let make_bu_abstract_section(
@@ -236,37 +257,16 @@
   grs_name_for_abstract,
   degree_type,
   submission_year,
-  major_professors_list, // Expected: array of dictionaries, each with "name" and "department" (or "title")
+  major_professors, // Expected: array of dictionaries, each with "name" and "department" (or "title")
   abstract_body_content
 ) = {
   align(center)[
-    #text(thesis_styling.font_sizes.body, weight: "bold", upper(thesis_title))
-    #v(2em)
-    #text(thesis_styling.font_sizes.body, weight: "bold", upper(author_name))
-    #v(1em)
-    #text(thesis_styling.font_sizes.body)[#school_name_for_abstract]
-    #v(0.5em)
-    #text(thesis_styling.font_sizes.body)[#grs_name_for_abstract]
-    #v(0.5em)
-    #text(thesis_styling.font_sizes.body)[#degree_type, #submission_year]
+    #text(thesis_styling.heading_fonts.at(1).size, weight: 700, upper(thesis_title))
+    #text(thesis_styling.heading_fonts.at(2).size, weight: "bold", upper(author_name))
+    #v(0em)
+    #text(thesis_styling.heading_fonts.at(3).size)[#school_name_for_abstract, #grs_name_for_abstract, #submission_year]
   ]
-
-  // Major Professors list - Left Aligned as per guidelines
-  if type(major_professors_list) == array and major_professors_list.len() > 0 {
-    v(1.5em) // Spacing before this section
-    align(left)[ // Align this whole block left
-      #let prof_label = if major_professors_list.len() > 1 {"Major Professors:"} else {"Major Professor:"}
-      #text(thesis_styling.font_sizes.body, weight: "bold")[#prof_label]
-      #v(0.5em)
-      #for prof in major_professors_list {
-        let name = prof.at("name", default: "Unnamed Professor")
-        // Use "department" if available, otherwise fallback to "title", then to an empty string or "No Department"
-        let role_info = prof.at("department", default: prof.at("title", default: ""))
-        [#text(thesis_styling.font_sizes.body)[#name#if role_info != "" {", " + role_info}]] // Each prof on a new line, left aligned
-        v(0.3em) // Small space between professor lines
-      }
-    ]
-  }
+  major_professors
 
   align(center)[ // Continue with centered ABSTRACT heading
     #v(1.5em) // Spacing after professors (if any) or before ABSTRACT heading
