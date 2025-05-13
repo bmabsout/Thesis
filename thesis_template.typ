@@ -6,7 +6,7 @@
 
 #let thesis_styling = (
   fonts: (
-    body: "New Computer Modern",
+    body: "Libertinus Serif",
     heading: "Source Serif 4",
   ),
   heading_fonts: (
@@ -16,7 +16,7 @@
     (size: 11pt, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),      // Level 4 (Subsubsection - kept)
   ),
   font_sizes: (
-    body: 12.2pt,
+    body: 12.4pt,
   ),
   weights: (
     body: 400,
@@ -34,11 +34,55 @@
   ),
 )
 
-#let font_override(thesis_styling, font_name, font_size) = {
-  thesis_styling.fonts.body = font_name
-  thesis_styling.font_sizes.body = font_size
+#let thesis_styling = {
+  thesis_styling.fonts.body = "New Computer Modern"
+  thesis_styling.font_sizes.body = 11.5pt
   thesis_styling
 }
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "EB Garamond"
+  thesis_styling.font_sizes.body = 13pt
+  thesis_styling
+}
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "Merriweather"
+  thesis_styling.font_sizes.body = 10.2pt
+  thesis_styling.weights.body = 300
+  thesis_styling
+}
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "Source Serif 4"
+  thesis_styling.font_sizes.body = 11.3pt
+  thesis_styling.weights.body = 400
+  thesis_styling
+}
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "Garamontio"
+  thesis_styling.font_sizes.body = 13pt
+  thesis_styling.weights.body = 400
+  thesis_styling
+}
+
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "Crimson Pro"
+  thesis_styling.font_sizes.body = 12.5pt
+  thesis_styling.weights.body = 400
+  thesis_styling
+}
+
+#let thesis_styling = {
+  thesis_styling.fonts.body = "Libre Baskerville"
+  thesis_styling.font_sizes.body = 9.9pt
+  thesis_styling.weights.body = 400
+  thesis_styling
+}
+
+
 
 #let roman_numbering(content) = {
   counter(page).update(1)
