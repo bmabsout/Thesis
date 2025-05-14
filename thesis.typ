@@ -3,20 +3,16 @@
 #import "thesis_template.typ": (
   make_template,
   default_style,
-    // Constants (if still needed directly in thesis.typ, otherwise they are used by template functions)
   BU_NAME, GRS_NAME
 )
 
-#let template = make_template(style: default_style + (
-  fonts: (
-    body: "Crimson Pro",
-    heading: "Crimson Pro",
-  ),
-  font_sizes: (
-    body: 12.5pt,
-  ),
-)
-)
+#let custom_style = (..default_style, body_text: (
+  font: "Crimson Pro",
+  size: 12.5pt,
+  weight: 400
+))
+
+#let template = make_template(style: custom_style)
 
 #let thesis_title_val = par(leading: 1em, [
   Minimizing the _#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality]_ Gap in Robot Learning:\

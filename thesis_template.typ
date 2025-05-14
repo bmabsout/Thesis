@@ -5,34 +5,45 @@
 #let GRS_NAME = "GRADUATE SCHOOL OF ARTS AND SCIENCES"
 
 #let default_style = (
-  fonts: (
-    body: "Libertinus Serif",
-    heading: "Libertinus Serif",
-    // x: text(font: "Dejavu Serif")
+  // Page-level layout properties
+  page: (
+    margins: (left: 1.5in, right: 1in, top: 1.5in, bottom: 1in), // Previously: style.margins
   ),
-  heading_fonts: (
-    (size: 1em, weight: "bold", spacing: (above: 1.5em, below: 1em)),       // Level 1 (Chapter ~ \Large, \bf)
-    (size: 1em, weight: "bold", spacing: (above: 1.0em, below: 1em)),  // Level 2 (Section ~ \large, \bf)
-    (size: 1em, weight: "bold", spacing: (above: 0.8em, below: 1em)),    // Level 3 (Subsection ~ \normalsize, \bf)
-    (size: 1em, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),      // Level 4 (Subsubsection - kept)
+
+  // Default text properties, primarily for body content
+  body_text: (
+    font: "Libertinus Serif",   // Previously: style.fonts.body
+    size: 12.4pt,              // Previously: style.font_sizes.body
+    weight: 400,               // Previously: style.weights.body
   ),
-  font_sizes: (
-    body: 12.4pt,
+
+  // Paragraph-specific styling
+  paragraph: (
+    leading: 1.5em,            // Previously: style.spacing.paragraph_leading
   ),
-  weights: (
-    body: 400,
-    heading: "bold",
+
+  // Heading styles, including general and per-level configurations
+  heading: (
+    font: "Libertinus Serif",   // Previously: style.fonts.heading
+    base_color: primary_color, // Previously: style.colors.primary (used for heading coloring)
+    // Per-level styles, derived from the previous `heading_fonts` array.
+    // The logic in `show heading` will use these values.
+    levels: (
+      // Level 1 (e.g., Chapter)
+      (size: 1em, weight: "bold", spacing: (above: 1.5em, below: 1em)),
+      // Level 2 (e.g., Section)
+      (size: 1em, weight: "bold", spacing: (above: 1.0em, below: 1em)),
+      // Level 3 (e.g., Subsection)
+      (size: 1em, weight: "bold", spacing: (above: 0.8em, below: 1em)),
+      // Level 4 (e.g., Subsubsection)
+      (size: 1em, weight: "bold", spacing: (above: 0.5em, below: 0.2em)),
+    )
   ),
-  colors: (
-    primary: primary_color,
-  ),
-  spacing: (
-    paragraph_leading: 1.5em,
-    signature_line_length: 3.7in,
-  ),
-  margins: (
-    left: 1.5in, right: 1in, top: 1.5in, bottom: 1in,
-  ),
+
+  // Miscellaneous layout constants
+  other: (
+    signature_line_length: 3.7in, // Previously: style.spacing.signature_line_length
+  )
 )
 
 // #let thesis_styling = {
@@ -150,24 +161,24 @@
     set page(
       width: 8.5in,
       height: 11in,
-      margin: style.margins,
+      margin: style.page.margins,
     )
 
     set text(
-      font: style.fonts.body,
-      size: style.font_sizes.body,
-      weight: style.weights.body,
+      font: style.body_text.font,
+      size: style.body_text.size,
+      weight: style.body_text.weight,
       hyphenate: false,
     )
-    set par(justify: true, leading: style.spacing.paragraph_leading, spacing: 3em)
+    set par(justify: true, leading: style.paragraph.leading, spacing: 3em)
 
-    let heading_font_family = style.fonts.heading
-    let current_primary_color = style.colors.primary
+    let heading_font_family = style.heading.font
+    let current_primary_color = style.heading.base_color
 
 
     show heading: it => {
       let level_idx = it.level - 1
-      let style_props = style.heading_fonts.at(level_idx)
+      let style_props = style.heading.levels.at(level_idx)
       let text_color = (
         current_primary_color, // Level 1
         current_primary_color.lighten(20%), // Level 2
@@ -233,7 +244,7 @@
     degree_submission_text: "Dissertation submitted in partial fulfillment" // Default, can be overridden
   ) = {
     // This content will be on page 'i', number not printed due to footer logic in setup_thesis_document
-    set text(font: style.fonts.heading, features: ("dlig": 0, "liga": 1, "calt": 1, "clig": 0))
+    set text(font: style.heading.font, features: ("dlig": 0, "liga": 1, "calt": 1, "clig": 0))
     align(center, stack(
       spacing: 0pt,
       text(size: 18pt)[#upper(school_name_on_title_page)],
@@ -242,7 +253,7 @@
       v(0.6fr),
       text(size: 14pt)[#degree_submission_text], 
       v(0.6fr),
-      text(size: 22pt, weight: 800, font:style.fonts.heading, title_text),
+      text(size: 22pt, weight: 800, font:style.heading.font, title_text),
       v(0.3fr),
       text(size: 14pt)[By],
       v(0.3fr),
@@ -259,7 +270,7 @@
   }
 
   let make_bu_copyright_page(author_name, copyright_year) = {
-    set text(size: style.font_sizes.body+3pt, font: style.fonts.heading)
+    set text(size: style.body_text.size+3pt, font: style.heading.font)
     // This content will be on page 'ii', number not printed
     v(1fr)
     align(center,
@@ -280,13 +291,13 @@
 
   let make_reader_block(reader) = {
     v(1.3em)
-    line(length: style.spacing.signature_line_length, stroke: 0.5pt)
+    line(length: style.other.signature_line_length, stroke: 0.5pt)
     v(-2em)
     stack(spacing: 10pt, reader.name, reader.academic_title, reader.institution)
   }
   
   let make_bu_approval_page(readers_list) = {
-    set text(size: style.font_sizes.body, font: style.fonts.heading)
+    set text(size: style.body_text.size, font: style.heading.font)
     align(center)[#text(20pt, weight: "bold")[Approved by]]
     v(1fr)
     grid(
@@ -320,31 +331,31 @@
     abstract_body_content
   ) = {
     align(center)[
-      #text(style.heading_fonts.at(1).size, weight: 700, upper(thesis_title))
-      #text(style.heading_fonts.at(2).size, weight: "bold", upper(author_name))
+      #text(style.heading.levels.at(1).size, weight: 700, upper(thesis_title))
+      #text(style.heading.levels.at(2).size, weight: "bold", upper(author_name))
       #v(0em)
-      #text(style.heading_fonts.at(3).size)[#school_name_for_abstract, #grs_name_for_abstract, #submission_year]
+      #text(style.heading.levels.at(3).size)[#school_name_for_abstract, #grs_name_for_abstract, #submission_year]
     ]
     major_professors
 
     align(center)[ // Continue with centered ABSTRACT heading
       #v(1.5em) // Spacing after professors (if any) or before ABSTRACT heading
-      #text(style.font_sizes.body, weight: "bold")[ABSTRACT] // Restored original line
+      #text(style.body_text.size, weight: "bold")[ABSTRACT] // Restored original line
     ]
     v(1.5em) // Spacing after ABSTRACT heading, before the body
     abstract_body_content
   }
 
   let make_table_of_contents(title: "Contents", depth: 2) = {
-    block(above:1em, below:1em)[#outline(title: text(style.font_sizes.body, weight: "bold", title), indent: auto, depth: depth)]
+    block(above:1em, below:1em)[#outline(title: text(style.body_text.size, weight: "bold", title), indent: auto, depth: depth)]
   }
 
   let make_list_of_figures(title: "List of Figures") = {
-    block(above:1em, below:1em)[#outline.supplement(figure.caption, title: text(style.font_sizes.body, weight: "bold", title))]
+    block(above:1em, below:1em)[#outline.supplement(figure.caption, title: text(style.body_text.size, weight: "bold", title))]
   }
 
   let make_list_of_tables(title: "List of Tables") = {
-    block(above:1em, below:1em)[#outline.supplement(table.caption, title: text(style.font_sizes.body, weight: "bold", title))]
+    block(above:1em, below:1em)[#outline.supplement(table.caption, title: text(style.body_text.size, weight: "bold", title))]
   }
 
   let format_main_content(body_content) = {
@@ -355,7 +366,7 @@
     if body_content != none {
       block({
         heading(level: 1, numbering: none)[#title]
-        set par(justify: true, leading: style.spacing.paragraph_leading)
+        set par(justify: true, leading: style.paragraph.leading)
         body_content
       })
     } else {[]}
@@ -378,7 +389,7 @@
     if vita_content != none {
       block({
         heading(level: 1, numbering: none)[#title]
-        set par(justify: true, leading: style.spacing.paragraph_leading)
+        set par(justify: true, leading: style.paragraph.leading)
         vita_content
       })
     } else {[]}
