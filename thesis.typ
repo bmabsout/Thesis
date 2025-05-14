@@ -1,23 +1,21 @@
 #import "src/lib_cv.typ": primary_color, long_line, diamond, state_color, action_color, reward_color
 #import "@preview/cetz:0.3.1"
 #import "thesis_template.typ": (
-    // Import component creation functions
-    make_bu_title_page,
-    make_bu_copyright_page,
-    make_bu_approval_page,
-    make_bu_abstract_section,
-    make_major_professor_block,
-    make_table_of_contents,
-    make_list_of_figures,
-    make_list_of_tables,
-    format_main_content,
-    format_appendices,      // If you have appendices
-    format_bibliography,
-    format_vita,
-    // Import the main assembly function
-    assemble_thesis_document,
+  make_template,
+  default_style,
     // Constants (if still needed directly in thesis.typ, otherwise they are used by template functions)
-    BU_NAME, GRS_NAME
+  BU_NAME, GRS_NAME
+)
+
+#let template = make_template(style: default_style + (
+  fonts: (
+    body: "Crimson Pro",
+    heading: "Crimson Pro",
+  ),
+  font_sizes: (
+    body: 12.5pt,
+  ),
+)
 )
 
 #let thesis_title_val = par(leading: 1em, [
@@ -47,7 +45,7 @@
 
 // ===== Generate Thesis Components =====
 
-#let title_page = make_bu_title_page(
+#let title_page = (template.make_bu_title_page)(
   thesis_title_val,
   author_name_val,
   degree_type_val,
@@ -57,22 +55,22 @@
   degree_submission_text: "Dissertation"
 )
 
-#let copyright_page = make_bu_copyright_page(author_name_val, submission_year_val)
+#let copyright_page = (template.make_bu_copyright_page)(author_name_val, submission_year_val)
 
-#let approval_page = make_bu_approval_page(approval_readers_val)
+#let approval_page = (template.make_bu_approval_page)(approval_readers_val)
 
-#let abstract = make_bu_abstract_section(
+#let abstract = (template.make_bu_abstract_section)(
   thesis_title_val,
   author_name_val,
   BU_NAME, // School name for abstract
   GRS_NAME, // GRS name for abstract
   degree_type_val,
   submission_year_val,
-  make_major_professor_block(major_professors_val),
+  (template.make_major_professor_block)(major_professors_val),
   [#include "src/chapters/abstract.typ"] // Abstract body content
 )
 
-#let table_of_contents = make_table_of_contents(title: "Contents", depth: 2)
+#let table_of_contents = (template.make_table_of_contents)(title: "Contents", depth: 2)
 
 // Optional: Generate List of Figures/Tables if you have them
 // #let list_of_figures = make_list_of_figures(title: "List of Figures")
@@ -92,9 +90,9 @@
 // ]
 // #let appendices = format_appendices(appendices_body, title: "Appendices")
 
-#let bibliography = format_bibliography("megaref.bib", options: (:), title: "References")
+#let bibliography = (template.format_bibliography)("megaref.bib", options: (:), title: "References")
 
-#let vita = format_vita([
+#let vita = (template.format_vita)([
   *Full Name:* Bassel El Mabsout \
   *Year of Birth:* XXXX \
   *Contact Address:* XXXX \
@@ -102,8 +100,7 @@
 
 
 // ===== Assemble the Document =====
-#show: doc => assemble_thesis_document(
-  doc,
+#show: (template.assemble_thesis_document).with(
   // Pass metadata
   thesis_title: thesis_title_val,
   author_name: author_name_val,
