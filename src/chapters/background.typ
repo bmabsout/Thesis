@@ -9,7 +9,7 @@ The standard formalization of sequential decision making @SuttonBarto @barto2017
 
 #figure(
   mdp,
-  caption: [The Markov Decision Process showing how a state #st in the state space #S and action $#at ~ pi(#st)$ determine the probability distribution $PP(#stp1|#st,#at)$ over next states. Dashed arrows (#box[#{import "@preview/cetz:0.3.1"; cetz.canvas(cetz.draw.line((0,0), (0.6,0), mark: (end: "triangle"), stroke: (dash: "dashed", thickness: 0.7pt)))}]) indicate sampling from a distribution.]
+  caption: [The Markov Decision Process showing how a state #st in the state space #S and action $#at ~ pi(#st)$ determine the probability distribution $PP(#stp1|#st,#at)$ over next states. Dashed arrows (#box[#{import "@preview/cetz:0.3.4"; cetz.canvas(cetz.draw.line((0,0), (0.6,0), mark: (end: "triangle"), stroke: (dash: "dashed", thickness: 0.7pt)))}]) indicate sampling from a distribution.]
 )
 
 === Policies and Returns <def-policy>

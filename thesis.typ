@@ -1,15 +1,19 @@
 #import "src/lib_cv.typ": primary_color, long_line, diamond, state_color, action_color, reward_color
-#import "@preview/cetz:0.3.1"
 #import "thesis_template.typ": (
   make_template,
   default_style,
+  font_options,
   BU_NAME, GRS_NAME
 )
 
-#let custom_style = (..default_style, body_text: (
-  font: "Crimson Pro",
-  size: 12.5pt,
-  weight: 400
+#import "@preview/t4t:0.4.3": get
+
+#let heading_font = (
+    font: "Lato",
+  )
+
+#let custom_style = get.dict-merge(default_style(), (
+  body: (text: font_options.crimson_pro), heading: (text: heading_font)
 ))
 
 #let template = make_template(style: custom_style)

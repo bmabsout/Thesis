@@ -28,6 +28,7 @@
           "${pkgs.jost}/share/fonts"
           "${pkgs.libre-baskerville}/share/fonts"
           "${pkgs.texlivePackages.baskervillef}/fonts"
+          "${pkgs.lato}/share/fonts"
         ];
       in
       {

@@ -1,4 +1,4 @@
-#import "@preview/cetz:0.3.1"
+#import "@preview/cetz:0.3.4"
 #import "../src/lib_cv.typ": *
 #import cetz.draw: *
 
