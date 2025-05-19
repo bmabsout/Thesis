@@ -52,6 +52,10 @@
     size: 10pt,
     weight: 400,
   ),
+  lato: (
+    font: "Lato",
+    size: 11.5pt,
+  ),
 )
 
 #let default_style(primary_color: primary_color) = (
@@ -103,7 +107,9 @@
   )
 )
 
-
+#let heading_style(style, level: 0) = {
+  return style.heading.text + style.heading.levels.at(level).text
+}
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -112,7 +118,7 @@
     header: [],
     footer: context {
       let page_num_str = counter(page).display("i")
-      align(center, text(size: 10pt, page_num_str))
+      align(center, text(size: 1em, page_num_str))
     }
   )
   content
@@ -121,7 +127,7 @@
 // ===== Page Numbering Transition Function =====
 #let arabic_numbering(numbering: "1", content) = {
   counter(page).update(1)
-  set page(numbering: numbering, footer: [], header: context align(right, text(size: 10pt, counter(page).display(numbering))))
+  set page(numbering: numbering, footer: [], header: context align(right, text(size: 1em, counter(page).display(numbering))))
   content
 }
 
@@ -166,10 +172,9 @@
     )
     set par(justify: true, leading: style.paragraph.leading, spacing: 3em)
 
-    let heading_font_family = style.heading.text.font
-
     show heading: it => {
       let level_idx = it.level - 1
+      set text(..style.heading.text)
       let style_props = style.heading.levels.at(level_idx)
 
       let final_heading_text_style = style.heading.text + style_props.text
@@ -233,48 +238,44 @@
     degree_submission_text: "Dissertation submitted in partial fulfillment" // Default, can be overridden
   ) = {
     // This content will be on page 'i', number not printed due to footer logic in setup_thesis_document
-    set text(font: style.heading.text.font, features: ("dlig": 0, "liga": 1, "calt": 1, "clig": 0))
-    align(center, stack(
-      spacing: 0pt,
-      text(size: 18pt)[#upper(school_name_on_title_page)],
-      v(0.2fr),
-      text(size: 14pt)[#upper(grs_name_on_title_page)],
-      v(0.6fr),
-      text(size: 14pt)[#degree_submission_text], 
-      v(0.6fr),
-      text(size: 22pt, weight: 800, font:style.heading.text.font, title_text),
-      v(0.3fr),
-      text(size: 14pt)[By],
-      v(0.3fr),
-      text(size: 18pt)[#upper(author_name)],
-      v(0.6fr),
-      text(size: 12pt)[
-        Submitted in Partial Fulfillment of the\
-        Requirements for the Degree of\
-        #degree_type
-      ],
-      v(0.6fr),
-      text(size: 12pt)[#submission_year]
-    ))
+    set text(..style.heading.text, size: 1.2em, features: ("dlig": 0, "liga": 1, "calt": 1, "clig": 0))
+    set align(center)
+    [
+      #upper(school_name_on_title_page)\
+      #upper(grs_name_on_title_page)
+      #v(0.6fr)
+      #degree_submission_text 
+      #v(0.6fr)
+      *#text(size: 1.2em, title_text)*
+      #v(0.3fr)
+      By
+      #v(0.3fr)
+      #upper(author_name)
+      #v(0.6fr)
+      #set text(size: 0.8em)
+      Submitted in Partial Fulfillment of the\
+      Requirements for the Degree of\
+      #degree_type
+      #v(0.6fr)
+      #submission_year
+    ]
   }
 
   let make_bu_copyright_page(author_name, copyright_year) = {
-    set text(size: style.body.text.size+3pt, font: style.heading.text.font)
+    set text(..style.heading.text, size: 1.2em)
     // This content will be on page 'ii', number not printed
     v(1fr)
-    align(center,
-      stack(
-        dir: ltr,
-        spacing: 10pt,
-        h(1fr),
-        sym.copyright,
-        align(left,par(leading: 10pt)[
-          #copyright_year by\
-          #author_name\
-          all rights reserved
-        ]),
-        h(0.3fr)
-      )
+    stack(
+      dir: ltr,
+      spacing: 10pt,
+      h(1fr),
+      sym.copyright,
+      align(left,par(leading: 10pt)[
+        #copyright_year by\
+        #author_name\
+        all rights reserved
+      ]),
+      h(0.3fr)
     )
   }
 
@@ -282,17 +283,22 @@
     v(1.3em)
     line(length: style.other.signature_line_length, stroke: 0.5pt)
     v(-2em)
-    stack(spacing: 10pt, reader.name, reader.academic_title, reader.institution)
+    [
+      #reader.name\
+      #reader.academic_title\
+      #reader.institution
+    ]
+    v(3em)
   }
   
   let make_bu_approval_page(readers_list) = {
-    set text(size: style.body.text.size, font: style.heading.text.font)
-    align(center)[#text(20pt, weight: "bold")[Approved by]]
+    set text(..heading_style(style, level: 1), fill: black, weight: 400)
+    align(center)[*Approved by*]
+    set text(size: 0.8em)
     v(1fr)
     grid(
-      columns: (1.7in, auto),
-      rows: 8em,
-      ..readers_list.map(reader => (reader.ordinal + " Reader", make_reader_block(reader))).flatten()
+      columns: (auto, auto),
+      ..readers_list.map(reader => ([#reader.ordinal Reader: #h(2em)], make_reader_block(reader))).flatten()
     )
     v(1fr)
   }
@@ -320,18 +326,14 @@
     abstract_body_content
   ) = {
     align(center)[
-      #text(style.heading.levels.at(1).text.size, weight: 700, upper(thesis_title))
-      #text(style.heading.levels.at(2).text.size, weight: "bold", upper(author_name))
-      #v(0em)
+      #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
       #text(style.heading.levels.at(3).text.size)[#school_name_for_abstract, #grs_name_for_abstract, #submission_year]
     ]
     major_professors
 
     align(center)[ // Continue with centered ABSTRACT heading
-      #v(1.5em) // Spacing after professors (if any) or before ABSTRACT heading
-      #text(style.body.text.size, weight: "bold")[ABSTRACT] // Restored original line
+      #text(..style.heading.levels.at(0).text)[ABSTRACT] // Restored original line
     ]
-    v(1.5em) // Spacing after ABSTRACT heading, before the body
     abstract_body_content
   }
 

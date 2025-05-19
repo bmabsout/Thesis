@@ -8,22 +8,20 @@
 
 #import "@preview/t4t:0.4.3": get
 
-#let heading_font = (
-    font: "Lato",
-  )
+#let heading_font = font_options.crimson_pro 
 
 #let custom_style = get.dict-merge(default_style(), (
-  body: (text: font_options.crimson_pro), heading: (text: heading_font)
+  body: (text: font_options.crimson_pro), heading: (text: font_options.lato)
 ))
 
 #let template = make_template(style: custom_style)
 
-#let thesis_title_val = par(leading: 1em, [
+#let thesis_title_val = [
   Minimizing the _#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality]_ Gap in Robot Learning:\
   A Fulfillment-Centric Perspective
-])
+]
 
-#let author_name_val = "Bassel EL Mabsout"
+#let author_name_val = "Bassel El Mabsout"
 #let submission_year_val = "2025"
 #let degree_type_val = "Doctor of Philosophy"
 
