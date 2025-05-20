@@ -1,115 +1,4 @@
-#import "src/lib_cv.typ": primary_color, long_line, diamond
-
-// ===== BU Constants =====
-#let BU_NAME = "BOSTON UNIVERSITY"
-#let GRS_NAME = "GRADUATE SCHOOL OF ARTS AND SCIENCES"
-
-
-#let font_options = (
-  libertinus_serif: (
-    font: "Libertinus Serif",
-    size: 12.4pt,
-    weight: 400,
-  ),
-  new_computer_modern: (
-    font: "New Computer Modern",
-    size: 11.5pt,
-  ),
-  eb_garamond: (
-    font: "EB Garamond",
-    size: 13pt,
-  ),
-  merriweather: (
-    font: "Merriweather",
-    size: 10.2pt,
-  ),
-  source_serif_4: (
-    font: "Source Serif 4",
-    size: 11.3pt,
-  ),
-  crimson_pro: (
-    font: "Crimson Pro",
-    size: 12.5pt,
-    weight: 400,
-  ),
-  garamontio: (
-    font: "Garamontio",
-    size: 13pt,
-    weight: 400,
-  ),
-  libre_baskerville: (
-    font: "Libre Baskerville",
-    size: 9.9pt,
-    weight: 400,
-  ),
-  baskervillef: (
-    font: "BaskervilleF",
-    size: 12pt,
-    weight: 400,
-  ),
-  dejavu_serif: (
-    font: "Dejavu Serif",
-    size: 10pt,
-    weight: 400,
-  ),
-  lato: (
-    font: "Lato",
-    size: 11.5pt,
-  ),
-)
-
-#let default_style(primary_color: primary_color) = (
-  // Page-level layout properties
-  page: (
-    margins: (left: 1.5in, right: 1in, top: 1.5in, bottom: 1in),
-  ),
-
-  // Body text properties
-  body: (
-    text: font_options.libertinus_serif, // This already has font, size, weight
-  ),
-
-  // Paragraph-specific styling
-  paragraph: (
-    leading: 1.5em,
-  ),
-
-  // Heading styles
-  heading: (
-    text: ( // Base text properties for all headings
-      font: "Libertinus Serif",
-    ),
-    levels: (
-      // Level 1 ~ Chapter
-      (
-        text: (size: 1.2em, weight: "bold", fill: primary_color),
-        spacing: (above: 2em, below: 2em)
-      ),
-      // Level 2 ~ Section
-      (
-        text: (size: 1.2em, weight: "bold", fill: primary_color.lighten(20%)),
-        spacing: (above: 2em, below: 2em)
-      ),
-      // Level 3 ~ Subsection
-      (
-        text: (size: 1.2em, weight: "bold", fill: primary_color.lighten(30%)),
-        spacing: (above: 2em, below: 1.5em)
-      ),
-      // Level 4 ~ Subsubsection
-      (
-        text: (size: 1em, weight: "bold", fill: black),
-      ),
-    )
-  ),
-
-  other: (
-    signature_line_length: 3.7in,
-  )
-)
-
-#let heading_style(style, level: 0) = {
-  return style.heading.text + style.heading.levels.at(level).text
-}
+#import "style.typ": default_style, heading_style, long_line
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -173,17 +62,21 @@
     set par(justify: true, leading: style.paragraph.leading, spacing: 3em)
 
     show heading: it => {
+      set text(size: style.heading.text.size)
       let level_idx = it.level - 1
-      set text(..style.heading.text)
       let style_props = style.heading.levels.at(level_idx)
-
-      let final_heading_text_style = style.heading.text + style_props.text
-
-      let text_block = text(..final_heading_text_style, it)
+      set text(..heading_style(style, level: level_idx))
 
       let spacing = style_props.at("spacing", default: (above: 0em, below: 0em))
       v(spacing.above, weak: true)
-      text_block
+      if it.level == 1 [
+        #colbreak(weak: true)
+        Chapter #counter(heading).display()\
+        #it.body
+        #long_line
+      ] else {
+        it
+      }
       v(spacing.below, weak: true)
     }
 
@@ -267,29 +160,24 @@
     v(1fr)
     stack(
       dir: ltr,
-      spacing: 10pt,
+      spacing: 0.5em,
       h(1fr),
       sym.copyright,
-      align(left,par(leading: 10pt)[
+      align(left,[
         #copyright_year by\
         #author_name\
         all rights reserved
       ]),
-      h(0.3fr)
+      // h(0.3fr)
     )
   }
 
-  let make_reader_block(reader) = {
-    v(1.3em)
-    line(length: style.other.signature_line_length, stroke: 0.5pt)
-    v(-2em)
-    [
-      #reader.name\
-      #reader.academic_title\
-      #reader.institution
-    ]
-    v(3em)
-  }
+  let make_reader_block(reader) = [
+    #box(line(length: 100%, stroke: (thickness: 1pt, dash: "dashed", cap: "round")))\
+    #reader.name\
+    #reader.academic_title\
+    #reader.institution
+  ]
   
   let make_bu_approval_page(readers_list) = {
     set text(..heading_style(style, level: 1), fill: black, weight: 400)
@@ -297,18 +185,20 @@
     set text(size: 0.8em)
     v(1fr)
     grid(
+      column-gutter: 2.2em,
+      row-gutter: 6em,
       columns: (auto, auto),
-      ..readers_list.map(reader => ([#reader.ordinal Reader: #h(2em)], make_reader_block(reader))).flatten()
+      ..readers_list.map(reader => ([#reader.ordinal Reader:], make_reader_block(reader))).flatten()
     )
     v(1fr)
   }
-
   let make_major_professor_block(professor) = {
-    stack(
-      dir: ltr,
-      spacing: 10pt,
+    grid(
+      columns: (auto, auto),
+      align: (right, left),
+      column-gutter: 1em,
       [*Major Professor:*],
-      par(leading: 10pt)[
+      [
         #professor.name\
         #professor.title
       ]
@@ -327,12 +217,14 @@
   ) = {
     align(center)[
       #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
-      #text(style.heading.levels.at(3).text.size)[#school_name_for_abstract, #grs_name_for_abstract, #submission_year]
+      #v(1em)
+      #text(size: 1.2em)[#upper(author_name)]\
+      #school_name_for_abstract, #grs_name_for_abstract, #submission_year
+      #rect(major_professors)
     ]
-    major_professors
-
+    v(1em)
     align(center)[ // Continue with centered ABSTRACT heading
-      #text(..style.heading.levels.at(0).text)[ABSTRACT] // Restored original line
+      #heading(numbering: none, level: 2, outlined: false)[ABSTRACT] // Restored original line
     ]
     abstract_body_content
   }

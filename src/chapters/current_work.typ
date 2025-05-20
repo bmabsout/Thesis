@@ -1,4 +1,4 @@
-#import "../lib_cv.typ": *
+#import "/src/commands.typ": *
 #let behavioral = "behavioral retention"
 #let resource = "resource efficiency"
 

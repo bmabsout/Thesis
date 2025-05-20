@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.3.4"
-#import "../src/lib_cv.typ": *
+#import "/src/commands.typ": *
 #import cetz.draw: *
 
 #let style = (

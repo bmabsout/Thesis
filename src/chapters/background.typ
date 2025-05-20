@@ -1,4 +1,4 @@
-#import "../lib_cv.typ": *
+#import "../commands.typ": *
 #import "../../figures/mdp.typ": mdp
 = Definitions and Literature Review
 

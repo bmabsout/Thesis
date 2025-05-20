@@ -1,17 +1,18 @@
-#import "src/lib_cv.typ": primary_color, long_line, diamond, state_color, action_color, reward_color
-#import "thesis_template.typ": (
+#import "src/commands.typ": state_color, action_color, reward_color
+#import "src/style.typ": default_style, font_options
+#import "src/thesis_template.typ": (
   make_template,
-  default_style,
-  font_options,
-  BU_NAME, GRS_NAME
 )
+
+// ===== BU Constants =====
+#let BU_NAME = "BOSTON UNIVERSITY"
+#let GRS_NAME = "GRADUATE SCHOOL OF ARTS AND SCIENCES"
+
 
 #import "@preview/t4t:0.4.3": get
 
-#let heading_font = font_options.crimson_pro 
-
 #let custom_style = get.dict-merge(default_style(), (
-  body: (text: font_options.crimson_pro), heading: (text: font_options.lato)
+  body: (text: font_options.source_serif_4), heading: (text: font_options.source_serif_4)
 ))
 
 #let template = make_template(style: custom_style)
@@ -88,7 +89,7 @@
 // ]
 // #let appendices = format_appendices(appendices_body, title: "Appendices")
 
-#let bibliography = (template.format_bibliography)("megaref.bib", options: (:), title: "References")
+#let bibliography = (template.format_bibliography)("/megaref.bib", options: (:), title: "References")
 
 #let vita = (template.format_vita)([
   *Full Name:* Bassel El Mabsout \

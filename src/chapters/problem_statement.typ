@@ -1,5 +1,3 @@
-#import "../lib_cv.typ": primary_color, long_line, diamond, fonts
-
 = Problem Statement and Objectives
 
 The fundamental challenge in robot learning lies in bridging the *intent-to-reality gap*—the disparity between a practitioner's intended robot behavior and what is achieved in reality @def-intent-to-reality. While reinforcement learning offers powerful tools for developing complex controllers @mnih2013playing @silver2016mastering @silver2018general @schrittwieser2020mastering, three critical problems limit its widespread adoption in the real-world @benchmarkingRobo @benchmarkingRL @FU2022104165:
