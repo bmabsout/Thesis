@@ -25,6 +25,7 @@
   content
 }
 
+
 #let make_template(style: default_style()) = {
   
   let assemble_thesis_document(
@@ -84,7 +85,6 @@
       box(inset: (right: 0.1em, bottom: 0em))[#text(weight: "bold", it)]
       box(inset: (right: 0em, bottom: 0em))[#text(weight: "bold", ":")]
     }
-
 
     set heading(numbering: "1.1")
     set math.equation(numbering: "(1)")
@@ -173,9 +173,10 @@
   }
 
   let make_reader_block(reader) = [
+    #v(5em)
     #box(line(length: 100%, stroke: (thickness: 1pt, dash: "dashed", cap: "round")))\
     #reader.name\
-    #reader.academic_title\
+    #reader.title\
     #reader.institution
   ]
   
@@ -183,22 +184,22 @@
     set text(..heading_style(style, level: 1), fill: black, weight: 400)
     align(center)[*Approved by*]
     set text(size: 0.8em)
-    v(1fr)
+    block(width: 100%, height: 1fr,
     grid(
       column-gutter: 2.2em,
-      row-gutter: 6em,
+      row-gutter: 1fr,
       columns: (auto, auto),
-      ..readers_list.map(reader => ([#reader.ordinal Reader:], make_reader_block(reader))).flatten()
-    )
-    v(1fr)
+      ..readers_list.map(reader => ([#v(2.5em)#reader.ordinal Reader], make_reader_block(reader))).flatten()
+    ))
+    
   }
   let make_major_professor_block(professor) = {
-    grid(
-      columns: (auto, auto),
-      align: (right, left),
-      column-gutter: 1em,
+    stack(
+      dir: ltr,
+      spacing: 1em,
       [*Major Professor:*],
       [
+        #set align(left)
         #professor.name\
         #professor.title
       ]
@@ -218,9 +219,11 @@
     align(center)[
       #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
       #v(1em)
-      #text(size: 1.2em)[#upper(author_name)]\
-      #school_name_for_abstract, #grs_name_for_abstract, #submission_year
-      #rect(major_professors)
+      #rect(width: 100%, inset: (top: 1em, bottom: 1em))[
+        #text(size: 1.2em)[#upper(author_name)]\
+        #school_name_for_abstract, #grs_name_for_abstract, #submission_year
+        #major_professors
+      ]
     ]
     v(1em)
     align(center)[ // Continue with centered ABSTRACT heading

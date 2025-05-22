@@ -34,13 +34,13 @@
 )
 
 #let approval_readers_val = (
-  (ordinal: "First", name: "Dr. Renato Mancuso", academic_title: "Professor of Computer Science", institution: none),
-  (ordinal: "Second", name: "Dr. Sabrina Neuman", academic_title: "Associate Professor of Computer Science", institution: none),
-  (ordinal: "Third", name: "Dr. Kate Saenko", academic_title: "Professor of Computer Science", institution: none),
-  (ordinal: "Fourth", name: "Dr. Bingzhuo Zhong", academic_title: "Assistant Professor of Computer Science", institution: none)
+  (ordinal: "First", name: "Dr. Renato Mancuso", title: "Associate Professor of Computer Science", institution: none),
+  (ordinal: "Second", name: "Dr. Kate Saenko", title: "Professor of Computer Science", institution: none),
+  (ordinal: "Third", name: "Dr. Sabrina Neuman", title: "Assistant Professor of Computer Science", institution: none),
+  (ordinal: "Fourth", name: "Dr. Bingzhuo Zhong", title: "Assistant Professor of Computer Science", institution: none)
 )
 
-#let major_professors_val = (name: "Renato Mancuso, Ph.D.", title: "Professor of Computer Science")
+#let major_professors_val = approval_readers_val.at(0)
 
 // ===== Generate Thesis Components =====
 

@@ -1,4 +1,4 @@
-#let primary_hue = 0deg
+#let primary_hue = 10deg
 
 #let primary_gradient = gradient.linear(
   oklch(0%, 60%, primary_hue),
@@ -90,6 +90,7 @@
 
 
 #let default_style(gradient: primary_gradient) = (
+  primary_gradient: gradient,
   // Page-level layout properties
   page: (
     margins: (left: 1.5in, right: 1in, top: 1.5in, bottom: 1in),
@@ -135,3 +136,16 @@
 #let heading_style(style, level: 0) = {
   return style.heading.text + style.heading.levels.at(level).text
 }
+
+
+
+#let note(content) = align(center, box(
+  stroke: (paint: primary_gradient.sample(90%),
+    thickness: 3pt,
+    dash: ("dot", 6pt),
+    cap: "round",),
+  radius: 0.5em,
+  fill: primary_gradient.sample(100%).lighten(50%),
+  inset: 1em,
+  content
+))
