@@ -1,0 +1,15 @@
+[submodule "latex/AnchorsRAM"]
+	path = latex/AnchorsRAM
+	url = https://git@git.overleaf.com/680fa5fce5b6f92e453ed7bf
+[submodule "latex/FPLIROS"]
+	path = latex/FPLIROS
+	url = https://git@git.overleaf.com/67bb8e4b1901136025312dd6
+[submodule "latex/CertiflightProgress"]
+	path = latex/CertiflightProgress
+	url = https://git@git.overleaf.com/6191d520ed45e9d5e2347090
+[submodule "latex/CAPS"]
+	path = latex/CAPS
+	url = https://git@git.overleaf.com/5f8904c5a4518500018db5b2
+[submodule "latex/REAL"]
+	path = latex/REAL
+	url = https://git@git.overleaf.com/5f04e92543a84a0001fd1a1d

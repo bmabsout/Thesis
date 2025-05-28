@@ -80,6 +80,7 @@
       }
       v(spacing.below, weak: true)
     }
+  
 
     show heading.where(level: 4): it => {
       box(inset: (right: 0.1em, bottom: 0em))[#text(weight: "bold", it)]
@@ -219,7 +220,7 @@
     align(center)[
       #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
       #v(1em)
-      #rect(width: 100%, inset: (top: 1em, bottom: 1em))[
+      #rect(width: 100%, inset: (top: 1em, bottom: 1em), radius: 12pt)[
         #text(size: 1.2em)[#upper(author_name)]\
         #school_name_for_abstract, #grs_name_for_abstract, #submission_year
         #major_professors
@@ -300,3 +301,12 @@
     assemble_thesis_document: assemble_thesis_document
   )
 }
+
+// // Conclusion
+// #include "chapters/10_synthesis_future.typ"
+
+// Appendix: Notation and Glossary
+#include "chapters/notation_glossary.typ"
+
+// References
+#show bibliography: set block(spacing: 1.5em)

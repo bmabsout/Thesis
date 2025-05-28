@@ -67,7 +67,7 @@ where $x_i in [0,1]$ are the values being composed. The parameter $p in RR$ cont
 #table(
   stroke: (thickness: 0.4pt),
   columns: (auto, auto, auto),
-  inset: 7pt,
+  inset: 1em,
   align: horizon,
   [*Parameter*], [*Name*], [*Operation*],
   [$p -> -infinity$], [Minimum], $min(x_1, ..., x_n)$,

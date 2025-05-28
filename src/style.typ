@@ -1,8 +1,37 @@
 #let primary_hue = 10deg
+#let accent1_hue = 140deg
+#let accent2_hue = 200deg
+#let accent3_hue = -60deg
+#let accent4_hue = 48deg
 
 #let primary_gradient = gradient.linear(
+  space: oklch,
   oklch(0%, 60%, primary_hue),
-  oklch(95%, 5%, primary_hue+20deg)
+  oklch(100%, 5%, primary_hue+20deg)
+)
+
+#let accent1_gradient = gradient.linear(
+  space: oklch,
+  oklch(0%, 50%, accent1_hue),
+  oklch(70%, 70%, accent1_hue+20deg)
+)
+
+#let accent2_gradient = gradient.linear(
+  space: oklch,
+  oklch(0%, 50%, accent2_hue),
+  oklch(70%, 70%, accent2_hue+20deg)
+)
+
+#let accent3_gradient = gradient.linear(
+  space: oklch,
+  oklch(0%, 50%, accent3_hue),
+  oklch(70%, 70%, accent3_hue+20deg)
+)
+
+#let accent4_gradient = gradient.linear(
+  space: oklch,
+  oklch(0%, 50%, accent4_hue),
+  oklch(70%, 70%, accent4_hue+10deg)
 )
 
 
@@ -112,17 +141,17 @@
     levels: (
       // Level 1 ~ Chapter
       (
-        text: (size: 1.5em, weight: "bold", fill: primary_gradient.sample(35%)),
+        text: (size: 1.5em, weight: "bold", fill: primary_gradient.sample(30%)),
         spacing: (above: 2em, below: 2em)
       ),
       // Level 2 ~ Section
       (
-        text: (size: 1.4em, weight: "bold", fill: primary_gradient.sample(50%)),
+        text: (size: 1.4em, weight: "bold", fill: primary_gradient.sample(45%)),
         spacing: (above: 2em, below: 2em)
       ),
       // Level 3 ~ Subsection
       (
-        text: (size: 1.3em, weight: "bold", fill: primary_gradient.sample(65%)),
+        text: (size: 1.3em, weight: "bold", fill: primary_gradient.sample(60%)),
         spacing: (above: 2em, below: 1.5em)
       ),
       // Level 4 ~ Subsubsection
@@ -131,6 +160,7 @@
       ),
     )
   ),
+  radius: 12pt,
 )
 
 #let heading_style(style, level: 0) = {
@@ -144,8 +174,22 @@
     thickness: 3pt,
     dash: ("dot", 6pt),
     cap: "round",),
-  radius: 0.5em,
-  fill: primary_gradient.sample(100%).lighten(50%),
+  radius: 12pt,
+  fill: primary_gradient.sample(97%),
   inset: 1em,
-  content
+  align(left, [
+    #set text(fill: primary_gradient.sample(40%))
+    #content
+  ])
 ))
+
+#let manual_sampler(fill: none, width: 10em, height: 2em, samples: 100) = {
+  let filler(i) = {
+    if type(fill) == gradient {
+      return fill.sample(i*1%)
+    }
+    return fill
+  }
+
+  stack(dir: ltr, spacing: 0em, ..range(samples).map(i => rect(fill: filler(i), width: width/samples, height: height)))
+}

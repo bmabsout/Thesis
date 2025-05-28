@@ -1,8 +1,8 @@
-#import "style.typ": primary_gradient
+#import "style.typ": accent2_gradient, accent1_gradient, accent3_gradient, accent4_gradient
 // Color definitions for consistent visualization
-#let state_color = primary_gradient.sample(45%)
-#let action_color = blue.darken(20%)
-#let reward_color = rgb("#08680e")
+#let state_color = accent4_gradient.sample(60%)
+#let action_color = accent2_gradient.sample(60%)
+#let reward_color = accent1_gradient.sample(60%)
 
 #let state(body) = text(fill: state_color, $#body$)
 #let action(body) = text(fill: action_color, $#body$)
@@ -26,3 +26,5 @@
   locate(loc => ())
   text(red, [TODO: #message])
 }
+
+#let sigmoid(x) = $phi(x)$

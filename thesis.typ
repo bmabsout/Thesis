@@ -76,11 +76,19 @@
 // #let list_of_tables = make_list_of_tables(title: "List of Tables")
 
 #let main_body = [
-  #include "src/chapters/problem_statement.typ"
-  #include "src/chapters/background.typ"
-  #include "src/chapters/published_results.typ"
-  #include "src/chapters/current_work.typ"
-  #include "src/chapters/timeline.typ"
+  // Part I: Problem and Theory
+  #include "src/chapters/01_crisis_of_intent.typ"
+  #include "src/chapters/02_intent_reality_framework.typ"
+  #include "src/chapters/03_foundations_fulfillment.typ"
+  
+  // Part II: Implementation and Applications
+  #include "src/chapters/04_fulfillment_priority_logic.typ"
+  #include "src/chapters/05_universal_behavioral_objectives.typ"
+  #include "src/chapters/06_multi_fulfillment_adaptation.typ"
+  
+  // Part III: Discovery and Synthesis
+  #include "src/chapters/07_fulfillment_lyapunov_control.typ"
+  #include "src/chapters/08_synthesis_future.typ"
 ]
 
 // Optional: Generate Appendices content if you have them
