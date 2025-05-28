@@ -235,7 +235,7 @@ The RL community has developed several approaches to address aspects of the inte
 
 Multi-objective reinforcement learning explicitly represents multiple objectives through vector rewards, avoiding the immediate semantic loss of linear scalarization @survey_seq_dec_morl @reymond2023actor. MORL approaches divide into *a-priori* methods (preferences specified before training) and *a-posteriori* methods (generating multiple Pareto-optimal policies for post-training selection).
 
-**The MORL Landscape and Its Limitations**: Traditional MORL approaches can be categorized into several paradigms, each with fundamental limitations:
+*The MORL Landscape and Its Limitations*: Traditional MORL approaches can be categorized into several paradigms, each with fundamental limitations:
 
 *Scalarization-Based MORL*: Most practical MORL systems ultimately rely on linear scalarization for policy selection, inheriting the same semantic loss and brittleness problems as traditional RL. Even sophisticated preference elicitation methods reduce to weighted combinations that cannot express complex logical relationships.
 
@@ -243,7 +243,7 @@ Multi-objective reinforcement learning explicitly represents multiple objectives
 
 *Constraint-Based MORL*: Constrained MDPs treat secondary objectives as constraints while optimizing a primary objective. These methods struggle with soft constraints, balanced multi-objective satisfaction, and the complex hierarchical relationships common in robotics.
 
-**Why MORL Has Failed in Robotics**: Despite decades of research, MORL has seen limited adoption in real-world robotics applications due to fundamental limitations:
+*Why MORL Has Failed in Robotics*: Despite decades of research, MORL has seen limited adoption in real-world robotics applications due to fundamental limitations:
 
 1. *Semantic Loss*: Even vector-valued approaches ultimately compress multi-objective information into scalar decisions, losing the semantic meaning of individual objectives.
 
@@ -253,7 +253,7 @@ Multi-objective reinforcement learning explicitly represents multiple objectives
 
 4. *Lack of Logical Structure*: Traditional MORL cannot express the logical relationships ("safety AND performance", "efficiency OR speed") that naturally characterize robotics objectives.
 
-**The Need for a New MORL Paradigm**: The limitations of existing MORL approaches highlight the need for a fundamentally different approach that:
+*The Need for a New MORL Paradigm*: The limitations of existing MORL approaches highlight the need for a fundamentally different approach that:
 - Preserves semantic meaning throughout learning
 - Enables direct specification of logical objective relationships  
 - Provides robust deployment across domains
@@ -326,27 +326,27 @@ This thesis presents a comprehensive framework for fulfillment-centric robot lea
 
 === For Practitioners
 If you're implementing robot learning systems and want practical guidance:
-- **Start here**: Chapter 1 (motivation) → Chapter 4 (FPL and practitioner's guide) → Chapter 5 (CAPS implementation)
-- **Key takeaway**: Use geometric mean composition ($p = 0$) as your default, handle universal objectives architecturally
-- **Implementation**: The practitioner's guide in Chapter 4 provides step-by-step methodology and common patterns
+- *Start here*: Chapter 1 (motivation) → Chapter 4 (FPL and practitioner's guide) → Chapter 5 (CAPS implementation)
+- *Key takeaway*: Use geometric mean composition ($p = 0$) as your default, handle universal objectives architecturally
+- *Implementation*: The practitioner's guide in Chapter 4 provides step-by-step methodology and common patterns
 
 === For Theoreticians  
 If you're interested in the mathematical foundations and theoretical contributions:
-- **Start here**: Chapter 3 (mathematical foundations) → Chapter 2 (intent-to-reality framework) → Chapter 7 (discovery story)
-- **Key insights**: Generalized means provide continuous logic, semantic preservation prevents information loss
-- **Novel theory**: Insights about common underlying causes of expressivity and deployment challenges, minimum fulfillment bounds, semantic anchoring principles
+- *Start here*: Chapter 3 (mathematical foundations) → Chapter 2 (intent-to-reality framework) → Chapter 7 (discovery story)
+- *Key insights*: Generalized means provide continuous logic, semantic preservation prevents information loss
+- *Novel theory*: Insights about common underlying causes of expressivity and deployment challenges, minimum fulfillment bounds, semantic anchoring principles
 
 === For Robotics Researchers
 If you're working on multi-objective control and want to understand the full framework:
-- **Read sequentially**: All chapters provide complementary perspectives on the same underlying framework
-- **Focus areas**: Chapter 5 (CAPS), Chapter 6 (Anchor Critics), Chapter 7 (Lyapunov applications)
-- **Empirical validation**: Each technical chapter includes comprehensive experimental results
+- *Read sequentially*: All chapters provide complementary perspectives on the same underlying framework
+- *Focus areas*: Chapter 5 (CAPS), Chapter 6 (Anchor Critics), Chapter 7 (Lyapunov applications)
+- *Empirical validation*: Each technical chapter includes comprehensive experimental results
 
 === For Students
 If you're learning about robot learning and multi-objective optimization:
-- **Foundation first**: Chapter 1 → Chapter 3 → Chapter 4 for core concepts
-- **Then applications**: Chapter 5 → Chapter 6 for practical implementations
-- **Discovery story**: Chapter 7 shows how mathematical insights emerge from practical problems
+- *Foundation first*: Chapter 1 → Chapter 3 → Chapter 4 for core concepts
+- *Then applications*: Chapter 5 → Chapter 6 for practical implementations
+- *Discovery story*: Chapter 7 shows how mathematical insights emerge from practical problems
 
 == Chapter Summary
 

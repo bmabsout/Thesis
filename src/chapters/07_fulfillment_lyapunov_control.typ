@@ -21,9 +21,9 @@ Classical control theory uses Lyapunov functions to analyze system stability. A 
 
 where $f(x)$ represents the system dynamics.
 
-Initially, control theorists used these conditions purely for **proving** stability—to verify that a given controller would be stable. However, the field evolved to recognize that the **size of the Lyapunov region** (the region of attraction) could serve as an **optimization criterion**. Rather than just proving stability, control theorists began optimizing controllers to achieve stability with the **largest possible region of attraction**.
+Initially, control theorists used these conditions purely for *proving* stability—to verify that a given controller would be stable. However, the field evolved to recognize that the *size of the Lyapunov region* (the region of attraction) could serve as an *optimization criterion*. Rather than just proving stability, control theorists began optimizing controllers to achieve stability with the *largest possible region of attraction*.
 
-This evolution was crucial: it transformed Lyapunov conditions from binary proof tools ("stable or not") into **quantitative optimization objectives** ("how stable, and over what region"). This shift from proof to optimization naturally leads to treating stability as a **fulfillment variable** that can be composed with other important controller objectives like performance, efficiency, and robustness.
+This evolution was crucial: it transformed Lyapunov conditions from binary proof tools ("stable or not") into *quantitative optimization objectives* ("how stable, and over what region"). This shift from proof to optimization naturally leads to treating stability as a *fulfillment variable* that can be composed with other important controller objectives like performance, efficiency, and robustness.
 
 === From Learning Lyapunov Control with Fulfillments
 
@@ -42,23 +42,23 @@ $ cal(L)_"CLF" = V(p)^2 + a_1 1/N sum_(x in cal(X)) [epsilon + V(f(x,u)) - V(x)]
 
 where $[dot]_+ = max(dot, 0)$ is the ReLU function.
 
-*The Core Problem*: This penalty-based formulation treated stability as a **constraint** to be satisfied rather than an **objective** to be optimized. The approach led to several fundamental issues:
+*The Core Problem*: This penalty-based formulation treated stability as a *constraint* to be satisfied rather than an *objective* to be optimized. The approach led to several fundamental issues:
 
-1. **Penalty Balancing**: The weights $a_1, a_2$ required careful tuning to balance the different constraint violations
-2. **Semantic Loss**: The combined loss obscured whether individual Lyapunov conditions were actually satisfied
-3. **Hard Constraints**: The ReLU penalties created discontinuous gradients and training instability
-4. **Composition Difficulty**: Adding performance objectives required additional penalty terms and more weight tuning
+1. *Penalty Balancing*: The weights $a_1, a_2$ required careful tuning to balance the different constraint violations
+2. *Semantic Loss*: The combined loss obscured whether individual Lyapunov conditions were actually satisfied
+3. *Hard Constraints*: The ReLU penalties created discontinuous gradients and training instability
+4. *Composition Difficulty*: Adding performance objectives required additional penalty terms and more weight tuning
 
 *Safe Controller Sets*: While we could define safe controllers as:
 $ S(p) = {pi | V(f(x,pi)) - V(x) < 0} $
 
 The penalty-based learning approach made it difficult to ensure that learned controllers actually belonged to this safe set while achieving good performance.
 
-This mathematical foundation revealed the need for a fundamentally different approach—one that treated stability not as a constraint to be penalized, but as a **fulfillment to be satisfied** and composed with other objectives.
+This mathematical foundation revealed the need for a fundamentally different approach—one that treated stability not as a constraint to be penalized, but as a *fulfillment to be satisfied* and composed with other objectives.
 
 === The Fulfillment Treatment
 
-Building on the control theory evolution from proof to optimization, our key insight was to reformulate the penalty-based CLF loss as **fulfillment variables** that could be composed using continuous logic operators. Instead of penalizing constraint violations, we measured the degree to which each condition was satisfied.
+Building on the control theory evolution from proof to optimization, our key insight was to reformulate the penalty-based CLF loss as *fulfillment variables* that could be composed using continuous logic operators. Instead of penalizing constraint violations, we measured the degree to which each condition was satisfied.
 
 *From Penalties to Fulfillments*: The CLF penalty terms were transformed into fulfillment measures:
 
@@ -90,7 +90,7 @@ This transformation eliminated the need for manual weight tuning ($a_1, a_2$) an
 
 === The Composition Challenge
 
-The critical challenge emerged when we needed to compose these stability fulfillment variables with other important controller objectives. A good controller must satisfy stability requirements **and** achieve good tracking performance **and** maintain energy efficiency **and** provide robustness to disturbances.
+The critical challenge emerged when we needed to compose these stability fulfillment variables with other important controller objectives. A good controller must satisfy stability requirements *and* achieve good tracking performance *and* maintain energy efficiency *and* provide robustness to disturbances.
 
 Traditional linear combination approaches failed at multiple levels:
 
@@ -120,7 +120,7 @@ More importantly, this stability fulfillment can now be composed with other cont
 
 $ f_"controller" = M_0(f_"stability", f_"tracking", f_"efficiency") $
 
-This enables the design of controllers that achieve **all** important objectives simultaneously—they are stable **and** track well **and** are energy efficient—rather than trading off between these critical requirements.
+This enables the design of controllers that achieve *all* important objectives simultaneously—they are stable *and* track well *and* are energy efficient—rather than trading off between these critical requirements.
 
 === Convergence Benefits
 
@@ -139,10 +139,10 @@ We validated this approach on quadrotor attitude control, where stability is cri
 - *50% faster convergence* compared to penalty-based approaches
 - *Larger regions of attraction* for the learned Lyapunov functions  
 - *More robust performance* under model uncertainties
-- *Balanced multi-objective performance*: Controllers achieved good stability **and** tracking **and** efficiency simultaneously
+- *Balanced multi-objective performance*: Controllers achieved good stability *and* tracking *and* efficiency simultaneously
 - *No objective sacrifice*: Unlike linear scalarization, no individual objective was sacrificed for others
 
-These results provided the first empirical evidence that fulfillment-based optimization with generalized mean composition could outperform traditional approaches while achieving the control theory goal of designing controllers that satisfy **all** important conditions for good control performance.
+These results provided the first empirical evidence that fulfillment-based optimization with generalized mean composition could outperform traditional approaches while achieving the control theory goal of designing controllers that satisfy *all* important conditions for good control performance.
 
 == From Control Theory to General Robotics
 

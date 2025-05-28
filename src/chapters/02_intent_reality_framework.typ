@@ -83,15 +83,15 @@ Both the expressivity and deployment crises involve the fundamental challenge of
 $ pi^* = arg max_pi expect_(s,a) [M_p(f_1(s,a), ..., f_n(s,a))] $
 
 This formulation naturally addresses both crises:
-- **Expressivity**: Each $f_i$ preserves individual objective meaning
-- **Deployment**: Bounded fulfillment values [0,1] provide robustness under distribution shift
-- **Composition**: Generalized mean $M_p$ maintains semantic relationships
+- *Expressivity*: Each $f_i$ preserves individual objective meaning
+- *Deployment*: Bounded fulfillment values [0,1] provide robustness under distribution shift
+- *Composition*: Generalized mean $M_p$ maintains semantic relationships
 
 *Key Properties*:
-1. **Semantic Preservation**: Individual fulfillment values remain interpretable
-2. **Bounded Optimization**: All objectives constrained to [0,1] range
-3. **Compositional Structure**: Relationships between objectives are preserved
-4. **Distribution Robustness**: Bounded values are less sensitive to shift
+1. *Semantic Preservation*: Individual fulfillment values remain interpretable
+2. *Bounded Optimization*: All objectives constrained to [0,1] range
+3. *Compositional Structure*: Relationships between objectives are preserved
+4. *Distribution Robustness*: Bounded values are less sensitive to shift
 
 === Analysis of Common Challenges
 
