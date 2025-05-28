@@ -23,7 +23,6 @@
 #let loss = math.op($cal(L)$)
 #let expect = math.op($EE$, limits: true)
 #let todo(message) = {
-  locate(loc => ())
   text(red, [TODO: #message])
 }
 

@@ -575,6 +575,8 @@ $ tilde(f)_i(s,a,s') = f_i(s,a,s') + epsilon_i $
 
 where $epsilon_i$ is a noise term with $|epsilon_i| <= epsilon_"max"$ and $expect[epsilon_i] = 0$.
 
+#todo("Check and formally prove this theorem - currently unproven theoretical direction")
+
 *Theorem 6* (Robustness Under Bounded Noise): For any FPL formula $phi$ with power-mean compositions using $p <= 0$, the expected fulfillment degradation under bounded noise is:
 
 $ |expect[u(phi(tilde(f)_1, ..., tilde(f)_n))] - u(phi(f_1, ..., f_n))| <= epsilon_"max" dot K(p,n) $
@@ -586,6 +588,8 @@ where $K(p,n) = n^(1/p - 1)$ is the noise amplification factor.
 ==== Minimum Fulfillment Bounds Under Uncertainty
 
 The minimum fulfillment bounds remain valid in expectation:
+
+#todo("Validate this theorem with rigorous proof and empirical testing - theoretical work needed")
 
 *Theorem 7* (Probabilistic Fulfillment Bounds): For stochastic fulfillment with bounded noise, if $expect[M_p(tilde(f)_1, ..., tilde(f)_n)] >= y$, then:
 
@@ -600,62 +604,6 @@ For practitioners, this analysis provides concrete guidelines:
 1. *Parameter Selection Under Uncertainty*: More negative $p$ values provide stronger robustness guarantees but may reduce average performance
 2. *Noise Tolerance*: The framework degrades gracefully with bounded noise, maintaining semantic interpretability
 3. *Verification*: Fulfillment bounds can be verified probabilistically even under uncertainty
-
-==== Probabilistic Extensions
-
-While FPL currently operates on deterministic fulfillment values, potential probabilistic extensions could maintain semantic preservation:
-
-*Approach 1* (Expectation-Based): Replace point fulfillment with expected fulfillment
-$ f_i^"prob"(s,a) = expect_(s')[f_i(s,a,s')] $
-
-*Approach 2* (Chance-Constrained): Require fulfillment with high probability
-$ f_i^"chance"(s,a) = bb(1)[Pr[f_i(s,a,s') >= theta] >= 1 - epsilon] $
-
-*Approach 3* (Distributional): Operate on fulfillment distributions directly
-$ f_i^"dist"(s,a) ~ P(f_i | s,a) $
-
-Each approach trades off between computational tractability and uncertainty representation fidelity. The expectation-based approach integrates most naturally with existing FPL machinery while providing meaningful robustness guarantees.
-
-=== Computational Complexity Analysis
-
-Understanding FPL's computational complexity is crucial for practical deployment, especially in resource-constrained robotics applications.
-
-==== Evaluation Complexity
-
-*Theorem 8* (FPL Evaluation Complexity): For an FPL formula $phi$ with $n$ base objectives and nesting depth $d$:
-- Time complexity: $O(n dot d)$
-- Space complexity: $O(d)$ (for recursive evaluation)
-
-This linear complexity in both objectives and depth ensures scalability to practical problems.
-
-==== Optimization Complexity
-
-The complexity of optimizing policies under FPL specifications depends on:
-
-1. *Gradient Computation*: $O(n dot d)$ per gradient step
-2. *Critic Updates*: $O(n)$ parallel Q-function updates
-3. *Composition Overhead*: Negligible compared to neural network forward passes
-
-==== Approximation Strategies
-
-For extremely complex specifications, approximation can maintain semantic guarantees:
-
-*Strategy 1* (Formula Pruning): Remove low-priority branches below a threshold
-- Maintains minimum fulfillment bounds
-- Reduces depth from $d$ to $d'$
-- Error bounded by pruned branch weights
-
-*Strategy 2* (Objective Clustering): Group similar objectives
-- Reduces $n$ to $n'$ effective objectives
-- Preserves semantic relationships
-- Error bounded by intra-cluster variance
-
-*Strategy 3* (Caching): Memoize frequently evaluated subformulas
-- Trades space for time
-- Most effective for shared substructures
-- Reduces average-case complexity
-
-These strategies enable deployment on resource-constrained platforms while maintaining the essential semantic properties of FPL specifications.
 
 === Fulfillment Value Supervision
 
@@ -687,128 +635,103 @@ FPL can express any objective relationship that can be represented through conti
 
 The FPL type system ensures that all well-formed formulas produce valid fulfillment values in $[0,1]$ and that parameter constraints are enforced (e.g., $p \leq 0$ for AND operations).
 
-== Empirical Validation
+== Empirical Evaluation
 
-We validated FPL across multiple robotics domains, demonstrating significant improvements in both sample efficiency and final performance. Our comprehensive evaluation included both simulated benchmarks and real-world robotics applications.
+We conducted a comprehensive empirical evaluation of BPG across multiple continuous control environments from the Farama-Foundation Gymnasium benchmark suite. Our experimental framework assesses two primary aspects: (1) sample efficiency, measured by the number of environment interactions required to reach predefined performance thresholds, and (2) the algorithm's robustness to overestimation bias through our normalization of value functions into FQ-values.
 
-=== Experimental Methodology
-
-*Baseline Comparisons*: We compared FPL against three established multi-objective RL approaches:
-1. *Linear Scalarization*: Traditional weighted sum of objectives
-2. *Lexicographic Ordering*: Strict priority-based optimization
-3. *Pareto-Optimal Methods*: Multi-objective evolutionary approaches
+We compared BPG against its baseline (DDPG @DDPG) and several state-of-the-art reinforcement learning algorithms designed for sample efficiency, including SAC @SAC, TQC @TQC, and CrossQ, to establish its relative performance characteristics. Importantly, while BPG is trained using our FPL framework—which structures rewards into prioritized objectives—we evaluate its performance using the original scalar rewards of the benchmark environments. This choice ensures our evaluation directly compares BPG against baselines on standard metrics, while demonstrating that our objective decomposition approach generalizes effectively to conventional performance measures.
 
 *Evaluation Metrics*:
-- *Sample Efficiency*: Time steps required to reach acceptable performance
-- *Final Performance*: Quality of learned policies on individual objectives
-- *Specification Robustness*: Sensitivity to parameter changes
-- *Semantic Preservation*: Alignment between intended and achieved trade-offs
+- *Sample Efficiency*: Time steps required to reach acceptable performance thresholds
+- *Learning Stability*: Consistency and variance in learning curves
+- *Overestimation Bias*: Accuracy of Q-value estimation
+- *Behavioral Quality*: Analysis of learned behaviors versus reward hacking
 
-=== Quadrotor Attitude Control
+=== Sample Efficiency Results
 
-*Experimental Setup*: We trained attitude controllers for quadrotor stabilization using the Neuroflight simulation environment. The task involves tracking desired angular velocities while maintaining smoothness and energy efficiency.
+Our results on several benchmark environments demonstrate significant improvements in sample efficiency compared to baseline and state-of-the-art methods.
 
-*Objective Definitions*:
-- *Tracking*: $f_"track" = exp(-||omega_"desired" - omega_"actual"||^2)$
-- *Smoothness*: $f_"smooth" = exp(-||a_t - a_(t-1)||^2)$  
-- *Efficiency*: $f_"eff" = exp(-||a_t||^2)$
+*LunarLanderContinuous-v2*: BPG reaches 200 rewards in 20,000 timesteps—84% faster than DDPG (128,000) and 44% faster than the state-of-the-art CrossQ (36,000).
 
-*FPL Specification*:
-$ phi = "tracking" and_0 ("smoothness" and_(-1) "efficiency") $
+*Hopper-v4*: BPG requires only 27,400 timesteps to reach the 2000 reward threshold, compared to 66,600 for CrossQ (59% reduction) and 154,400 for DDPG (82% reduction).
 
-This specification prioritizes tracking accuracy while balancing smoothness and efficiency as secondary objectives.
-
-*Quantitative Results*: Table 1 shows comprehensive performance comparison across all methods.
-
-#figure(
-  table(
-    columns: 5,
-    align: center,
-    [*Method*], [*Sample Efficiency ↑*], [*Tracking MAE ↓*], [*Smoothness ↑*], [*Power Efficiency ↑*],
-    [Linear Scalarization], [1.0×], [12.3 ± 2.1], [0.42 ± 0.08], [0.31 ± 0.05],
-    [Lexicographic], [0.8×], [8.7 ± 1.5], [0.38 ± 0.12], [0.28 ± 0.07],
-    [Pareto Methods], [0.6×], [10.1 ± 2.8], [0.45 ± 0.15], [0.35 ± 0.09],
-    [*FPL (Ours)*], [*6.2×*], [*7.2 ± 1.1*], [*0.78 ± 0.06*], [*0.52 ± 0.04*]
-  ),
-  caption: [Quadrotor attitude control results. FPL achieves 6.2× improvement in sample efficiency while outperforming baselines on all individual objectives. Values show mean ± standard deviation over 10 independent runs.]
-)
-
-*Learning Progress Analysis*: Figure 1 demonstrates the superior convergence properties of FPL compared to baseline methods.
-
-#figure(
-  image("/figures/progress_plots.svg", width: 100%),
-  caption: [Learning curves comparing FPL against baseline multi-objective methods on quadrotor attitude control. FPL converges significantly faster while achieving better final performance on all objectives. Shaded regions show standard deviation over 10 runs.]
-)
-
-*Sample Efficiency Breakdown*: The 6.2× improvement in sample efficiency breaks down as follows:
-- *Faster Initial Learning*: FPL reaches 50% of final performance in 40% fewer steps
-- *Stable Convergence*: Reduced variance in learning curves (60% smaller confidence intervals)
-- *Better Final Performance*: 15-25% improvement on individual objectives
-
-=== Manipulation Tasks: Robot Arm Reaching
-
-*Experimental Setup*: We evaluated FPL on robot arm reaching tasks using the MuJoCo physics simulator with a 7-DOF Franka Emika Panda arm. The task requires reaching target positions while maintaining safety constraints and optimizing for speed and smoothness.
-
-*Objective Definitions*:
-- *Safety*: $f_"safe" = min(1, d_"obstacle" / d_"threshold")$ (distance to obstacles)
-- *Accuracy*: $f_"acc" = exp(-||p_"target" - p_"end"||^2)$ (end-effector position error)
-- *Smoothness*: $f_"smooth" = exp(-||dot(q)_t - dot(q)_(t-1)||^2)$ (joint velocity changes)
-
-*FPL Specification*:
-$ phi = ["safety"]_(0.3) and_(-infinity) ("accuracy" and_0 "smoothness") $
-
-This specification ensures safety as a hard constraint while balancing accuracy and smoothness.
-
-*Results Summary*:
-- *400% faster convergence* to acceptable policies (50,000 vs 200,000 time steps)
-- *Zero safety violations* during training and deployment (vs 12% violation rate for baselines)
-- *Improved task success rate* from 65% to 95%
-- *30% reduction in trajectory jerk* while maintaining accuracy
-
-=== Mobile Robot Navigation
-
-*Experimental Setup*: Navigation tasks in cluttered environments using a differential drive robot. The robot must reach goal locations while avoiding obstacles and optimizing energy consumption.
-
-*Objective Definitions*:
-- *Goal Reaching*: $f_"goal" = exp(-||p_"goal" - p_"robot"||^2)$
-- *Obstacle Avoidance*: $f_"safe" = min(1, d_"min" / d_"safe")$
-- *Energy Efficiency*: $f_"energy" = exp(-||v_t||^2 - ||omega_t||^2)$
-
-*FPL Specification*:
-$ phi = "safety" and_(-2) ("goal_reaching" and_1 "efficiency") $
-
-*Results Summary*:
-- *50% reduction in training time* compared to reward engineering approaches
-- *Improved path quality* with 25% shorter paths and 40% lower energy consumption
-- *More robust behavior* in unseen environments (85% vs 60% success rate)
-
-=== Comprehensive Sample Efficiency Analysis
-
-Figure 2 provides a detailed analysis of sample efficiency improvements across all tested domains.
+*Pendulum-v1* and *Reacher-v4*: BPG similarly outperforms other algorithms, with improvements of 51% over CrossQ in Pendulum-v1 and outperforms all algorithms in Reacher-v4.
 
 #figure(
   image("/figures/violin_plots_timesteps.svg", width: 100%),
-  caption: [Sample efficiency comparison across all tested domains. Violin plots show the distribution of time steps required to reach acceptable performance. FPL consistently requires fewer samples with lower variance, demonstrating both efficiency and reliability improvements.]
+  caption: [Sample efficiency comparison across benchmark environments. Violin plots show the distribution of timesteps required to reach performance thresholds across 10 random seeds. The red horizontal line separates seeds failing to reach the threshold. BPG consistently requires fewer samples with lower variance.]
 )
 
-*Statistical Significance*: All reported improvements are statistically significant (p < 0.001) using Welch's t-test with Bonferroni correction for multiple comparisons.
+#figure(
+  image("/figures/progress_plots.svg", width: 100%),
+  caption: [Learning curves showing smoothed training progress of rewards versus environment steps for each algorithm. Shaded regions represent standard deviation across seeds, and dashed lines indicate reward thresholds for each environment. BPG demonstrates steeper learning curves and more consistent improvement.]
+)
 
-*Variance Reduction*: Beyond improved mean performance, FPL shows 40-60% reduction in training variance, indicating more reliable and predictable learning behavior.
+=== Learning Dynamics Analysis
 
-=== Ablation Studies
+The learning trajectories reveal two key advantages of BPG:
 
-*Component Analysis*: We conducted ablation studies to understand the contribution of different FPL components:
+1. *Steeper Learning Curves*: BPG demonstrates significantly steeper learning curves, particularly in Pendulum-v1 and LunarLanderContinuous-v2, enabling rapid policy acquisition with minimal environment interactions.
 
-1. *FQ-Value Composition vs Reward Composition*: FQ-value composition provides 2.3× better sample efficiency than applying FPL operators to immediate rewards.
+2. *Learning Consistency*: BPG's learning curves show remarkable consistency, achieving near-monotonic improvement with rapidly increasing fulfillment. This suggests that FPL enables more coherent credit assignment during critical early learning stages, contributing to both accelerated initial learning and optimization stability throughout the training process.
 
-2. *Generalized Means vs Linear Combination*: Generalized means provide 1.8× improvement over linear scalarization even with optimal weight tuning.
+=== Overestimation Bias Mitigation
 
-3. *Priority Offsets*: Priority offsets improve convergence speed by 35% when objectives have natural hierarchies.
+In multi-objective settings, accurate Q-value estimation is crucial for proper objective prioritization. We conducted controlled experiments on the Hopper-v4 environment with deliberately reduced Polyak averaging to evaluate BPG's resilience to overestimation bias.
 
-*Parameter Sensitivity*: FPL shows robust performance across parameter ranges:
-- Conjunction parameters ($p$): Performance stable for $p in [-5, 0]$
-- Priority offsets ($delta$): Effective for $delta in [-0.5, 0.5]$
-- Fulfillment supervision weight: Optimal around $lambda = 0.1$
+Without our Q-value normalization mechanism, the average Q-value error for Fulfillment Q-values reached 0.627 after 38k steps. Adding underestimating loss with learning rate $alpha_"FV" = 0.75$ reduced error by 77% to 0.146, while $alpha_"FV" = 2.0$ achieved similar results (0.138). This confirms that our fulfillment supervision loss mitigates overestimation bias without requiring additional critics or complex ensemble methods.
+
+=== FPL Specification Examples
+
+We demonstrate how FPL simplifies reward specification while maintaining or improving performance. For each environment, we show the original reward function and our FPL specification:
+
+*Pendulum-v1*:
+- *Original*: $-theta^2 - 0.1 dot(theta)^2 - 0.001 text("torque")^2$
+- *FPL*: $F_"angle"^2 and_p F_"actuation"$
+
+Here $F_"angle"$ represents fulfillment for angle alignment, and $F_"actuation"$ represents minimizing actuation. The squared angle term emphasizes the primary task of angle alignment.
+
+*Reacher-v4*:
+- *Original*: $-text("distance") - 0.1||text("torque")||^2$
+- *FPL*: $F_"distance"^2 and_p bold(and)_p(bold(F)_"torque")$
+
+Our FPL specification represents reaching the target with $F_"distance"$, squared for emphasis, and minimizing the torque fulfillments.
+
+*Hopper-v4*:
+- *Original*: $1 + (d x)/(d t) - 0.001 ||text("action")||_2^2$
+- *FPL*: $bold(and)_p(bold(F)_"speed") and_p bold(and)_p(bold(F)_"action")$
+
+Here $bold(and)_p(bold(F)_"speed")$ represents the fulfillments for the velocity of each limb, and $bold(and)_p(bold(F)_"action")$ represents minimizing the three joint torques.
+
+*LunarLanderContinuous-v2*:
+The original reward is particularly complex, with distance, velocity, angle rewards, leg contact bonuses, engine penalties, and terminal rewards. Our FPL specification uses a hierarchical structure:
+
+$bold(and)_p({F_"near", [F_"very_near"]_0.1, [F_"legs"]_0.1, [F_"landed"]_0.1, [F_"fuel"]_0.5})$
+
+The offsets create a natural curriculum: the agent first focuses on basic proximity, then simultaneously addresses precise positioning, leg contact, and landing, and finally optimizes fuel efficiency once primary objectives are reasonably satisfied.
+
+=== Behavioral Analysis and Reward Hacking Prevention
+
+Standard reward functions often embody fundamental limitations that FPL effectively addresses. In LunarLander, the non-Markovian reward aggregates multiple state-history components, complicating Q-value estimation and impeding learning efficiency. Hopper-v4 exemplifies semantic ambiguity, where identical reward values (≈1000) can represent qualitatively distinct behaviors—either sustained upright posture without progression or significant forward motion lacking stability—conflating disparate policy qualities.
+
+=== Ablation Study: Impact of FPL on Behavior
+
+#figure(
+  table(
+    columns: 3,
+    align: center,
+    [*Metric*], [*With FPL*], [*Without FPL*],
+    [$phi_"hopper"$], [0.625], [0.194],
+    [Hopper-v4 Reward], [2288.80], [750.35]
+  ),
+  caption: [BPG Performance in Hopper-v4 (48k steps, 10 seeds). Beyond raw performance gains, agents without FPL frequently achieved rewards of ≈1000 by standing still—a reward hacking scenario. FPL assigned near-zero fulfillment values (3.8 × 10^-5) to such behaviors, correctly identifying them as failing to satisfy intended objectives.]
+)
+
+Beyond raw performance gains with FPL, we observed a critical qualitative difference: without FPL, agents frequently achieved rewards of approximately 1000 by simply standing still—a reward hacking scenario where linear rewards were fulfilled but failed to achieve the intended behavior. Our FPL formulation assigned near-zero fulfillment values to such behaviors, correctly identifying them as failing to satisfy the intended objectives since the agent must move all limbs forward to be considered fulfilled.
+
+=== Parameter Robustness
+
+FPL demonstrates robustness to reasonable variations in power mean parameters and offsets. We choose $p$ as either 0 or -1, which primarily serve to optimize sample efficiency rather than fundamentally changing the desired behavior. For example, not squaring the angle term in Pendulum would still result in an upright pendulum, but with slower convergence due to more conservative actions. This behavioral consistency persists across training runs, unlike linear weighted reward functions that often converge to different local optima depending on initialization.
 
 == Relationship to Multi-Objective Reinforcement Learning
 

@@ -72,7 +72,7 @@
       v(spacing.above, weak: true)
       if it.level == 1 [
         #colbreak(weak: true)
-        Chapter #counter(heading).display()\
+        #if it.numbering != none [Chapter #counter(heading).display()\ ]
         #it.body
         #long_line
       ] else {
@@ -89,7 +89,6 @@
 
     set heading(numbering: "1.1")
     set math.equation(numbering: "(1)")
-    // --- Assemble Document Parts ---
 
     let build_pages = (pages) => {
       for page in pages.filter(page => page != none and page != []).intersperse(pagebreak()) {
@@ -235,7 +234,11 @@
 
   let make_table_of_contents(title: "Contents", depth: 2) = {
     heading(level: 2, numbering: none, outlined: false, title)
-    outline(title: none, indent: auto, depth: depth)
+    show outline.entry: it => {
+      set text(..heading_style(style, level: it.level - 1), size: 1em)
+      it
+    }
+    outline(title: none, indent: 3em, depth: depth)
   }
 
   let make_list_of_figures(title: "List of Figures") = {
@@ -262,19 +265,6 @@
     } else {[]}
   }
 
-  let format_bibliography(file_path, options: none, title: "Bibliography") = {
-    if file_path != none {
-      heading(level: 1, numbering: none)[#title]
-      let style = options.at("style", default: none)
-      let bib_title_opt = options.at("title", default: none)
-      bibliography(
-          file_path,
-          title: if bib_title_opt != none {bib_title_opt} else {none},
-          style: if style != none {style} else {"ieee"}
-      )
-    } else {[]}
-  }
-
   let format_vita(vita_content, title: "Vita") = {
     if vita_content != none {
       block({
@@ -296,14 +286,10 @@
     make_list_of_tables: make_list_of_tables,
     format_main_content: format_main_content,
     format_appendices: format_appendices,
-    format_bibliography: format_bibliography,
     format_vita: format_vita,
     assemble_thesis_document: assemble_thesis_document
   )
 }
-
-// // Conclusion
-// #include "chapters/10_synthesis_future.typ"
 
 // Appendix: Notation and Glossary
 #include "chapters/notation_glossary.typ"

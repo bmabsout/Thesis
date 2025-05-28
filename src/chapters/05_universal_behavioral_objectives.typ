@@ -32,7 +32,7 @@ The black-box nature of neural network-based controllers limits mitigation of ba
 
 - *Surrogate Function Issues*: Research has shown that RL algorithms can be very sensitive to learning hyperparameters, input normalization, and reward scales. The surrogate optimization functions learned by policy gradient algorithms can present a very different optimization space compared to the true value function, making it difficult to trust nuanced information transfer from environment rewards to action policy optimization.
 
-== Universal Behavioral Objectives: A New Paradigm
+== Universal Behavioral Objectives
 
 We propose that certain behavioral requirements are so fundamental to robotics applications that they should be treated as *universal behavioral objectives*—requirements that apply across tasks and domains rather than being specific to particular applications.
 

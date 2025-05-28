@@ -97,7 +97,12 @@
 // ]
 // #let appendices = format_appendices(appendices_body, title: "Appendices")
 
-#let bibliography = (template.format_bibliography)("/megaref.bib", options: (:), title: "References")
+#let bibliography_content = bibliography(
+  "/megaref.bib",
+  title: "References",
+  style: "apa"
+)
+
 
 #let vita = (template.format_vita)([
   *Full Name:* Bassel El Mabsout \
@@ -124,6 +129,6 @@
   // list_of_tables: list_of_tables,   // Optional
   main: main_body,
   // appendices: appendices, // Optional
-  bibliography: bibliography,
+  bibliography: bibliography_content,
   vita: vita,
 )

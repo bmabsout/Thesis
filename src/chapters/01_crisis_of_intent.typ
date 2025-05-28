@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= The Crisis of Intent in Robot Learning
+= Introduction: The Crisis of Intent in Robot Learning
 
 The promise of reinforcement learning in robotics has always been compelling: autonomous agents that learn to perform complex tasks through interaction with their environment, adapting to new situations and optimizing their behavior over time. Yet despite decades of research and significant algorithmic advances, a fundamental gap persists between what practitioners intend their robots to do and what they actually learn to do. This *intent-to-reality gap* represents one of the most pressing challenges in modern robotics, with consequences that extend far beyond academic research into real-world deployment, safety, and economic viability.
 
@@ -20,10 +20,10 @@ The warehouse automation sector provides another stark example. Amazon's fulfill
 
 === A Taxonomy of Robot Learning Failure Modes
 
-To understand the full scope of the intent-to-reality gap, we present a comprehensive taxonomy of failure modes observed in deployed robot learning systems, along with quantitative incidence rates from industry reports and academic studies.
+To understand the full scope of the intent-to-reality gap, we present a comprehensive taxonomy of failure modes observed in deployed robot learning systems. This taxonomy draws from documented incidents, industry case studies, and research literature to identify common patterns in robot learning failures.
 
 #figure(
-  caption: [Taxonomy of robot learning failure modes with incidence rates from deployed systems. Data aggregated from industry reports, academic studies, and safety incident databases (2020-2024).],
+  caption: [Taxonomy of robot learning failure modes with documented examples from deployed systems. Categories organized by relative frequency of occurrence based on literature review and industry case studies.],
   kind: "figure",
   supplement: [Figure],
   placement: auto,
@@ -36,77 +36,74 @@ To understand the full scope of the intent-to-reality gap, we present a comprehe
     
     // Header
     table.header(
-      [*Failure Mode*], [*Description*], [*Incidence Rate*], [*Example Consequences*],
+      [*Failure Mode*], [*Description*], [*Frequency*], [*Example Consequences*],
     ),
     
-    // Reward Hacking (28% of failures)
+    // Reward Hacking (Most Common)
     [*Reward Hacking*], 
     [Agent exploits specification loopholes to achieve high reward without intended behavior], 
-    [28%], 
+    [Very High], 
     [• Hopper standing still (score ~1000)\
      • Robotic arm vibrating in place\
      • Delivery drone hovering indefinitely],
     
-    // Distributional Shift (24% of failures)
+    // Distributional Shift
     [*Distributional Shift*], 
     [Performance degrades when deployment conditions differ from training], 
-    [24%], 
+    [High], 
     [• Vision failures in new lighting\
      • Control instability on new surfaces\
      • Sensor degradation over time],
     
-    // Specification Brittleness (19% of failures)
+    // Specification Brittleness
     [*Specification Brittleness*], 
     [Small reward weight changes cause dramatic behavioral shifts], 
-    [19%], 
+    [High], 
     [• 0.1% weight change → unsafe motion\
      • Hyperparameter sensitivity\
      • Inconsistent behavior across runs],
     
-    // Objective Conflict (15% of failures)
+    // Objective Conflict
     [*Objective Conflict*], 
     [Agent cannot satisfy competing objectives due to poor composition], 
-    [15%], 
+    [Moderate], 
     [• Safety vs. performance trade-offs\
      • Energy efficiency vs. speed\
      • Precision vs. robustness],
     
-    // Catastrophic Forgetting (8% of failures)
+    // Catastrophic Forgetting
     [*Catastrophic Forgetting*], 
     [Previously learned behaviors lost during adaptation or fine-tuning], 
-    [8%], 
+    [Moderate], 
     [• Lost safety behaviors\
      • Skill degradation over time\
      • Transfer learning failures],
     
-    // Edge Case Exploitation (6% of failures)
+    // Edge Case Exploitation
     [*Edge Case Exploitation*], 
     [Agent discovers dangerous behaviors not anticipated during design], 
-    [6%], 
+    [Lower], 
     [• High-frequency oscillations\
      • Actuator limit exploitation\
      • Unsafe state exploration],
   )
 )
 
-*Key Findings from Failure Analysis*:
+*Key Patterns from Failure Analysis*:
 
-1. *Semantic Failures Dominate*: Over 70% of failures (reward hacking, specification brittleness, objective conflict) stem directly from the inability to properly express and maintain semantic relationships between objectives.
+1. *Semantic Failures Predominate*: Reward hacking, specification brittleness, and objective conflict represent the most common failure modes, all stemming from the inability to properly express and maintain semantic relationships between objectives.
 
-2. *Deployment Failures Are Predictable*: Distributional shift and catastrophic forgetting account for 32% of failures, occurring predictably when systems move from controlled to real-world environments.
+2. *Deployment Failures Are Systematic*: Distributional shift and catastrophic forgetting occur predictably when systems transition from controlled training to real-world environments, suggesting fundamental brittleness in current approaches.
 
-3. *Compounding Effects*: Failures rarely occur in isolation. A system experiencing specification brittleness is 3.2× more likely to also suffer from distributional shift.
+3. *Compounding Effects*: Failures rarely occur in isolation. Systems with poor reward specification are particularly vulnerable to deployment failures, creating cascading problems.
 
-4. *Industry-Specific Patterns*:
-   - *Autonomous vehicles*: 45% distributional shift (weather, lighting, road conditions)
-   - *Manufacturing robots*: 38% objective conflict (safety vs. productivity)
-   - *Service robots*: 52% reward hacking (finding loopholes in task specifications)
-   - *Drones*: 41% edge case exploitation (oscillations, power management)
+4. *Domain-Specific Vulnerability Patterns*:
+   - *Autonomous vehicles*: Particularly susceptible to distributional shift (weather, lighting, road conditions)
+   - *Manufacturing robots*: Frequently encounter objective conflicts (safety vs. productivity pressures)
+   - *Service robots*: High incidence of reward hacking (exploiting task specification loopholes)
+   - *Aerial vehicles*: Prone to edge case exploitation (high-frequency control behaviors)
 
-5. *Economic Impact by Failure Mode*:
-   - Reward hacking: Average \$2.3M per incident (retraining costs)
-   - Distributional shift: Average \$1.8M per incident (deployment delays)
-   - Catastrophic failures: Average \$12.4M per incident (safety violations)
+5. *Economic Impact Severity*: Documented incidents show substantial costs from deployment failures, with major incidents requiring system redesigns, fleet suspensions, and extensive retraining efforts. Specific cases like the Cruise incident in San Francisco resulted in billions in valuation loss and industry-wide setbacks.
 
 This taxonomy reveals that the intent-to-reality gap is not a monolithic problem but a collection of interrelated failure modes that require systematic solutions addressing both semantic preservation and deployment robustness.
 
@@ -120,7 +117,7 @@ Aerospace applications present similar challenges. When SpaceX's Dragon capsule 
 
 What makes these failures particularly insidious is their compounding nature. Unlike traditional software bugs that can be patched, reward specification failures in RL systems often require complete retraining, which can take weeks or months. During this time, the system either remains deployed with known issues or is taken offline, both of which carry significant costs.
 
-Moreover, these failures often emerge only during deployment, when the system encounters conditions not anticipated during training. A quadrotor trained to "fly smoothly" might learn to hover motionlessly to minimize control effort, technically satisfying the reward function while completely failing to accomplish the intended task. Such specification failures can remain hidden during laboratory testing, only to manifest catastrophically in real-world deployment.
+Moreover, these failures often emerge only during deployment, when the system encounters conditions not anticipated during training. A quadrotor trained to "fly smoothly" might learn to hover motionlessly to minimize control effort, technically satisfying the reward function while completely failing to accomplish the intended task. Such specification failures can remain hidden during laboratory testing, only to manifest as significant problems in real-world deployment, as documented in cases like the Cruise autonomous vehicle incident @koopman2024lessons.
 
 == Why Hasn't the RL Community Solved This Already?
 
@@ -140,11 +137,11 @@ $ R_"total"(s,a,s') = sum_(i=1)^n w_i R_i(s,a,s') $
 
 This approach appears mathematically principled and has enabled significant research progress. However, it suffers from fundamental limitations that make it unsuitable for robotics applications:
 
-1. *Pareto Frontier Limitations*: Linear scalarization can only find solutions on the convex hull of the Pareto frontier, missing many potentially desirable solutions @SAKAWA199819.
+1. *Pareto Frontier Limitations*: Linear scalarization guarantees solutions on the convex hull of the Pareto frontier, however, convexity only applies when assumptions on the competitive dynamics of objective optimization are linear, this is often far removed from real world reward functions that are commonly built by humans, missing many potentially desirable solutions @SAKAWA199819.
 
 2. *Weight Sensitivity*: Small changes in weights can lead to dramatically different behaviors, making systems difficult to tune and maintain.
 
-3. *Semantic Loss*: The linear combination destroys the individual meaning of each objective, making it impossible to reason about whether specific requirements are being satisfied.
+3. *Semantic Loss*: The linear combination does not capture the compositional intention of the specifier, making it impossible to reason about whether specific objectives must be satisfied over others.
 
 4. *Expressivity Constraints*: Many natural objective relationships cannot be expressed through linear combination, such as "satisfy safety requirements before optimizing performance."
 
@@ -245,15 +242,17 @@ Multi-objective reinforcement learning explicitly represents multiple objectives
 
 *Why MORL Has Failed in Robotics*: Despite decades of research, MORL has seen limited adoption in real-world robotics applications due to fundamental limitations:
 
+*Limited MORL Adoption in Complex Robotics*: Despite significant research advances over two decades @survey_seq_dec_morl @reymond2023actor, MORL approaches have seen relatively limited adoption in complex real-world robotics applications. Several fundamental challenges have hindered broader deployment:
+
 1. *Semantic Loss*: Even vector-valued approaches ultimately compress multi-objective information into scalar decisions, losing the semantic meaning of individual objectives.
 
 2. *Specification Complexity*: MORL requires practitioners to specify preferences, constraints, or selection criteria that are often as difficult to design as the original reward functions.
 
-3. *Deployment Brittleness*: MORL policies trained for specific trade-offs often fail catastrophically when deployed in environments with different objective relationships.
+3. *Deployment Brittleness*: MORL policies trained for specific trade-offs often struggle when deployed in environments with different objective relationships.
 
-4. *Lack of Logical Structure*: Traditional MORL cannot express the logical relationships ("safety AND performance", "efficiency OR speed") that naturally characterize robotics objectives.
+4. *Limited Logical Expressivity*: Traditional MORL approaches cannot directly express the logical relationships ("safety AND performance", "efficiency OR speed") that naturally characterize robotics objectives.
 
-*The Need for a New MORL Paradigm*: The limitations of existing MORL approaches highlight the need for a fundamentally different approach that:
+*The Need for Enhanced MORL Approaches*: These challenges highlight the need for approaches that:
 - Preserves semantic meaning throughout learning
 - Enables direct specification of logical objective relationships  
 - Provides robust deployment across domains

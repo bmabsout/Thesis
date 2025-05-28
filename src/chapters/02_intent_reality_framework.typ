@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= The Intent-to-Reality Gap: A Unified Framework
+= The Intent-to-Reality Gap
 
 The previous chapters have established the crisis of intent in robot learning and the mathematical foundations for fulfillment-centric approaches. This chapter presents the central intellectual contribution of this thesis: the insight that the reward expressivity crisis and deployment crisis, while distinct problems, stem from similar underlying issues related to the lack of structure in existing reward and value functions. Both crises involve the challenge of multi-objective satisfaction under uncertainty, and both can be addressed through the unified framework of fulfillment-centric learning.
 
@@ -11,6 +11,8 @@ This unification represents a paradigm shift in how we understand robot learning
 To understand the relationship between expressivity and deployment crises, we must first provide a formal mathematical characterization of the intent-to-reality gap that captures both its semantic and distributional aspects.
 
 === Mathematical Definition
+
+#todo[maybe formalize this gap correctly]
 
 Let $I$ represent the practitioner's true intent, $S_"train"$ the training specification, $pi_"train"$ the learned policy, and $pi_"deploy"$ the deployed behavior. The intent-to-reality gap can be decomposed as:
 
@@ -68,10 +70,8 @@ The key insight of this thesis is that both the expressivity and deployment gaps
 
 === Shared Root Causes
 
-*Root Cause 1: Lack of Semantic Structure*: Both crises arise because traditional approaches fail to preserve the semantic meaning of individual objectives during optimization.
-
-*Root Cause 2: Unstructured Scalar Optimization*: Linear scalarization destroys information about objective relationships, leading to both poor expressivity and deployment brittleness.
-
+*Root Cause 1: Lack of Semantic Structure*: Both crises arise because traditional approaches fail to preserve the semantic meaning of individual objectives during optimization. \
+*Root Cause 2: Unstructured Scalar Optimization*: Linear scalarization destroys information about objective relationships, leading to both poor expressivity and deployment brittleness. \
 *Root Cause 3: Multi-Objective Satisfaction Challenges*: Both problems involve the fundamental challenge of satisfying multiple competing objectives, but traditional approaches lack the mathematical structure to handle this properly.
 
 === Mathematical Characterization of the Relationship
@@ -140,16 +140,13 @@ Understanding the common challenges reveals why traditional reinforcement learni
 Traditional RL assumes that all objectives can be expressed as quantities to be maximized:
 $ pi^* = arg max_pi expect[sum_(t=0)^infinity gamma^t R(s_t, a_t, s_(t+1))] $
 
-This assumption works well for games and simulated environments where there is a natural scoring mechanism, but it fails catastrophically for robotics applications.
+This assumption works well for games and simulated environments where there is a natural scoring mechanism, but it often performs poorly or leads to brittleness when applied to complex robotics applications with multiple competing objectives and safety constraints.
 
 === Why Maximization Fails for Robotics
 
-*1. Semantic Relationships*: Robotics objectives involve complex semantic relationships that cannot be captured through simple linear combination. "Maintain stability while optimizing performance" requires understanding the relationship between these objectives, not just their weighted sum.
-
-*2. Individual Objective Visibility*: When objectives are linearly combined, their individual meanings become obscured. It becomes difficult to determine whether specific requirements are being satisfied or which objectives are limiting performance.
-
-*3. Brittleness*: Linear scalarization approaches are inherently brittle because small changes in weights can lead to dramatically different behaviors, making systems difficult to tune and maintain in production environments.
-
+*1. Semantic Relationships*: Robotics objectives involve complex semantic relationships that cannot be captured through simple linear combination. "Maintain stability while optimizing performance" requires understanding the relationship between these objectives, not just their weighted sum. \
+*2. Individual Objective Visibility*: When objectives are linearly combined, their individual meanings become obscured. It becomes difficult to determine whether specific requirements are being satisfied or which objectives are limiting performance. \
+*3. Brittleness*: Linear scalarization approaches are inherently brittle because small changes in weights can lead to dramatically different behaviors, making systems difficult to tune and maintain in production environments. \
 *4. Distribution Sensitivity*: Linear combinations are highly sensitive to distribution shift because they depend on specific numerical relationships that may not hold in new environments.
 
 === The Structured Composition Alternative
@@ -161,12 +158,9 @@ where each $f_i$ represents the degree to which objective $i$ is satisfied, and 
 
 This formulation addresses the limitations of linear scalarization:
 
-*1. Preserved Semantics*: Each objective maintains its individual meaning throughout optimization, enabling interpretability and debugging.
-
-*2. Robustness*: Structured composition is more robust than linear scalarization because it preserves the relationships between objectives rather than depending on specific weight values.
-
-*3. Interpretability*: Practitioners can monitor the satisfaction level of each objective independently and understand how they interact.
-
+*1. Preserved Semantics*: Each objective maintains its individual meaning throughout optimization, enabling interpretability and debugging. \
+*2. Robustness*: Structured composition is more robust than linear scalarization because it preserves the relationships between objectives rather than depending on specific weight values. \
+*3. Interpretability*: Practitioners can monitor the satisfaction level of each objective independently and understand how they interact. \
 *4. Transfer*: Structured compositions transfer more naturally across domains because the fundamental relationships between objectives remain meaningful.
 
 == Empirical Validation of the Unified Framework
@@ -175,8 +169,7 @@ We validated the unified framework through experiments that demonstrate how fulf
 
 === Quadrotor Control Experiment
 
-*Setup*: Train quadrotor controllers with multiple objectives (tracking, smoothness, efficiency) and evaluate both specification accuracy and deployment robustness.
-
+*Setup*: Train quadrotor controllers with multiple objectives (tracking, smoothness, efficiency) and evaluate both specification accuracy and deployment robustness. \
 *Traditional Approach*: Linear scalarization with separate domain adaptation
 - Specification: $R = w_1 R_"track" + w_2 R_"smooth" + w_3 R_"efficient"$
 - Deployment: Domain randomization + fine-tuning
@@ -193,8 +186,7 @@ We validated the unified framework through experiments that demonstrate how fulf
 
 === Manipulation Task Experiment
 
-*Setup*: Robot arm manipulation with safety, accuracy, and efficiency objectives across multiple environments.
-
+*Setup*: Robot arm manipulation with safety, accuracy, and efficiency objectives across multiple environments. \
 *Results*:
 - *Unified Benefits*: Single specification worked across all environments
 - *Semantic Preservation*: Individual objective satisfaction remained interpretable
@@ -262,26 +254,22 @@ This chapter makes several important theoretical contributions to robot learning
 
 === Insight into Common Underlying Causes
 
-*Contribution 1*: First systematic analysis showing that expressivity and deployment crises stem from similar underlying issues related to the lack of structure in existing reward and value functions.
-
+*Contribution 1*: First systematic analysis showing that expressivity and deployment crises stem from similar underlying issues related to the lack of structure in existing reward and value functions. \
 *Significance*: Simplifies the conceptual landscape and enables more integrated solution development.
 
 === Paradigm Shift Justification
 
-*Contribution 2*: Rigorous demonstration that maximization-based approaches are fundamentally incompatible with robotics applications.
-
+*Contribution 2*: Rigorous demonstration that maximization-based approaches are fundamentally incompatible with robotics applications. \
 *Significance*: Provides theoretical justification for the paradigm shift to constraint satisfaction.
 
 === Unified Mathematical Framework
 
-*Contribution 3*: Development of a unified mathematical framework that addresses both challenges through similar mechanisms.
-
+*Contribution 3*: Development of a unified mathematical framework that addresses both challenges through similar mechanisms. \
 *Significance*: Enables integrated research and development approaches.
 
 === Empirical Validation
 
-*Contribution 4*: Experimental validation that unified approaches outperformed separate solutions.
-
+*Contribution 4*: Experimental validation that unified approaches outperformed separate solutions. \
 *Significance*: Demonstrates practical benefits of the theoretical insights.
 
 == Limitations and Future Directions
@@ -290,22 +278,16 @@ While the unified framework provides significant advantages, several limitations
 
 === Current Limitations
 
-*1. Complexity Management*: Very complex specifications can still be difficult to construct and debug.
-
-*2. Parameter Selection*: Choosing appropriate composition parameters requires domain expertise.
-
-*3. Computational Overhead*: Complex compositions increase computational cost.
-
+*1. Complexity Management*: Very complex specifications can still be difficult to construct and debug. \
+*2. Parameter Selection*: Choosing appropriate composition parameters requires domain expertise. \
+*3. Computational Overhead*: Complex compositions increase computational cost. \
 *4. Learning Curve*: Practitioners need training to effectively use the unified framework.
 
 === Future Research Directions
 
-*1. Automated Specification*: Developing methods to automatically generate fulfillment specifications from demonstrations or natural language descriptions.
-
-*2. Dynamic Adaptation*: Creating systems that can adapt their fulfillment specifications during deployment based on observed performance.
-
-*3. Hierarchical Composition*: Developing methods for automatically decomposing complex specifications into manageable hierarchies.
-
+*1. Automated Specification*: Developing methods to automatically generate fulfillment specifications from demonstrations or natural language descriptions. \
+*2. Dynamic Adaptation*: Creating systems that can adapt their fulfillment specifications during deployment based on observed performance. \
+*3. Hierarchical Composition*: Developing methods for automatically decomposing complex specifications into manageable hierarchies. \
 *4. Integration with Planning*: Combining fulfillment-centric learning with model-based planning and control methods.
 
 == Chapter Summary
@@ -314,7 +296,7 @@ This chapter has presented the central intellectual contribution of this thesis:
 
 1. *Common Underlying Challenges*: Both crises involve similar fundamental limitations in how objectives are structured and preserved during optimization under uncertainty.
 
-2. *Maximization Paradigm Failure*: Traditional RL's maximization paradigm is fundamentally incompatible with robotics applications that require constraint satisfaction.
+2. *Maximization Paradigm Challenges*: Traditional RL's maximization paradigm faces significant challenges when applied to complex robotics applications that require nuanced constraint satisfaction and semantic preservation.
 
 3. *Unified Solution Approach*: Fulfillment-centric learning provides a framework that addresses both challenges through similar mechanisms based on constraint satisfaction semantics.
 

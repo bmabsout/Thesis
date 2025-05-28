@@ -150,8 +150,6 @@ The limitations and broader implications point toward several promising directio
 
 *Dynamic Composition*: Developing methods for adapting FPL formulas dynamically based on context, performance, or changing requirements. This could enable more adaptive and responsive systems.
 
-*Hierarchical Decomposition*: Developing systematic methods for decomposing complex objectives into hierarchical structures that can be optimized efficiently.
-
 *Formal Verification*: Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
 
 === Algorithmic Improvements
@@ -165,8 +163,6 @@ The limitations and broader implications point toward several promising directio
 *Meta-Learning*: Applying meta-learning techniques to automatically adapt FPL formulas and optimization parameters based on task characteristics and performance.
 
 *Parallel and Distributed Optimization*: Developing parallel and distributed versions of the algorithms that can scale to very large problems.
-
-*Hardware Acceleration*: Developing specialized hardware or acceleration techniques for composable fulfillment optimization.
 
 === Application Domains
 
@@ -182,7 +178,7 @@ The limitations and broader implications point toward several promising directio
 
 === Tool and Interface Development
 
-*Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.
+*Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.\
 
 *Natural Language Processing*: Developing methods for translating natural language specifications into FPL formulas, making the framework accessible to non-technical users.
 
@@ -249,7 +245,6 @@ The development of composable fulfillment has broader implications for society a
 *Lifecycle Considerations*: The adaptability properties could extend the useful life of robotic systems by enabling them to adapt to changing requirements rather than requiring replacement.
 
 == Vision for the Future
-
 Looking forward, composable fulfillment represents a step toward a future where human intent and machine behavior are more closely aligned, where complex systems can be designed and deployed with confidence, and where the benefits of artificial intelligence and robotics can be realized more broadly and safely.
 
 === Short-Term Vision (2-5 years)

@@ -193,3 +193,9 @@
 
   stack(dir: ltr, spacing: 0em, ..range(samples).map(i => rect(fill: filler(i), width: width/samples, height: height)))
 }
+
+
+// #let todo(message) = {
+//   locate(loc => ())
+//   text(red, [TODO: #message])
+// }

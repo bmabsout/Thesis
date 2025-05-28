@@ -136,7 +136,7 @@ This representation enables several key advantages:
   ]
 )
 
-== Generalized Means as Continuous Logic
+== Generalized Means as Fulfillment Logic Aggregators
 
 The mathematical foundation for composing fulfillment values comes from the theory of generalized means, which provide a natural framework for continuous logic operations.
 
@@ -413,9 +413,6 @@ For extreme values of $p$, numerical stability can become an issue. We address t
 2. *Smooth Approximations*: Use smooth approximations for limiting cases ($p -> plus.minus infinity$)
 3. *Adaptive Scheduling*: Gradually adjust parameters during optimization
 
-=== Computational Complexity
-
-The computational overhead of generalized mean composition is minimal compared to neural network forward passes, making the approach practical for real-time applications.
 
 == Universal Behavioral Objectives
 
