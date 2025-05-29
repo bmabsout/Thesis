@@ -4,6 +4,6 @@ Robot learning faces fundamental challenges that have hindered real-world deploy
 
 These seemingly disparate challenges stem from the inherent lack of structure in existing reward and value functions. To address this, I introduce fulfillment—reconceptualizing objectives as continuous logical values to fulfill rather than scalar values to maximize. Fulfillment functions serve as semantic bridges, translating intuitive judgments like "this action is 80% as smooth as I want" into mathematical values that remain aligned with intention throughout optimization. Using generalized means as continuous logic operators, fulfillments enable semantic-preserving composition with gradient-based optimization.
 
-This perspective allowed turning the aforementioned challenges into specification design issues such that addressing them yielded state-of-the-art results: the first RL system outperforming classical PID controllers in quadrotor deployment with 50-80% power reductions, live and robust neural network adaptation, and consistent policy search with 3-6× sample efficiency improvements across various robotic domains.
+This perspective allowed turning the aforementioned challenges into specification design issues such that addressing them yielded state-of-the-art results: the first RL system outperforming classical PID controllers in quadrotor deployment with 50-80% power reductions, live and robust neural network adaptation, and consistent policy search with up to 6.4× speedup across various robotic domains.
 
 

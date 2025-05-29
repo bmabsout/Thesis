@@ -34,7 +34,7 @@ The thesis has made contributions across multiple dimensions, from theoretical f
 
 *Cross-Domain Validation*: Comprehensive empirical validation across quadrotor control, manipulation tasks, and mobile robot navigation demonstrates the generality and effectiveness of the approach.
 
-*Sample Efficiency Improvements*: Consistent 3-6x improvements in sample efficiency across domains demonstrate the practical value of semantic preservation and compositional optimization.
+*Sample Efficiency Improvements*: Consistent 6.4× and 5.6× speedups across domains demonstrate the practical value of semantic preservation and compositional optimization.
 
 *Real-World Deployment*: Successful real-world deployment on quadrotor hardware with live adaptation capabilities demonstrates the practical viability of the approach.
 
@@ -303,7 +303,7 @@ Looking forward, composable fulfillment represents a step toward a future where 
     
     [8], [Five foundational principles—semantic preservation, continuous logic, behavioral decomposition, compositional optimization, and semantic anchoring—explain the framework's success.],
     
-    [9], [Empirical validation demonstrates 3-6× sample efficiency improvements, 50-80% power reduction, and 100% successful sim-to-real transfer in quadrotor control.],
+    [9], [Empirical validation demonstrates up to 6.4× speedup, 5.6× speedup across domains, 50-80% power reduction, and 100% successful sim-to-real transfer in quadrotor control.],
     
     [10], [Composable fulfillment transforms robot learning from art to engineering discipline, providing principled tools for bridging human intent and machine behavior.],
   ),

@@ -798,11 +798,11 @@ We compared BPG against its baseline (DDPG @DDPG) and several state-of-the-art r
 
 Our results on several benchmark environments demonstrate significant improvements in sample efficiency compared to baseline and state-of-the-art methods.
 
-*LunarLanderContinuous-v2*: BPG reaches 200 rewards in 20,000 timesteps—84% faster than DDPG (128,000) and 44% faster than the state-of-the-art CrossQ (36,000).
+*LunarLanderContinuous-v2*: BPG reaches 200 rewards in 20,000 timesteps—6.4× speedup compared to DDPG (128,000) and 1.8× speedup compared to the state-of-the-art CrossQ (36,000).
 
-*Hopper-v4*: BPG requires only 27,400 timesteps to reach the 2000 reward threshold, compared to 66,600 for CrossQ (59% reduction) and 154,400 for DDPG (82% reduction).
+*Hopper-v4*: BPG requires only 27,400 timesteps to reach the 2000 reward threshold, compared to 66,600 for CrossQ (2.4× speedup) and 154,400 for DDPG (5.6× speedup).
 
-*Pendulum-v1* and *Reacher-v4*: BPG similarly outperforms other algorithms, with improvements of 51% over CrossQ in Pendulum-v1 and outperforms all algorithms in Reacher-v4.
+*Pendulum-v1* and *Reacher-v4*: BPG similarly outperforms other algorithms, with 2× speedup over CrossQ in Pendulum-v1 and outperforms all algorithms in Reacher-v4.
 
 #figure(
   image("/figures/violin_plots_timesteps.svg", width: 100%),
@@ -969,7 +969,7 @@ Our comprehensive evaluation demonstrates significant advances over existing MOR
 - Constrained policy optimization
 - Lexicographic ordering approaches
 
-*Results*: FPL achieves 3-6× improvement in sample efficiency across all tested domains, with particularly strong performance in safety-critical scenarios where constraint satisfaction is essential.
+*Results*: FPL achieves up to 84% faster convergence and 82% reduction in training steps across tested domains, with particularly strong performance in safety-critical scenarios where constraint satisfaction is essential.
 
 ==== Multi-Objective Performance Metrics
 
@@ -1102,7 +1102,7 @@ $ phi = ["high_priority"]_(0.3) and_(-2) ["medium_priority"]_(0.1) and_(-2) "low
 
 === Comprehensive Multi-Domain Evaluation
 
-To establish the broad applicability of FPL and fulfillment composition, we conducted extensive validation across diverse robotics domains, demonstrating consistent improvements in sample efficiency (3-6×), final performance (15-30% improvement), and training stability (50-80% variance reduction).
+To establish the broad applicability of FPL and fulfillment composition, we conducted extensive validation across diverse robotics domains, demonstrating consistent improvements: up to 6.4× speedup on LunarLander, 5.6× speedup on Hopper, final performance improvements of 15-30%, and training stability with 50-80% variance reduction.
 
 *Key Domains*: Continuous control benchmarks (MuJoCo suite), real-world robotics (quadrotor control, manipulation), and multi-agent coordination tasks.
 
@@ -1222,7 +1222,7 @@ Successful implementation requires a systematic four-phase approach:
 3. Optimize composition parameters and explore sophisticated relationships
 
 *Performance Expectations*:
-- 3-6× improvements in sample efficiency
+- Up to 6.4× speedup and 5.6× speedup across robotic domains, with significant performance gains across multiple robotics domains.
 - Better robustness under distribution shift
 - Clear understanding of objective satisfaction
 - Initial overhead but long-term reduction in tuning cycles
@@ -1271,7 +1271,7 @@ This chapter has presented Fulfillment Priority Logic as a complete solution to 
 
 3. *Algorithmic Implementation*: The Balanced Policy Gradient algorithm that efficiently optimizes FPL specifications while maintaining theoretical guarantees.
 
-4. *Empirical Validation*: Demonstration of 3-6x improvements in sample efficiency and significant performance gains across multiple robotics domains.
+4. *Empirical Validation*: Demonstration of up to 6.4× speedup and 5.6× speedup across robotic domains, with significant performance gains across multiple robotics domains.
 
 5. *Practical Guidelines*: Comprehensive guidance for practitioners on how to construct and use FPL specifications effectively.
 
