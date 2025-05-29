@@ -1,12 +1,159 @@
 #import "../commands.typ": *
 
-= Fulfillments in Reinforcement Learning
+= Fulfillment Priority Logic: Expressing Intent Through Continuous Logic
+
+The previous chapters established that the intent-to-reality gap stems from a fundamental semantic mismatch: humans think in terms of requirements to satisfy, while machines optimize numerical scores to maximize. This chapter presents Fulfillment Priority Logic (FPL)—a formal language that enables practitioners to express their true intentions directly while maintaining the mathematical rigor needed for efficient optimization.
+
+FPL builds on the fulfillment framework's core insight: *fulfillment functions* serve as semantic bridges that translate high-level intentions into [0,1] values that accurately align with human assessment of objective satisfaction. When you define $f_"smoothness"(s,a,s') = 0.8$, you're saying "this action is about 80% as smooth as I want it to be." FPL then provides continuous logic operators that let you compose these semantic judgments while preserving their individual meaning.
+
+*The Power of Semantic Preservation*: Traditional multi-objective RL approaches force you to specify mysterious weight combinations like $R = 0.6 R_"tracking" + 0.3 R_"smoothness" + 0.1 R_"safety"$. When this produces a total reward of 0.7, you have no idea what's actually happening. FPL lets you express your intent directly: "I want safety AND (tracking AND smoothness)" becomes $f_"safety" and_(-∞) (f_"tracking" and_0 f_"smoothness")$. When this evaluates to 0.7, you can inspect the individual components and understand exactly what trade-offs are being made.
+
+This chapter demonstrates how FPL transforms multi-objective reinforcement learning from a brittle weight-tuning process into a principled engineering discipline. We present two key innovations: the FPL formal language for expressing complex objective relationships through continuous logic, and FQ-value composition for temporal reasoning about trade-offs. Together, they enable practitioners to specify what they actually want while maintaining the optimization efficiency needed for complex robotics applications.
+
+== The Semantic Bridge: From Intentions to Fulfillment Functions
+
+The foundation of FPL lies in creating *fulfillment functions* that accurately capture your semantic understanding of each objective. This isn't just mathematical abstraction—it's about formalizing the judgments you already make when evaluating robot behavior.
+
+=== Designing Fulfillment Functions: A Practical Process
+
+Creating effective fulfillment functions requires understanding what "good enough" means for each objective in your domain. This process involves three key steps:
+
+*Step 1: Semantic Clarity*
+Before writing any mathematics, clearly articulate what you mean by each objective:
+- *Smoothness*: "Control actions should change gradually, avoiding abrupt oscillations that waste energy or damage hardware"
+- *Safety*: "The robot should maintain safe distances from obstacles, with larger margins providing higher confidence"
+- *Tracking*: "The robot should follow the desired trajectory accurately, with smaller errors indicating better performance"
+
+*Step 2: Value Mapping*
+Map your semantic understanding to the [0,1] scale:
+- What behavior would you consider 100% satisfactory? ($f = 1.0$)
+- What behavior would be completely unacceptable? ($f = 0.0$)
+- How would you rate intermediate cases? ($f \in (0,1)$)
+
+*Step 3: Mathematical Implementation*
+Design functions that reflect your semantic mapping:
+
+*Example: Smoothness Fulfillment*
+```python
+def f_smoothness(state, action, next_state):
+    control_change = ||action - previous_action||
+    # Choose λ so that "acceptable" change maps to ~0.8
+    return exp(-λ × control_change²)
+```
+
+*Example: Safety Fulfillment*
+```python
+def f_safety(state, action, next_state):
+    min_distance = minimum_distance_to_obstacles(next_state)
+    safe_threshold = 0.5  # meters
+    margin = 0.3  # meters
+    # Sigmoid ensures smooth transition around safety threshold
+    return sigmoid((min_distance - safe_threshold) / margin)
+```
+
+*Example: Tracking Fulfillment*
+```python
+def f_tracking(state, action, next_state):
+    error = ||current_position - desired_position||
+    acceptable_error = 0.1  # meters
+    # Exponential decay: small errors → high fulfillment
+    return exp(-error / acceptable_error)
+```
+
+=== Validation and Iteration
+
+The most critical step is validation: do your fulfillment functions actually align with your semantic understanding?
+
+*Validation Process*:
+1. Generate test scenarios with known performance levels
+2. Evaluate what fulfillment values your functions produce
+3. Compare with your intuitive assessment
+4. Adjust parameters until alignment is achieved
+
+*Example Validation*:
+- Small control change (0.1 rad/s): $f_"smoothness" = 0.95$ ✓ "Very smooth"
+- Medium control change (0.5 rad/s): $f_"smoothness" = 0.6$ ✓ "Somewhat jerky"  
+- Large control change (1.0 rad/s): $f_"smoothness" = 0.2$ ✓ "Too aggressive"
+
+If your function outputs don't match your semantic assessment, adjust the parameters ($λ$, thresholds, margins) until they align.
+
+== Continuous Logic: Composing Semantic Relationships
+
+Once you have fulfillment functions that accurately capture individual objectives, FPL provides continuous logic operators to compose them while preserving semantic meaning.
+
+=== The AND Relationship: Joint Satisfaction
+
+When you say "the robot should be safe AND smooth," you mean both objectives must be satisfied. FPL uses generalized means with $p ≤ 0$ to capture AND semantics:
+
+```
+φ = f_safety ∧_p f_smoothness
+```
+
+*Parameter Selection for AND*:
+- $p → -∞$: Strict AND (minimum operator) - "Both objectives must be satisfied"
+- $p = -2$: Conservative AND - "Balance objectives with emphasis on the worst performer"  
+- $p = 0$: Balanced AND (geometric mean) - "Natural multiplicative balance"
+
+*Semantic Interpretation*:
+```
+φ = f_safety ∧_0 f_smoothness = √(f_safety × f_smoothness)
+```
+
+If safety is 0.9 and smoothness is 0.6, then φ = √(0.9 × 0.6) = 0.73. You can see that:
+- Both objectives contribute to the result
+- Poor performance in one objective limits overall success
+- Individual values remain inspectable for debugging
+
+=== The OR Relationship: Alternative Satisfaction
+
+When you say "achieve high speed OR high efficiency," you mean either objective being satisfied is sufficient. FPL uses generalized means with $p ≥ 1$ for OR semantics:
+
+```
+φ = f_speed ∨_p f_efficiency  
+```
+
+*Parameter Selection for OR*:
+- $p = 1$: Linear OR (arithmetic mean) - "Both objectives contribute equally"
+- $p = 2$: Optimistic OR - "Success in either objective provides good overall performance"
+- $p → ∞$: Strict OR (maximum operator) - "Success in any objective is sufficient"
+
+=== Hierarchical Composition: Complex Intentions
+
+Real robotics applications often involve hierarchical intent structures. FPL enables natural expression of these relationships:
+
+*Example: Safety-First Quadrotor Control*
+"Safety is absolutely required, but among safe actions, balance tracking and smoothness"
+
+```
+φ = f_safety ∧_{-∞} (f_tracking ∧_0 f_smoothness)
+```
+
+*Semantic Interpretation*:
+- The outer $∧_{-∞}$ (minimum) ensures safety is never compromised
+- The inner $∧_0$ (geometric mean) balances tracking and smoothness among safe actions
+- You can inspect all three individual fulfillment values for complete understanding
+
+*Example: Conditional Efficiency*
+"Maintain baseline performance, but optimize efficiency when possible"
+
+```  
+φ = [f_performance]_{0.3} ∧_{-1} f_efficiency
+```
+
+*Semantic Interpretation*:
+- $[f_"performance"]_{0.3}$ gives performance a baseline boost (priority offset)
+- The harmonic mean ($p = -1$) ensures efficiency only matters when performance is adequate
+- Individual fulfillment values remain meaningful and inspectable
+
+== FQ-Value Composition: Temporal Reasoning About Trade-offs
 
 Building on the mathematical foundations established in Chapter 3, this chapter demonstrates how fulfillment composition integrates with reinforcement learning through two key innovations: Fulfillment Priority Logic (FPL) for expressing complex objective relationships, and FQ-value composition for temporal reasoning about trade-offs. Together, these enable principled multi-objective reinforcement learning that preserves semantic meaning while enabling efficient optimization.
 
 *Multi-Objective RL Context*: This work represents a fundamental advancement in multi-objective reinforcement learning (MORL), addressing core limitations that have prevented practical deployment of multi-objective approaches in robotics. While traditional MORL suffers from semantic loss through linear scalarization, computational overhead of Pareto-based methods, and brittleness of constraint-based approaches, our fulfillment-centric framework provides a unified solution that maintains semantic meaning while enabling efficient single-policy optimization.
 
 The development of FPL was motivated by the recognition that the reward expressivity crisis stems not from limitations in optimization algorithms, but from the inadequacy of existing multi-objective RL approaches for expressing the complex objective relationships that naturally arise in robotics. Traditional reward engineering forces practitioners into a brittle trial-and-error process where small changes in weights can lead to dramatically different behaviors, and where the semantic meaning of individual objectives is lost in linear combinations.
+
+*Scope and Design Intent*: Building on the objective taxonomy established in Chapter 1, FPL is specifically designed to handle *behavioral objectives*—those objectives that directly relate to robot behavior and have clear semantic meaning. FPL is not intended to replace all aspects of reward engineering; general objectives (like regularization terms) are better handled through appropriate algorithm design, and universal behavioral objectives (like smoothness) are better handled through architectural integration as demonstrated in Chapter 5. Instead, FPL provides a principled framework for composing task-specific behavioral objectives while preserving their semantic relationships.
 
 This chapter presents two complementary solutions that advance the state-of-the-art in multi-objective RL: FPL provides a formal language for expressing objective relationships through continuous logic, while FQ-value composition enables temporal reasoning about multi-objective trade-offs. Together, they transform multi-objective reinforcement learning from a brittle weight-tuning process into a principled engineering discipline with strong theoretical guarantees and practical advantages.
 

@@ -2,9 +2,13 @@
 
 = Universal Behavioral Objectives and Architectural Integration
 
-The previous chapters established the mathematical foundations of Fulfillment Priority Logic and demonstrated its application to complex objective relationships. However, not all behavioral requirements are best expressed as explicit objectives in FPL formulas. Some behaviors—such as smoothness, stability, and efficiency—are so fundamental to robotics applications that they should be considered *universal behavioral objectives* that transcend specific task requirements.
+The previous chapters established the mathematical foundations of Fulfillment Priority Logic and demonstrated its application to complex objective relationships. However, not all requirements in robotics systems should be expressed as explicit objectives in FPL formulas. As established in Chapter 1's taxonomy of objectives, some behaviors—*universal behavioral objectives*—are so fundamental to robotics applications that they should be considered requirements that transcend specific task definitions.
 
-This chapter introduces the concept of universal behavioral objectives and presents Conditioning for Action Policy Smoothness (CAPS) as a paradigm for encoding these objectives directly into policy architectures rather than relying on reward engineering. We demonstrate how this architectural approach complements FPL by handling fundamental behavioral requirements at the policy level while allowing FPL to focus on task-specific objective relationships.
+Universal behavioral objectives, as defined in our taxonomy, are behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks, domains, or application contexts. These include smoothness, stability, basic safety, and robustness. Rather than forcing practitioners to explicitly specify these fundamental requirements in every FPL formula, this chapter introduces the concept of *architectural integration*—encoding universal behavioral objectives directly into policy architectures.
+
+This chapter presents Conditioning for Action Policy Smoothness (CAPS) as a paradigm for this architectural approach. CAPS demonstrates how smoothness, a quintessential universal behavioral objective, can be encoded directly into policy architectures rather than relying on reward engineering. We show how this architectural approach complements FPL by handling fundamental behavioral requirements at the policy level while allowing FPL to focus on task-specific behavioral objective relationships.
+
+*The Architectural vs. Compositional Distinction*: This approach reflects a key insight from our objective taxonomy: different types of objectives require different treatment mechanisms. Task-specific behavioral objectives (like "reach the target quickly") benefit from explicit composition through FPL, allowing practitioners to express complex logical relationships. Universal behavioral objectives (like "control smoothly") should be built into the architecture itself, ensuring they are automatically satisfied without burdening the specification process.
 
 == The Problem of Oscillatory Control in Neural Policies
 

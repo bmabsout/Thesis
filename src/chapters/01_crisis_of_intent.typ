@@ -4,6 +4,10 @@
 
 The promise of reinforcement learning in robotics has always been compelling: autonomous agents that learn to perform complex tasks through interaction with their environment, adapting to new situations and optimizing their behavior over time. Yet despite decades of research and significant algorithmic advances, a fundamental gap persists between what practitioners intend their robots to do and what they actually learn to do. This *intent-to-reality gap* represents one of the most pressing challenges in modern robotics, with consequences that extend far beyond academic research into real-world deployment, safety, and economic viability.
 
+The root cause of this gap lies in a fundamental semantic mismatch: humans naturally think about robot objectives as *requirements to satisfy*—"the robot should move smoothly," "the quadrotor should avoid obstacles," "the arm should reach targets quickly"—while machine learning systems optimize *numerical scores to maximize*. Traditional reinforcement learning converts our natural, semantic requirements into opaque numerical rewards that obscure their original meaning. When a reward function outputs 0.7, we have no idea whether this represents good tracking with poor safety, excellent efficiency with terrible smoothness, or balanced mediocrity across all objectives.
+
+This thesis introduces *fulfillment-centric learning*—a framework that preserves the semantic meaning of objectives throughout the optimization process. At its heart are *fulfillment functions* that serve as semantic bridges, translating intuitive judgments like "this motion is about 80% as smooth as I want" into mathematical values $f_"smoothness" = 0.8$ that maintain their interpretability. These fulfillment values can then be composed using continuous logic operators that extend Boolean relationships ("safety AND smoothness") to the continuous domain while preserving individual semantic meaning.
+
 This chapter establishes the scope and urgency of this crisis, examining both its theoretical foundations and practical manifestations. We argue that the intent-to-reality gap stems from two interconnected crises: a *reward expressivity crisis* that limits our ability to specify complex intentions, and a *deployment crisis* that prevents robust transfer of learned behaviors to real-world conditions. Understanding these crises is essential for appreciating why fulfillment-centric learning represents not just an incremental improvement, but a fundamental paradigm shift necessary for the future of robot learning.
 
 == The High Stakes of Robot Learning Failures
@@ -162,6 +166,194 @@ This has led to a research ecosystem focused on algorithmic improvements to samp
 As robotics applications have become more sophisticated, the complexity of the intent-to-reality gap has exploded exponentially. Early RL applications in robotics involved simple, well-defined tasks like pole balancing or reaching. Modern applications require robots to navigate complex, multi-objective scenarios with competing requirements, safety constraints, and performance specifications.
 
 The traditional approach of manual reward engineering simply doesn't scale to this complexity. Practitioners find themselves trapped in endless cycles of reward tuning, where fixing one behavior breaks another, and where the relationship between reward specification and emergent behavior becomes increasingly opaque.
+
+== A Taxonomy of Objectives in Robot Learning
+
+Before examining the crises that arise from this complexity, it is essential to establish a clear taxonomy of the different types of objectives that robotics systems must handle. This framework will provide the conceptual foundation for understanding how fulfillment-centric learning addresses each category of objective through appropriate mechanisms.
+
+=== Mathematical Formalization of Robot Behavior
+
+Before examining different types of objectives, we must establish rigorous mathematical definitions that form the foundation of our framework. We will build this understanding progressively, starting with behavior itself, then examining how scoring functions provide tractable ways to evaluate behavior, and finally showing how fulfillment functions extend existing approaches.
+
+==== Defining Behavior Formally
+
+*Behavior (Mathematical Definition)*: A behavior $B$ is a set of trajectories $B subset.eq cal(T)$, where each trajectory $tau = {(s_0, a_0), (s_1, a_1), ..., (s_T, a_T)}$ represents a sequence of state-action pairs that characterizes how a robot operates in its environment.
+
+For any given behavioral requirement (e.g., "move smoothly," "avoid obstacles," "track accurately"), the corresponding behavior $B$ is the set of all trajectories that satisfy that requirement. However, explicitly defining this infinite set $B$ is generally intractable for complex robotics applications.
+
+==== Objectives as Scoring Functions with Total Ordering
+
+*Objective Function (Mathematical Definition)*: Since directly specifying the behavior set $B$ is intractable, we instead define an *objective function*—a scoring function that assigns higher scores to trajectories that better satisfy our behavioral requirements.
+
+An objective function is a function $f: cal(T) -> RR$ such that:
+- $f(tau_1) > f(tau_2)$ indicates trajectory $tau_1$ better satisfies the behavioral requirement than $tau_2$
+- The function provides a total ordering over trajectories based on desirability
+- Trajectories $tau in B$ (desired behavior set) receive higher scores than $tau' in.not B$
+
+This scoring approach provides a tractable way to specify behavioral preferences without explicitly enumerating infinite trajectory sets, and forms the foundation for optimization-based control and learning.
+
+==== Connections to Existing Frameworks
+
+This objective function formulation appears across multiple established frameworks:
+
+*Signal Temporal Logic (STL)*: In robust STL, the robustness metric $rho(tau, phi)$ serves as an objective function, providing a total ordering over trajectories based on how well they satisfy temporal logic specifications. Positive robustness values indicate satisfaction, while the magnitude indicates the "safety margin" of satisfaction.
+
+*Reinforcement Learning*: In RL, the value function $V^pi(s) = E[sum_(t=0)^infinity gamma^t R(s_t, a_t) | s_0 = s, pi]$ provides an objective function that scores trajectories (or trajectory prefixes) based on expected cumulative reward. This creates a total ordering over policies and trajectories.
+
+*Classical Control*: Performance criteria like tracking error, settling time, and control effort serve as objective functions that score trajectory quality according to control-theoretic principles.
+
+==== The Challenge of Multiple Objectives
+
+Real-world robotics applications invariably involve multiple behavioral requirements simultaneously. A quadrotor delivery system, for example, must satisfy objectives for:
+- Flight stability (safety-critical)
+- Trajectory tracking (performance requirement)  
+- Energy efficiency (resource optimization)
+- Obstacle avoidance (safety constraint)
+- Speed (mission effectiveness)
+
+When multiple objectives exist, we have multiple scoring functions $f_1, f_2, ..., f_n$, each providing its own total ordering over trajectories. However, these individual orderings may conflict—a trajectory that scores highly on speed may score poorly on energy efficiency.
+
+==== Classical RL: The Single Objective Limitation
+
+Traditional reinforcement learning addresses multiple objectives through linear scalarization:
+
+$ R_"total"(s,a,s') = sum_(i=1)^n w_i R_i(s,a,s') $
+
+This approach collapses multiple objective functions into a single scalar reward, which then produces a single value function. While mathematically convenient, this creates a fundamental limitation: when the agent receives a total reward value (e.g., $R_"total" = 0.7$), it becomes impossible to disambiguate the level at which each individual objective is being satisfied.
+
+For example, a total reward of 0.7 could result from:
+- High performance (0.9) but poor efficiency (0.5)
+- Balanced mediocrity across all objectives (~0.7 each)
+- Excellent efficiency (1.0) but terrible tracking (0.4)
+
+This semantic loss makes it impossible to understand, debug, or improve system behavior with respect to individual objectives.
+
+==== Multi-Objective RL: Preserving Individual Scoring Functions
+
+Multi-Objective Reinforcement Learning (MORL) addresses this limitation by maintaining separate objective functions $f_1, f_2, ..., f_n$ throughout the learning process. Instead of scalar rewards, MORL uses vector rewards $vec(R) = [R_1, R_2, ..., R_n]$, which can produce vector value functions $vec(V) = [V_1, V_2, ..., V_n]$.
+
+This preserves the individual ordering information from each objective function:
+- $V_1(s)$ indicates expected performance on objective 1 from state $s$
+- $V_2(s)$ indicates expected performance on objective 2 from state $s$
+- And so forth for all objectives
+
+MORL enables practitioners to examine individual objective performance and understand trade-offs between competing requirements. However, MORL approaches still require some mechanism for policy selection or action choice when objectives conflict.
+
+==== Fulfillment Functions: Adding Global Semantic Structure
+
+While MORL preserves individual objective information, we propose going further by imbuing objective functions with additional semantic structure. We introduce *fulfillment functions* that extend standard objective functions with global semantic anchoring.
+
+*Fulfillment Function (Mathematical Definition)*: A fulfillment function $f: cal(T) -> [0,1]$ extends standard objective functions by adding:
+
+- *Semantic Anchoring*: There exist clearly defined reference behaviors $tau_"unacceptable"$ and $tau_"satisfactory"$ such that:
+  - $f(tau_"unacceptable") approx 0$ (complete failure to satisfy behavioral requirement)
+  - $f(tau_"satisfactory") approx 1$ (adequate satisfaction of behavioral requirement)
+  
+- *Inherited Total Ordering*: Maintains the ordering $f(tau_1) > f(tau_2)$ when $tau_1$ better satisfies the behavioral requirement than $tau_2$
+
+- *Interpolative Semantics*: Intermediate values $f(tau) = alpha in (0,1)$ represent the degree to which trajectory $tau$ satisfies the behavioral requirement, where $alpha$ aligns with intuitive human assessment
+
+*Key Innovation - Global Semantic Anchoring*: Unlike arbitrary scoring functions that only provide relative ordering, fulfillment functions satisfy a *globality condition*:
+- $f(tau) approx 0$: "Trajectory $tau$ does not fulfill this behavioral objective at all"
+- $f(tau) approx 1$: "Trajectory $tau$ satisfies what I need for this behavioral objective"  
+- $f(tau) in [0,1]$: Provides semantically meaningful intermediate values that remain interpretable
+
+==== Benefits of Fulfillment Functions over Standard MORL
+
+The global semantic anchoring provided by fulfillment functions offers several key advantages over traditional MORL approaches:
+
+*1. Semantic Interpretability*: When a fulfillment function outputs $f_"safety" = 0.8$, this has clear semantic meaning: "the robot is performing at 80% of what I consider satisfactory for safety." Traditional MORL objective values lack this interpretable grounding.
+
+*2. Compositional Logic*: The [0,1] range with semantic anchoring enables the use of continuous logic operators (AND, OR, NOT) that preserve semantic meaning. For example:
+- $f_"safety" and f_"efficiency"$ represents "both safety AND efficiency are satisfied"
+- This composition maintains interpretability, unlike arbitrary linear combinations
+
+*3. Cross-Domain Transfer*: The semantic anchoring makes fulfillment functions more transferable across domains. A fulfillment function for "smoothness" maintains its meaning whether applied to manipulator arms or quadrotor flight.
+
+*4. Natural Specification*: Practitioners can specify fulfillment functions by defining what constitutes "completely unacceptable" (0) and "satisfactory" (1) behavior, which aligns with natural human assessment processes.
+
+*5. Optimization Compatibility*: The bounded [0,1] range and smooth properties enable gradient-based optimization while maintaining semantic meaning throughout the optimization process.
+
+*6. Debugging and Analysis*: Individual fulfillment values provide immediately interpretable diagnostic information, making it easier to identify which objectives are limiting overall system performance.
+
+This global semantic structure enables robust composition methods and optimization approaches that preserve the meaning of individual objectives—addressing the fundamental limitations that have prevented broader adoption of multi-objective approaches in real-world robotics applications.
+
+==== Universal Behaviors
+
+*Universal Behavior (Mathematical Definition)*: A universal behavior $B_"universal"$ is a behavior set (collection of trajectories) that should be satisfied across virtually all robotics applications, independent of task-specific requirements.
+
+Examples include:
+- $B_"smooth"$: Set of trajectories with smooth control signals
+- $B_"stable"$: Set of trajectories maintaining system stability
+- $B_"safe"$: Set of trajectories avoiding collisions and damage
+
+*Universal Behavioral Objectives*: Behavioral objectives targeting universal behaviors. These should be handled architecturally rather than through explicit composition, as they represent fundamental requirements rather than task-specific trade-offs.
+
+=== Behavioral Objectives: Robot-Centric Goals
+
+*Behavioral objectives* are objectives that directly relate to robot behavior—they specify how we want the robot to behave during operation. These objectives have clear semantic meaning because they can be observed and evaluated by watching the robot's actual behavior.
+
+*Examples of Behavioral Objectives*:
+- *Performance objectives*: Speed/velocity targets, tracking accuracy, task completion time
+- *Efficiency objectives*: Energy consumption, actuator usage, computational efficiency during deployment
+- *Safety objectives*: Collision avoidance, stability maintenance, constraint satisfaction
+- *Quality objectives*: Precision, repeatability, robustness to disturbances
+- *Task-specific objectives*: Manipulation dexterity, navigation efficiency, communication protocols
+
+*Key Characteristics*:
+- Directly observable in robot state-action trajectories
+- Have clear semantic meaning in terms of robot performance and behavior
+- Can be measured and evaluated during robot operation
+- May be task-specific or domain-specific
+- Form the primary content of reward functions and performance metrics
+
+*Why "Behavioral" Matters*: When we later discuss "behavioral fulfillment," we mean fulfillment functions that capture how well the robot is behaving according to these performance, safety, and quality criteria—not abstract algorithmic properties.
+
+=== Universal Behavioral Objectives: Fundamental Requirements
+
+*Universal behavioral objectives* are behavioral objectives that target universal behaviors—those behavioral requirements that every robot should satisfy, regardless of task or domain.
+
+*Examples of Universal Behavioral Objectives*:
+- *Smoothness*: Temporal and spatial smoothness in control actions
+- *Stability*: Maintenance of stable operation under perturbations
+- *Safety*: Basic collision avoidance and damage prevention
+- *Robustness*: Graceful degradation under modeling errors and disturbances
+- *Efficiency*: Reasonable energy and computational resource usage
+
+*Key Characteristics*:
+- Apply across virtually all robotics domains and tasks
+- Enhance rather than define task-specific performance
+- Fundamental to good robot behavior regardless of application
+- Suitable for architectural integration rather than explicit specification
+- Often taken for granted but critical for real-world deployment
+
+*Why "Universal Behavioral" Matters*: These objectives target behaviors that every robot should exhibit. When we discuss architectural integration for "universal behavioral objectives," we mean building these fundamental behavioral requirements directly into the system rather than specifying them each time.
+
+=== The Architectural Implication
+
+This taxonomy has profound implications for how objectives should be handled in robot learning systems:
+
+*General Objectives* are best handled through appropriate algorithm design and hyperparameter selection, often outside the main learning loop.
+
+*Behavioral Objectives* require explicit representation in the learning process and benefit from the semantic preservation properties of fulfillment-centric learning.
+
+*Universal Behavioral Objectives* are prime candidates for architectural integration—building them directly into policy architectures rather than relying on reward engineering.
+
+This architectural insight forms a central theme of this thesis: different types of objectives require different treatment mechanisms. Universal behavioral objectives like smoothness should be handled architecturally (as demonstrated through CAPS in Chapter 5), while task-specific behavioral objectives should be composed using fulfillment priority logic (as developed in Chapter 4).
+
+=== Implications for the Intent-to-Reality Gap
+
+The taxonomy reveals why traditional approaches fail across different objective categories:
+
+*Semantic Loss Across Categories*: Linear scalarization destroys semantic meaning not just within behavioral objectives, but across the entire objective hierarchy, making it impossible to understand which category of objective is limiting performance.
+
+*Inappropriate Treatment*: Traditional approaches treat all objectives uniformly through reward engineering, failing to recognize that universal behavioral objectives would be better handled architecturally.
+
+*Specification Burden*: Practitioners are forced to explicitly specify universal behavioral objectives that should be automatically satisfied, adding unnecessary complexity to an already difficult specification problem.
+
+*Robustness Failures*: Universal behavioral objectives that are critical for deployment (like smoothness and stability) become just another term in a brittle linear combination, making them vulnerable to the same distribution shift problems as task-specific objectives.
+
+The fulfillment-centric framework addresses these issues by providing appropriate mechanisms for each category: architectural integration for universal behavioral objectives, semantic-preserving composition for behavioral objectives, and algorithmic considerations for general objectives.
 
 == The Two Faces of the Crisis
 

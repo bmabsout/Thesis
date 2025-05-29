@@ -1,142 +1,118 @@
 #import "../commands.typ": *
 
-= Fulfillments
+= The Fulfillment Framework: Semantic Bridges for Robot Learning
 
-The mathematical foundation for composable fulfillment lies in reconceptualizing objectives as constraints to be satisfied rather than scores to be maximized. This chapter establishes the theoretical foundations for this mathematical framework, introducing the key concepts of fulfillment variables, generalized means as continuous logic operators, and the compositional structure that enables semantic preservation while maintaining computational tractability.
+At the heart of this thesis lies a simple but profound insight: the intent-to-reality gap stems from a fundamental mismatch between how humans think about objectives and how machines optimize them. Humans think in terms of *requirements to satisfy*—"the robot should move smoothly," "the drone should avoid obstacles," "the arm should reach the target quickly." Traditional reinforcement learning, however, thinks in terms of *scores to maximize*—converting these natural requirements into numerical rewards that obscure their original meaning.
 
-The development of these foundations emerged from our work on control-theoretic approaches to robot learning, where we discovered that classical stability conditions could be naturally expressed as fulfillment variables and composed using generalized mean operations. This insight revealed that the mathematical tools needed for composable fulfillment already existed—they simply needed to be applied in the context of multi-objective optimization with proper theoretical grounding.
+The fulfillment framework provides *semantic bridges* that preserve the natural meaning of objectives throughout the optimization process. This chapter establishes the mathematical foundations for these bridges, showing how fulfillment functions translate high-level intentions into optimization-friendly values, and how continuous logic preserves their semantic relationships during composition.
 
-== From Reward Maximization to Fulfillment Satisfaction
+== The Core Insight: Fulfillment as Semantic Alignment
 
-Traditional optimization approaches in robotics are built on the foundation of scalar maximization: systems are designed to maximize a single scalar objective function. This framework has enabled significant theoretical and practical advances, but it fundamentally misaligns with how practitioners think about robotics objectives.
+Consider a fundamental question: when you say "the robot should move smoothly," what do you actually mean? You have an intuitive sense of smoothness—you can look at robot motion and judge whether it appears smooth or jerky. The fulfillment framework formalizes this intuitive judgment.
 
-=== The Maximization Paradigm
+=== Fulfillment Functions: Formalizing Intuitive Judgment
 
-In standard optimization, the objective is to find parameters $theta^*$ that maximize a scalar objective:
+A *fulfillment function* $f: S times A times S -> [0,1]$ is a mathematical function that captures your intuitive judgment about how well an objective is being satisfied:
 
-$ theta^* = arg max_theta f(theta) $
+- $f(s,a,s') = 1.0$: "Perfect! This action completely satisfies my objective."
+- $f(s,a,s') = 0.8$: "Pretty good, mostly satisfies what I want."
+- $f(s,a,s') = 0.3$: "Not great, only partially satisfies my intent."
+- $f(s,a,s') = 0.0$: "Terrible! This completely fails to achieve what I want."
 
-This formulation works well when the objective can be naturally expressed as a single scalar quantity to be maximized. However, robotics applications typically involve multiple objectives that must be balanced or satisfied simultaneously. The standard approach to handling multiple objectives is linear scalarization:
+The key insight is that this $[0,1]$ value should *align with your semantic understanding* of the objective. If you look at the robot's behavior and think "that's about 70% as smooth as I'd like," then $f_"smoothness"$ should output approximately $0.7$.
 
-$ f_"total"(theta) = sum_(i=1)^n w_i f_i(theta) $
+*Example: Smoothness Fulfillment*
+For a quadrotor control task, you might define smoothness fulfillment as:
+```
+f_smoothness(s, a, s') = exp(-λ × ||a - a_previous||²)
+```
+where $λ$ is chosen so that:
+- Small control changes (smooth motion) → $f_"smoothness" ≈ 1.0$
+- Large control changes (jerky motion) → $f_"smoothness" ≈ 0.0$
+- The mapping aligns with your intuitive sense of "smooth enough"
 
-where $w_i$ are manually tuned weights and $f_i$ represent individual objective components.
+*Example: Safety Fulfillment*
+For obstacle avoidance, you might define:
+```
+f_safety(s, a, s') = sigmoid((distance_to_obstacles - safe_threshold) / margin)
+```
+where:
+- Far from obstacles → $f_"safety" ≈ 1.0$ ("completely safe")
+- Near obstacles → $f_"safety" ≈ 0.0$ ("very dangerous")
+- The sigmoid shape matches your comfort level with different distances
 
-Linear scalarization suffers from several fundamental limitations that make it unsuitable for robotics applications:
+=== The Semantic Alignment Principle
 
-1. *Loss of Semantic Meaning*: The linear combination destroys the individual meaning of each objective, making it impossible to reason about whether specific requirements are being satisfied.
+The critical requirement is *semantic alignment*: the fulfillment value should accurately reflect your actual assessment of how well the objective is being met. This principle has several implications:
 
-2. *Brittleness*: Small changes in weights can lead to dramatically different behaviors, making the system difficult to tune and maintain.
+1. *Domain Expertise Matters*: You need to understand what "good enough" means for each objective in your domain.
 
-3. *Expressivity Limitations*: Many natural objective relationships cannot be expressed through linear combination. For example, it is impossible to express "satisfy objective A before optimizing objective B" using linear weights.
+2. *Validation is Essential*: You should test fulfillment functions by evaluating whether their outputs match your intuitive judgments.
 
-4. *Pareto Optimality Issues*: Linear scalarization can only find solutions on the convex hull of the Pareto frontier, missing many potentially desirable solutions @SAKAWA199819.
+3. *Iterative Refinement*: Like any engineering process, you may need to adjust fulfillment functions to better capture your intent.
 
-=== The Fulfillment Alternative
+4. *Interpretability by Design*: The $[0,1]$ scale provides immediate interpretability—you can always understand what a fulfillment value means.
 
-The composable fulfillment framework reconceptualizes objectives as *constraints to be satisfied* rather than *scores to be maximized*. In this framework, each objective $O_i$ is associated with a fulfillment value $f_i in [0,1]$ that represents the degree to which the objective is satisfied:
+== The Composition Challenge: Preserving Semantic Relationships
 
-- $f_i = 1$: Objective $O_i$ is fully satisfied
-- $f_i = 0$: Objective $O_i$ is completely unsatisfied  
-- $0 < f_i < 1$: Objective $O_i$ is partially satisfied
+Once you have fulfillment functions that accurately capture individual objectives, the next challenge is combining them while preserving their semantic relationships. This is where traditional approaches fail catastrophically.
 
-This representation enables several key advantages:
+=== Why Linear Combination Destroys Semantics
 
-1. *Semantic Preservation*: Each fulfillment value maintains its individual meaning throughout the learning process.
+Traditional reinforcement learning combines objectives through weighted sums:
+```
+total_reward = w₁ × f_tracking + w₂ × f_smoothness + w₃ × f_safety
+```
 
-2. *Interpretability*: Practitioners can directly monitor the satisfaction level of each objective.
+This approach has a fatal flaw: *it destroys the semantic meaning of individual objectives*. Consider what happens when this combined reward equals 0.7:
 
-3. *Composability*: Multiple fulfillment values can be combined using continuous logic operators while preserving their semantic meaning.
+- Did all objectives achieve 0.7 fulfillment?
+- Did tracking achieve 1.0 while safety achieved 0.4?
+- Did one objective completely fail while others excelled?
+- Is this behavior acceptable, or should you be concerned?
 
-#figure(
-  caption: [Comparison of traditional reward pipeline vs. composable fulfillment pipeline. The traditional approach loses semantic meaning through linear scalarization, while the fulfillment approach preserves individual objective meanings through continuous logic composition.],
-  kind: "figure",
-  supplement: [Figure],
-  placement: auto,
-  gap: 0.5em,
-  block[
-    #set align(center)
-    #table(
-      columns: (1fr, 0.1fr, 1fr),
-      stroke: none,
-      inset: 1em,
-      
-      // Traditional Pipeline
-      align(center)[
-        *Traditional Reward Pipeline*
-        #rect(fill: rgb("#ffeeee"), stroke: 1pt + black, radius: 5pt)[
-          #align(left)[
-            *Objectives:*\
-            - Tracking accuracy\
-            - Control smoothness\
-            - Energy efficiency
-          ]
-        ]
-        ↓
-        #rect(fill: rgb("#fff0e0"), stroke: 1pt + black, radius: 5pt)[
-          *Linear Scalarization*\
-          $R = w_1 R_"track" + w_2 R_"smooth" + w_3 R_"eff"$
-        ]
-        ↓
-        #rect(fill: rgb("#ffcccc"), stroke: 1pt + red, radius: 5pt)[
-          *Semantic Loss*\
-          Individual meanings lost\
-          Cannot verify satisfaction
-        ]
-        ↓
-        #rect(fill: rgb("#f0f0f0"), stroke: 1pt + black, radius: 5pt)[
-          *RL Optimization*\
-          Maximize scalar reward
-        ]
-        ↓
-        #rect(fill: rgb("#ffdddd"), stroke: 1pt + red, radius: 5pt)[
-          *Brittle Behavior*\
-          Sensitive to weight changes\
-          Reward hacking possible
-        ]
-      ],
-      
-      [], // Empty column for spacing
-      
-      // Fulfillment Pipeline
-      align(center)[
-        *Composable Fulfillment Pipeline*
-        #rect(fill: rgb("#eeffee"), stroke: 1pt + black, radius: 5pt)[
-          #align(left)[
-            *Objectives:*\
-            - Tracking accuracy\
-            - Control smoothness\
-            - Energy efficiency
-          ]
-        ]
-        ↓
-        #rect(fill: rgb("#e0ffe0"), stroke: 1pt + black, radius: 5pt)[
-          *Fulfillment Variables*\
-          $f_"track", f_"smooth", f_"eff" in [0,1]$
-        ]
-        ↓
-        #rect(fill: rgb("#ccffcc"), stroke: 1pt + green, radius: 5pt)[
-          *Semantic Preservation*\
-          Individual meanings retained\
-          Can monitor satisfaction
-        ]
-        ↓
-        #rect(fill: rgb("#f0f0f0"), stroke: 1pt + black, radius: 5pt)[
-          *Continuous Logic*\
-          $f = M_p(f_"track", f_"smooth", f_"eff")$
-        ]
-        ↓
-        #rect(fill: rgb("#ddffdd"), stroke: 1pt + green, radius: 5pt)[
-          *Robust Behavior*\
-          Interpretable trade-offs\
-          Guaranteed satisfaction
-        ]
-      ]
-    )
-  ]
-)
+You cannot answer these questions because the linear combination has *erased* the individual semantic information. This is why traditional reward engineering leads to endless trial-and-error cycles—you lose the ability to understand what's actually happening.
 
-== Generalized Means as Fulfillment Logic Aggregators
+=== Continuous Logic: Preserving Semantic Relationships
+
+The fulfillment framework solves this through *continuous logic*—mathematical operators that extend Boolean logic to the continuous domain $[0,1]$ while preserving semantic meaning.
+
+==== The "AND" Relationship: Joint Satisfaction
+
+When you say "the robot should be safe AND smooth," you mean both objectives must be satisfied. In Boolean logic:
+- $"True" and "True" = "True"$
+- $"True" and "False" = "False"$
+- $"False" and "False" = "False"$
+
+In continuous logic using generalized means with $p ≤ 0$:
+- $M_0(1.0, 1.0) = 1.0$ (both fully satisfied → fully satisfied overall)
+- $M_0(1.0, 0.0) = 0.0$ (one failed → overall failure)
+- $M_0(0.8, 0.6) = 0.69$ (both partially satisfied → balanced result)
+
+*Key Property*: You can always inspect the individual values! If the overall fulfillment is 0.69, you can see it came from 0.8 smoothness and 0.6 safety. The semantic meaning is preserved.
+
+==== The "OR" Relationship: Alternative Satisfaction  
+
+When you say "achieve high speed OR high efficiency," you mean either objective being satisfied is sufficient. Using generalized means with $p ≥ 1$:
+- $M_2(0.8, 0.3) = 0.61$ (one objective well satisfied → decent overall)
+- $M_2(0.3, 0.3) = 0.3$ (both partially satisfied → limited success)
+- $M_2(0.0, 0.9) = 0.64$ (one objective satisfied → acceptable overall)
+
+==== Hierarchical Relationships: Complex Intent Structure
+
+Real robotics applications often have hierarchical intent: "Safety is absolutely required, but among safe actions, balance speed and efficiency."
+
+This can be expressed as:
+```
+φ = safety ∧_{-∞} (speed ∧_0 efficiency)
+```
+
+Using continuous logic:
+- The $∧_{-∞}$ (minimum operator) ensures safety is never compromised
+- The $∧_0$ (geometric mean) balances speed and efficiency among safe actions
+- You can still inspect individual fulfillment: $f_"safety"$, $f_"speed"$, $f_"efficiency"$
+
+== Mathematical Foundations: Generalized Means as Continuous Logic Operators
 
 The mathematical foundation for composing fulfillment values comes from the theory of generalized means, which provide a natural framework for continuous logic operations.
 

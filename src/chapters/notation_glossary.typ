@@ -96,15 +96,29 @@ This appendix provides a comprehensive reference for the mathematical notation a
 
 === Core Concepts
 
-*Fulfillment*: The degree to which an objective is satisfied, represented as a value in $[0,1]$ where 0 indicates complete failure and 1 indicates complete satisfaction.
+*Fulfillment Function*: A mathematical function $f: S times A times S -> [0,1]$ that serves as a *semantic bridge*, translating high-level intentions into values that accurately align with human assessment of objective satisfaction. When $f_"smoothness"(s,a,s') = 0.8$, it means "this action is about 80% as smooth as I want it to be."
 
-*Intent-to-Reality Gap*: The discrepancy between what practitioners intend their robots to do and what they actually learn to do, consisting of both expressivity and deployment components.
+*Semantic Bridge*: The property that fulfillment functions preserve the natural meaning of objectives throughout the optimization process, enabling practitioners to specify their true intentions directly while maintaining mathematical rigor for optimization.
 
-*Semantic Preservation*: The property that individual objective meanings are maintained throughout the learning process, enabling interpretability and debugging.
+*Fulfillment*: The degree to which an objective is satisfied, represented as a value in $[0,1]$ where 0 indicates complete failure and 1 indicates complete satisfaction. Unlike traditional rewards, fulfillment values maintain their individual semantic meaning when composed.
 
-*Continuous Logic*: A mathematical framework that extends boolean logic to continuous values in [0,1], enabling smooth reasoning about partial constraint satisfaction.
+*Intent-to-Reality Gap*: The discrepancy between what practitioners intend their robots to do and what they actually learn to do, consisting of both expressivity and deployment components. Stems from the semantic mismatch between human requirements and machine optimization.
+
+*Semantic Preservation*: The property that individual objective meanings are maintained throughout the learning process, enabling interpretability and debugging. Contrasts with traditional linear scalarization which destroys individual semantic information.
+
+*Continuous Logic*: A mathematical framework that extends Boolean logic to continuous values in [0,1], enabling smooth reasoning about partial constraint satisfaction while preserving semantic relationships between objectives.
 
 *Deployment Crisis*: The fundamental challenge that learned policies fail to maintain performance when transferred from training to deployment environments.
+
+=== Objective Taxonomy
+
+*Objective*: Any quantity that can be included in an optimization scheme, regardless of its relationship to robot behavior or domain specificity. This includes regularization terms, computational constraints, and meta-objectives.
+
+*Behavioral Objective*: A subset of objectives that directly relate to the controller's actions and resulting robot behavior in the environment. These have clear semantic meaning in terms of robot performance and can be observed in state-action trajectories.
+
+*Universal Behavioral Objective (UBO)*: A subset of behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks or domains. Examples include smoothness, stability, basic safety, and robustness.
+
+*Architectural Integration*: The design principle of encoding universal behavioral objectives directly into policy architectures rather than requiring explicit specification in reward functions or FPL formulas.
 
 === Theoretical Components
 
