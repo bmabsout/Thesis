@@ -55,8 +55,8 @@ This appendix provides a comprehensive reference for the mathematical notation a
   columns: (auto, auto, auto),
   align: (left, left, left),
   [*Symbol*], [*Name*], [*Description*],
-  [$and_p$], [Conjunction], [AND operator with parameter $p <= 0$],
-  [$or_p$], [Disjunction], [OR operator with parameter $p >= 1$],
+  [$and_p$], [Conjunction], [AND operator with parameter $p <= 0$ (typically)],
+  [$or_p$], [Disjunction], [OR operator, derived from $and_p$ via De Morgan's laws ($not(not phi_1 and_p not phi_2)$), thus uses the same $p$ (typically $p <= 0$) as the $and_p$ in its definition. Note: Generalized mean $M_q$ with $q >= 1$ can also directly produce OR-like semantics but is distinct from FPL's $or_p$ definition.],
   [$not$], [Negation], [Logical NOT: $not phi = 1 - u(phi)$],
   [$[phi]_delta$], [Priority offset], [Offset operator with $delta in [-1,1]$],
   [$tack$], [Turnstile], [Type judgment: $Gamma tack phi : tau$],
@@ -96,9 +96,11 @@ This appendix provides a comprehensive reference for the mathematical notation a
 
 === Core Concepts
 
-*Fulfillment Function*: A mathematical function $f: S times A times S -> [0,1]$ that serves as a *semantic bridge*, translating high-level intentions into values that accurately align with human assessment of objective satisfaction. When $f_"smoothness"(s,a,s') = 0.8$, it means "this action is about 80% as smooth as I want it to be."
+*Fulfillment Function*: A mathematical function that quantifies the degree to which a specific objective is satisfied, mapping a relevant set of inputs (which could include states, actions, trajectories, policy parameters, etc.) to a value in $[0,1]$. This value, the *fulfillment*, represents the level of satisfaction, where 0 indicates complete failure and 1 indicates complete satisfaction. Fulfillment functions serve as a *semantic bridge* by translating high-level intentions into these quantifiable values.
 
-*Semantic Bridge*: The property that fulfillment functions preserve the natural meaning of objectives throughout the optimization process, enabling practitioners to specify their true intentions directly while maintaining mathematical rigor for optimization.
+*Fulfillment Reward Function*: A specific type of fulfillment function, typically denoted $f_i: S times A times S -> [0,1]$, that provides a per-timestep fulfillment value based on the current state, action, and next state. These values, sometimes called *fulfillment rewards* or *immediate fulfillments*, are analogous to rewards in traditional RL and form the basis for calculating Fulfillment Q-values (FQs). For instance, $f_"smoothness"(s,a,s') = 0.8$ means "this specific transition yields 80% of the desired smoothness."
+
+*Semantic Bridge*: The property that fulfillment functions (especially Fulfillment Reward Functions when used in an RL context) preserve the natural meaning of objectives throughout the optimization process, enabling practitioners to specify their true intentions directly while maintaining mathematical rigor for optimization.
 
 *Fulfillment*: The degree to which an objective is satisfied, represented as a value in $[0,1]$ where 0 indicates complete failure and 1 indicates complete satisfaction. Unlike traditional rewards, fulfillment values maintain their individual semantic meaning when composed.
 
@@ -118,7 +120,9 @@ This appendix provides a comprehensive reference for the mathematical notation a
 
 *Universal Behavioral Objective (UBO)*: A subset of behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks or domains. Examples include smoothness, stability, basic safety, and robustness.
 
-*Architectural Integration*: The design principle of encoding universal behavioral objectives directly into policy architectures rather than requiring explicit specification in reward functions or FPL formulas.
+*Universal Behavioral Fulfillment (UBF)*: The quantified degree of satisfaction, typically on a scale of $[0,1]$, of a Universal Behavioral Objective. UBFs result from applying a fulfillment function to a UBO.
+
+*Architectural Integration*: The design principle of encoding universal behavioral objectives directly into policy architectures rather than requiring explicit specification in reward functions or FPL formulas. This is often a preferred method for promoting high UBFs.
 
 === Theoretical Components
 
@@ -170,6 +174,11 @@ This appendix provides a comprehensive reference for the mathematical notation a
   [TD3], [Twin Delayed Deep Deterministic Policy Gradient],
   [TLTL], [Truncated Linear Temporal Logic],
   [UBO], [Universal Behavioral Objective],
+  [IRL], [Inverse Reinforcement Learning],
+  [LLM], [Large Language Model],
+  [MCDM], [Multi-Criteria Decision Making],
+  [MDP], [Markov Decision Process],
+  [NSGA-II], [Non-dominated Sorting Genetic Algorithm II],
 )
 
 == Common Usage Examples

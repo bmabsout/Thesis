@@ -92,6 +92,9 @@
   // Part IV: Validation and Synthesis
   #include "src/chapters/07_fulfillment_lyapunov_control.typ"
   #include "src/chapters/08_synthesis_future.typ"
+
+  // Include the Claims.typ document
+  #include "src/Claims.typ"
 ]
 
 // Optional: Generate Appendices content if you have them

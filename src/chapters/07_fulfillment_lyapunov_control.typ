@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Learning Lyapunov Controllers
+= Learning Lyapunov Controllers <chap:lyapunov>
 
 The mathematical foundation for fulfillment-centric learning emerged from an unexpected source: our attempts to incorporate stability guarantees into reinforcement learning through Lyapunov functions. This chapter tells the story of how classical control theory concepts led to the discovery that generalized means provide the mathematical framework needed for continuous logic operations in robot learning.
 

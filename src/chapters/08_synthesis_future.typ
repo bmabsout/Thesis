@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Synthesis and Future Directions
+= Synthesis and Future Directions <chap:synthesis>
 
 This thesis has presented composable fulfillment as a unified framework for multi-objective robot learning that comprehensively addresses the intent-to-reality gap. Through the development of mathematical foundations for multi-fulfillment optimization, formal languages for expressing complex objective relationships, architectural principles for universal behavioral objectives, and adaptation frameworks for preserving multi-objective intent across domains, we have demonstrated how to transform robot learning from a brittle trial-and-error process into a principled engineering discipline. This final chapter synthesizes the key contributions, examines their broader implications, and outlines promising directions for future research.
 
@@ -308,7 +308,7 @@ Looking forward, composable fulfillment represents a step toward a future where 
     [10], [Composable fulfillment transforms robot learning from art to engineering discipline, providing principled tools for bridging human intent and machine behavior.],
   ),
   caption: [Ten key takeaways from this thesis that capture the essential contributions and insights of composable fulfillment.]
-)
+) <tab:key_takeaways_table>
 
 == Personal Reflection: Lessons from the PhD Journey
 

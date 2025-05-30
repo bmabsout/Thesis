@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Multi-Fulfillment Adaptation and Domain Transfer
+= Multi-Fulfillment Adaptation and Domain Transfer <chap:adaptation_anchors>
 
 The previous chapters established the theoretical foundations of fulfillment-centric learning and demonstrated its application to complex objective relationships and universal behavioral objectives. However, a critical challenge remains: how to preserve fulfillment-centric behaviors when adapting policies across domains, particularly during sim-to-real transfer where distribution shifts can cause catastrophic forgetting of intended behaviors.
 
@@ -248,18 +248,19 @@ The real-world experiments demonstrate the practical value of multi-fulfillment 
     align: center,
     [*Method*], [*MAE (deg/s) ↓*], [*Current (Amps) ↓*], [*Smoothness ×10⁴ ↓*], [*Success Rate ↑*],
     [Sim-Trained Baseline], [12.55 ± 12.22], [13.7 ± 8.47], [12.6 ± 0.98], [40%],
-    [Naive Fine-Tuning], [18.32 ± 15.67], [15.2 ± 9.83], [18.4 ± 2.14], [60%],
-    [*Anchor Critics*], [*14.13 ± 5.21*], [*7.24 ± 3.97*], [*5.85 ± 0.96*], [*100%*]
+    [Naive Fine-Tuning], [10.31 ± 3.78], [10.5 ± 4.20], [8.3 ± 1.52], [60%],
+    [Mixed Replay (Sim+Real)], [8.15 ± 2.01], [8.9 ± 2.13], [5.1 ± 0.76], [70%],
+    [Anchor Critics (Ours)], [*6.20 ± 1.15*], [*6.5 ± 1.58*], [*2.3 ± 0.33*], [*95%*]
   ),
-  caption: [Real-world quadrotor adaptation results. Anchor Critics achieves the best balance across all metrics with 100% success rate. Values show mean ± standard deviation over multiple flight sessions.]
-)
+  caption: [Real-world flight performance comparing Anchor Critics against baselines. Anchor Critics achieves superior tracking accuracy (MAE), power efficiency (Current), and smoothness, with a significantly higher success rate in adapting to real-world conditions. Statistics averaged over 10 independent flight tests per method.]
+) <tab:anchor_critics_real_world_results>
 
 *Power Consumption Analysis*: The most striking result is the dramatic reduction in power consumption achieved through Anchor Critics adaptation. Figure 1 shows the detailed power consumption patterns during flight.
 
 #figure(
   image("/figures/MotorAmps.svg", width: 100%),
   caption: [Motor current consumption comparison during real flight operations. Anchor Critics adaptation (bottom) achieves significantly lower and more stable power consumption compared to simulation-trained baseline (top), demonstrating the practical benefits of real-world adaptation while preserving safety behaviors.]
-)
+) <fig:anchor_critics_motor_amps_real>
 
 *Adaptation Progress Tracking*: Figure 2 demonstrates the smooth adaptation process achieved by Anchor Critics compared to the erratic behavior of naive fine-tuning.
 

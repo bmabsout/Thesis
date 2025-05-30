@@ -1,22 +1,22 @@
 #import "../commands.typ": *
 
-= Fulfillment Priority Logic: Expressing Intent Through Continuous Logic
+= Fulfillment Priority Logic: Expressing Intent Through Continuous Logic <chap:fpl>
 
 The previous chapters established that the intent-to-reality gap stems from a fundamental semantic mismatch: humans think in terms of requirements to satisfy, while machines optimize numerical scores to maximize. This chapter presents Fulfillment Priority Logic (FPL)—a formal language that enables practitioners to express their true intentions directly while maintaining the mathematical rigor needed for efficient optimization.
 
-FPL builds on the fulfillment framework's core insight: *fulfillment functions* serve as semantic bridges that translate high-level intentions into [0,1] values that accurately align with human assessment of objective satisfaction. When you define $f_"smoothness"(s,a,s') = 0.8$, you're saying "this action is about 80% as smooth as I want it to be." FPL then provides continuous logic operators that let you compose these semantic judgments while preserving their individual meaning.
+FPL builds on the fulfillment framework's core insight: *Fulfillment Functions* are general mappings of relevant system aspects to a $[0,1]$ satisfaction value. For reinforcement learning, specific instances called *Fulfillment Reward Functions* ($f_i: S times A times S -> [0,1]$) serve as semantic bridges that translate high-level intentions into per-timestep fulfillment rewards. When you define $f_"smoothness"(s,a,s') = 0.8$, you're saying "this state transition yields 80% of the desired smoothness." FPL then provides continuous logic operators to compose these semantic judgments (often based on their expected future values derived from these fulfillment rewards) while preserving their individual meaning.
 
-*The Power of Semantic Preservation*: Traditional multi-objective RL approaches force you to specify mysterious weight combinations like $R = 0.6 R_"tracking" + 0.3 R_"smoothness" + 0.1 R_"safety"$. When this produces a total reward of 0.7, you have no idea what's actually happening. FPL lets you express your intent directly: "I want safety AND (tracking AND smoothness)" becomes $f_"safety" and_(-∞) (f_"tracking" and_0 f_"smoothness")$. When this evaluates to 0.7, you can inspect the individual components and understand exactly what trade-offs are being made.
+*The Power of Semantic Preservation*: Traditional multi-objective RL approaches force you to specify mysterious weight combinations like $R = 0.6 R_"tracking" + 0.3 R_"smoothness" + 0.1 R_"safety"$. When this produces a total reward of 0.7, you have no idea what's actually happening. FPL lets you express your intent directly: "I want safety AND (tracking AND smoothness)" becomes $f_"safety" and_(-∞) (f_"tracking" and_0 f_"smoothness")$. When this evaluates to 0.7 (typically applied to FQ-values), you can inspect the individual components and understand exactly what trade-offs are being made.
 
-This chapter demonstrates how FPL transforms multi-objective reinforcement learning from a brittle weight-tuning process into a principled engineering discipline. We present two key innovations: the FPL formal language for expressing complex objective relationships through continuous logic, and FQ-value composition for temporal reasoning about trade-offs. Together, they enable practitioners to specify what they actually want while maintaining the optimization efficiency needed for complex robotics applications.
+This chapter demonstrates how FPL transforms multi-objective reinforcement learning from a brittle weight-tuning process into a principled engineering discipline. We present two key innovations: the FPL formal language for expressing complex objective relationships through continuous logic, and FQ-value composition for temporal reasoning about trade-offs using values derived from fulfillment rewards. Together, they enable practitioners to specify what they actually want while maintaining the optimization efficiency needed for complex robotics applications.
 
-== The Semantic Bridge: From Intentions to Fulfillment Functions
+== The Semantic Bridge: From Intentions to Fulfillment Reward Functions
 
-The foundation of FPL lies in creating *fulfillment functions* that accurately capture your semantic understanding of each objective. This isn't just mathematical abstraction—it's about formalizing the judgments you already make when evaluating robot behavior.
+The foundation of FPL lies in creating *Fulfillment Reward Functions* that accurately capture your semantic understanding of each objective at a per-timestep level. This isn't just mathematical abstraction—it's about formalizing the judgments you already make when evaluating robot behavior for specific transitions.
 
-=== Designing Fulfillment Functions: A Practical Process
+=== Designing Fulfillment Reward Functions: A Practical Process
 
-Creating effective fulfillment functions requires understanding what "good enough" means for each objective in your domain. This process involves three key steps:
+Creating effective fulfillment reward functions requires understanding what "good enough" means for each objective in your domain for a given state transition. This process involves three key steps:
 
 *Step 1: Semantic Clarity*
 Before writing any mathematics, clearly articulate what you mean by each objective:
@@ -31,9 +31,9 @@ Map your semantic understanding to the [0,1] scale:
 - How would you rate intermediate cases? ($f \in (0,1)$)
 
 *Step 3: Mathematical Implementation*
-Design functions that reflect your semantic mapping:
+Design fulfillment reward functions that reflect your semantic mapping for a transition:
 
-*Example: Smoothness Fulfillment*
+*Example: Smoothness Fulfillment Reward Function*
 ```python
 def f_smoothness(state, action, next_state):
     control_change = ||action - previous_action||
@@ -41,7 +41,7 @@ def f_smoothness(state, action, next_state):
     return exp(-λ × control_change²)
 ```
 
-*Example: Safety Fulfillment*
+*Example: Safety Fulfillment Reward Function*
 ```python
 def f_safety(state, action, next_state):
     min_distance = minimum_distance_to_obstacles(next_state)
@@ -51,7 +51,7 @@ def f_safety(state, action, next_state):
     return sigmoid((min_distance - safe_threshold) / margin)
 ```
 
-*Example: Tracking Fulfillment*
+*Example: Tracking Fulfillment Reward Function*
 ```python
 def f_tracking(state, action, next_state):
     error = ||current_position - desired_position||
@@ -62,28 +62,28 @@ def f_tracking(state, action, next_state):
 
 === Validation and Iteration
 
-The most critical step is validation: do your fulfillment functions actually align with your semantic understanding?
+The most critical step is validation: do your fulfillment reward functions actually align with your semantic understanding for specific transitions?
 
 *Validation Process*:
-1. Generate test scenarios with known performance levels
-2. Evaluate what fulfillment values your functions produce
+1. Generate test scenarios with known performance levels for transitions
+2. Evaluate what fulfillment reward values your functions produce
 3. Compare with your intuitive assessment
 4. Adjust parameters until alignment is achieved
 
 *Example Validation*:
-- Small control change (0.1 rad/s): $f_"smoothness" = 0.95$ ✓ "Very smooth"
-- Medium control change (0.5 rad/s): $f_"smoothness" = 0.6$ ✓ "Somewhat jerky"  
-- Large control change (1.0 rad/s): $f_"smoothness" = 0.2$ ✓ "Too aggressive"
+- Small control change (0.1 rad/s): $f_"smoothness"(s,a,s') = 0.95$ ✓ "Very smooth transition"
+- Medium control change (0.5 rad/s): $f_"smoothness"(s,a,s') = 0.6$ ✓ "Somewhat jerky transition"
+- Large control change (1.0 rad/s): $f_"smoothness"(s,a,s') = 0.2$ ✓ "Too aggressive transition"
 
-If your function outputs don't match your semantic assessment, adjust the parameters ($λ$, thresholds, margins) until they align.
+If your function outputs don't match your semantic assessment for a transition, adjust the parameters ($λ$, thresholds, margins) until they align.
 
 == Continuous Logic: Composing Semantic Relationships
 
-Once you have fulfillment functions that accurately capture individual objectives, FPL provides continuous logic operators to compose them while preserving semantic meaning.
+Once you have fulfillment reward functions that accurately capture individual objectives, FPL provides continuous logic operators to compose them (typically by composing their FQ-values) while preserving semantic meaning.
 
 === The AND Relationship: Joint Satisfaction
 
-When you say "the robot should be safe AND smooth," you mean both objectives must be satisfied. FPL uses generalized means with $p ≤ 0$ to capture AND semantics:
+When you say "the robot should be safe AND smooth," you mean both objectives must be satisfied. FPL uses generalized means with $p <= 0$ to capture AND semantics:
 
 ```
 φ = f_safety ∧_p f_smoothness
@@ -106,16 +106,16 @@ If safety is 0.9 and smoothness is 0.6, then φ = √(0.9 × 0.6) = 0.73. You ca
 
 === The OR Relationship: Alternative Satisfaction
 
-When you say "achieve high speed OR high efficiency," you mean either objective being satisfied is sufficient. FPL uses generalized means with $p ≥ 1$ for OR semantics:
+When you say "achieve high speed OR high efficiency," you mean either objective being satisfied is sufficient. FPL uses generalized means with $q >= 1$ for OR semantics:
 
 ```
-φ = f_speed ∨_p f_efficiency  
+φ = f_speed ∨_q f_efficiency  
 ```
 
 *Parameter Selection for OR*:
-- $p = 1$: Linear OR (arithmetic mean) - "Both objectives contribute equally"
-- $p = 2$: Optimistic OR - "Success in either objective provides good overall performance"
-- $p → ∞$: Strict OR (maximum operator) - "Success in any objective is sufficient"
+- $q = 1$: Linear OR (arithmetic mean) - "Both objectives contribute equally"
+- $q = 2$: Optimistic OR - "Success in either objective provides good overall performance"
+- $q → ∞$: Strict OR (maximum operator) - "Success in any objective is sufficient"
 
 === Hierarchical Composition: Complex Intentions
 
@@ -175,11 +175,11 @@ where $w_i$ are manually tuned weights and $R_i$ represent individual objective 
 
 === The Fulfillment Alternative in RL
 
-The composable fulfillment framework reconceptualizes RL objectives as *constraints to be satisfied* rather than *scores to be maximized*. In this framework, each objective $O_i$ is associated with a fulfillment value $f_i in [0,1]$ that represents the degree to which the objective is satisfied:
+The composable fulfillment framework reconceptualizes RL objectives as *constraints to be satisfied* rather than *scores to be maximized*. In this framework, each objective $O_i$ is associated with a fulfillment value $f_i in [0,1]$ (derived from a fulfillment reward function $f_i(s,a,s')$ at each timestep) that represents the degree to which the objective is satisfied:
 
-- $f_i = 1$: Objective $O_i$ is fully satisfied
-- $f_i = 0$: Objective $O_i$ is completely unsatisfied  
-- $0 < f_i < 1$: Objective $O_i$ is partially satisfied
+- $f_i = 1$: Objective $O_i$ is fully satisfied by the transition
+- $f_i = 0$: Objective $O_i$ is completely unsatisfied by the transition
+- $0 < f_i < 1$: Objective $O_i$ is partially satisfied by the transition
 
 This representation enables several key advantages in the RL context:
 
@@ -249,8 +249,8 @@ The syntax of FPL formulas is defined by the following grammar:
 $ phi ::= f | phi and_p phi | phi or_p phi | not phi | [phi]_delta $
 
 where:
-- $f in [0,1]$ denotes a base fulfillment value
-- $p <= 0$ in both $and_p$ and $or_p$ operators  
+- $f in [0,1]$ denotes a base fulfillment value (typically an FQ-value derived from fulfillment rewards)
+- $p <= 0$ is typically used for $and_p$ operators to achieve conjunctive semantics (e.g., min, geometric mean, harmonic mean). The same $p$ is used in the derived $or_p$.
 - $not$ denotes logical negation
 - $[phi]_delta$ offsets the priority of $phi$ by $delta in [-1,1]$
 
@@ -270,12 +270,12 @@ To ensure FPL formulas are well-formed and can be evaluated meaningfully, we pro
     ────────────────────  (T-Base)
          Γ ⊢ f : [0,1]
 
-    Γ ⊢ φ₁ : [0,1]   Γ ⊢ φ₂ : [0,1]   p ≤ 0
-    ─────────────────────────────────────────  (T-And)
+    Γ ⊢ φ₁ : [0,1]   Γ ⊢ φ₂ : [0,1]   p ≤ 0 (common range for conjunctive M_p)
+    ──────────────────────────────────────────────────────────────────  (T-And)
            Γ ⊢ φ₁ ∧_p φ₂ : [0,1]
 
-    Γ ⊢ φ₁ : [0,1]   Γ ⊢ φ₂ : [0,1]   p ≥ 1
-    ─────────────────────────────────────────  (T-Or)
+    Γ ⊢ φ₁ : [0,1]   Γ ⊢ φ₂ : [0,1]   p ≤ 0 (as or_p is derived from and_p)
+    ──────────────────────────────────────────────────────────────────  (T-Or)
            Γ ⊢ φ₁ ∨_p φ₂ : [0,1]
 
          Γ ⊢ φ : [0,1]
@@ -289,14 +289,15 @@ To ensure FPL formulas are well-formed and can be evaluated meaningfully, we pro
 
 *Well-Formedness*: A formula $phi$ is well-formed if $Gamma tack phi : [0,1]$ for some context $Gamma$.
 
-*Type Safety Theorem (Sketch)*: If $Gamma tack phi : [0,1]$ and all base fulfillment values are in $[0,1]$, then $u(phi) in [0,1]$.
+==== Theorem (Type Safety Sketch) <thm:type_safety>
+*If $Gamma tack phi : [0,1]$ and all base fulfillment values are in $[0,1]$, then $u(phi) in [0,1]$.*
 
 *Proof Sketch*: By structural induction on the derivation of $Gamma tack phi : [0,1]$:
 - Base case: Base fulfillment values are in $[0,1]$ by assumption
-- Inductive cases: Each operator preserves the $[0,1]$ range by the properties of generalized means and the priority offset operator
+- Inductive cases: Each operator ($and_p$ using $M_p$, $or_p$ derived via De Morgan from $and_p$, $not$, priority offset) preserves the $[0,1]$ range.
 
 This type system ensures that:
-1. Only valid parameter ranges are used ($p <= 0$ for AND, $p >= 1$ for OR)
+1. Parameter $p$ is consistently applied. While $p \le 0$ is typical for $M_p$ to have AND-like semantics, the $or_p$ will inherit this $p$.
 2. Priority offsets are bounded to maintain meaningful semantics
 3. All evaluations produce valid fulfillment values in $[0,1]$
 
@@ -307,10 +308,10 @@ This type system ensures that:
 The semantics of FPL define how each operator transforms fulfillment values:
 
 *Base Fulfillment*:
-$ u(f) := f $ for $f in [0,1]$
+$ u(f) := f $ for $f in [0,1]$ (where $f$ is often an FQ-value derived from fulfillment rewards)
 
 *Conjunction* (AND):
-$ u(phi_1 and_p phi_2) := M_p(u(phi_1), u(phi_2)) $ for $phi_1, phi_2 : "FPL"$
+$ u(phi_1 and_p phi_2) := M_p(u(phi_1), u(phi_2)) $ for $phi_1, phi_2 : "FPL"$ (where $p <= 0$ for typical AND semantics)
 
 *Negation*:
 $ u(not phi) := 1 - u(phi) $ for $phi : "FPL"$
@@ -325,22 +326,25 @@ These semantics preserve logical relationships between objectives while enabling
 
 === Logical Interpretation
 
-The parameter $p$ in conjunction and disjunction operators controls the logical semantics:
+The parameter $p$ in $and_p$ (and thus in the derived $or_p$) controls the logical semantics. For $and_p$, $p \le 0$ is typical.
 
-*Strict Conjunction* ($p -> -infinity$): All objectives must be fully satisfied
+*Strict Conjunction* ($p -> -infinity$): $M_p$ effectively becomes the $min$ operator.
 $ u(phi_1 and_(-infinity) phi_2) = min(u(phi_1), u(phi_2)) $
+The FPL $or_p$ derived using this $M_p$ (i.e., $p -> -infinity$) becomes $1 - min(1-u(phi_1), 1-u(phi_2)) = max(u(phi_1), u(phi_2))$. This is a Strict OR (Maximum operator behavior).
 
-*Conservative Conjunction* ($p < 0$): Objectives should be balanced with emphasis on the least satisfied
-$ u(phi_1 and_(-2) phi_2) = sqrt((u(phi_1)^(-2) + u(phi_2)^(-2))/2)^(-1/2) $
+*Conservative Conjunction* ($p < 0$, e.g., $p = -2$): $M_p$ is $M_(-2)(u_1, u_2) = ((u_1^(-2) + u_2^(-2))/2)^(-1/2)$.
+$ u(phi_1 and_(-2) phi_2) = M_(-2)(u(phi_1), u(phi_2)) $
+The FPL $or_p$ derived using this $M_p$ (i.e., $p = -2$) becomes $1 - M_(-2)(1-u(phi_1), 1-u(phi_2))$. This results in an optimistic OR-like behavior: if either input fulfillment is high, the composed fulfillment tends to be high.
 
-*Balanced Conjunction* ($p = 0$): Multiplicative composition that naturally balances objectives
-$ u(phi_1 and_0 phi_2) = sqrt(u(phi_1) dot u(phi_2)) $
+*Balanced Conjunction* ($p = 0$): $M_p$ is the geometric mean $M_0(u_1, u_2) = sqrt(u_1 u_2)$.
+$ u(phi_1 and_0 phi_2) = M_0(u(phi_1), u(phi_2)) $
+The FPL $or_p$ derived using this $M_p$ (i.e., $p = 0$) becomes $1 - M_0(1-u(phi_1), 1-u(phi_2)) = 1 - sqrt((1-u(phi_1))(1-u(phi_2)))$. This provides a balanced OR-like behavior, distinct from the arithmetic mean but serving a similar disjunctive purpose.
 
-*Linear Combination* ($p = 1$): Traditional weighted averaging
-$ u(phi_1 and_1 phi_2) = (u(phi_1) + u(phi_2))/2 $
-
-*Optimistic Disjunction* ($p > 1$): Any objective being satisfied is sufficient
-$ u(phi_1 or_2 phi_2) = sqrt((u(phi_1)^2 + u(phi_2)^2)/2) $
+It is important to note that the FPL $or_p$ operator is explicitly defined via De Morgan's laws from the $and_p$ operator (which uses $M_p$, typically with $p \le 0$). This is a specific design choice for FPL. For comparison, the generalized mean $M_q$ with $q \ge 1$ (as discussed in Chapter 3) can also be used to *directly* achieve various OR-like semantics. For example:
+- *Arithmetic Mean for OR-like behavior ($q=1$)*: $M_1(u_1, u_2) = (u_1+u_2)/2$.
+- *Quadratic Mean for OR-like behavior ($q=2$)*: $M_2(u_1, u_2) = sqrt((u_1^2+u_2^2)/2)$.
+- *Maximum for OR-like behavior ($q -> +infinity$)*: $M_(+infinity)(u_1, u_2) = max(u_1, u_2)$.
+These direct $M_q$ (with $q \ge 1$) formulations are not how $or_p$ is defined in FPL's syntax, but they represent other ways to achieve disjunctive semantics using generalized means.
 
 === Formal Definition of Continuous Logic Operations
 
@@ -360,7 +364,8 @@ To precisely characterize FPL's expressivity, we formally define the class of co
 3. *Negations*: If $L in cal(L)_"PM"$, then $(1 - L) in cal(L)_"PM"$
 4. *Priority Transformations*: If $L in cal(L)_"PM"$, then $(L + delta)/(1 + delta) in cal(L)_"PM"$
 
-*Theorem 4* (FPL Expressivity Class): FPL can express exactly the class $cal(L)_"PM"$ of power-mean continuous logic operations.
+==== Theorem (FPL Expressivity Class) <thm:fpl_expressivity_class>
+*FPL can express exactly the class $cal(L)_"PM"$ of power-mean continuous logic operations.*
 
 This class includes:
 - All generalized conjunctions and disjunctions
@@ -458,7 +463,8 @@ This creates a "prioritized balance" where each objective has a guaranteed minim
 
 While FPL is expressive within the class of continuous logic operations, it has well-defined limitations that practitioners should understand.
 
-*Theorem 5* (Expressivity Limitations): FPL cannot express:
+==== Theorem (Expressivity Limitations) <thm:fpl_limitations>
+*FPL cannot express:*
 
 1. *Temporal Sequences*: "First achieve A, then maintain B"
    - Requires explicit temporal operators not present in FPL
@@ -487,11 +493,11 @@ The key innovation in FPL is the application of logical operators to FQ-values r
 
 === FQ-Value Definition
 
-An FQ-value represents the expected fulfillment of an objective when taking action $a$ in state $s$ and following policy $pi$ thereafter:
+An FQ-value represents the expected cumulative discounted fulfillment reward for an objective when taking action $a$ in state $s$ and following policy $pi$ thereafter:
 
 $ "FQ"^pi_i(s,a) = expect_tau [sum_(t=0)^infinity gamma^t f_i(s_t, a_t, s_(t+1)) | s_0 = s, a_0 = a, pi] $
 
-where $f_i(s,a,s') in [0,1]$ is the immediate fulfillment for objective $i$.
+where $f_i(s,a,s') in [0,1]$ is the immediate fulfillment reward for objective $i$.
 
 The normalization ensures that FQ-values remain in $[0,1]$:
 
@@ -547,20 +553,20 @@ This expresses: "Safety is required, and either maintain minimum efficiency or o
 
 Consider a drone delivery system that must adapt its behavior based on battery level. We want to express: "Always maintain safety, but when battery is low, prioritize efficiency over speed; when battery is high, prioritize speed over efficiency."
 
-*Step 1: Define Base Fulfillment Functions*
+*Step 1: Define Base Fulfillment Reward Functions*
 ```
-f_safety: [0,1]    # Obstacle avoidance and stability
-f_speed: [0,1]     # Delivery time optimization  
-f_efficiency: [0,1] # Power consumption minimization
-f_battery: [0,1]   # Current battery level (normalized)
+f_safety: S times A times S -> [0,1]    # Obstacle avoidance and stability
+f_speed: S times A times S -> [0,1]     # Delivery time optimization
+f_efficiency: S times A times S -> [0,1] # Power consumption minimization
+f_battery_level: S -> [0,1]   # Current battery level (normalized) - a state-based fulfillment function
 ```
 
-*Step 2: Construct Conditional FPL Formula*
+*Step 2: Construct Conditional FPL Formula (to be applied to FQ-values)*
 ```
-φ = safety ∧_{-∞} conditional_objective
+φ = fq_safety ∧_{-∞} conditional_objective_fq
 
 where:
-conditional_objective = (battery ∧_0 speed) ∨_1 (¬battery ∧_0 efficiency)
+conditional_objective_fq = (fq_battery ∧_0 fq_speed) ∨_p (¬fq_battery ∧_0 fq_efficiency)
 ```
 
 *Step 3: Parse Tree Visualization*
@@ -569,54 +575,55 @@ conditional_objective = (battery ∧_0 speed) ∨_1 (¬battery ∧_0 efficiency)
                    /         \
                ∧_{-∞}         
               /     \
-         safety    conditional_objective
+         safety    conditional_objective_fq
                         |
-                       ∨_1
+                       ∨_p
                     /       \
                 ∧_0           ∧_0
                /   \         /   \
-          battery speed  ¬battery efficiency
+          fq_battery fq_speed  ¬fq_battery fq_efficiency
 ```
 
 *Step 4: Evaluation Example*
 Consider a scenario with:
-- `f_safety = 0.95` (safe operation)
-- `f_speed = 0.7` (moderate speed)
-- `f_efficiency = 0.8` (good efficiency)
-- `f_battery = 0.3` (low battery)
+- `fq_safety = 0.95` (safe operation)
+- `fq_speed = 0.7` (moderate speed)
+- `fq_efficiency = 0.8` (good efficiency)
+- `fq_battery = 0.3` (low battery)
 
 Evaluation proceeds bottom-up:
-1. `¬battery = 1 - 0.3 = 0.7`
-2. `battery ∧_0 speed = √(0.3 × 0.7) = 0.458`
-3. `¬battery ∧_0 efficiency = √(0.7 × 0.8) = 0.748`
-4. `conditional_objective = (0.458 + 0.748)/2 = 0.603` (arithmetic mean)
+1. `¬fq_battery = 1 - 0.3 = 0.7`
+2. `fq_battery ∧_0 fq_speed = √(0.3 × 0.7) = 0.458`
+3. `¬fq_battery ∧_0 fq_efficiency = √(0.7 × 0.8) = 0.748`
+4. `conditional_objective_fq = (0.458 + 0.748)/2 = 0.603` (arithmetic mean)
 5. `φ = min(0.95, 0.603) = 0.603`
 
-*Step 5: Behavioral Interpretation*
-- When battery is high (e.g., 0.9), the left branch dominates: `√(0.9 × speed)`
-- When battery is low (e.g., 0.1), the right branch dominates: `√(0.9 × efficiency)`
-- The smooth transition ensures stable behavior as battery level changes
-- Safety is always enforced as a hard constraint via the `-∞` parameter
+*Step 5: Behavioral Interpretation (of FQ-value composition)*
+- When FQ_battery is high (e.g., 0.9), the left branch of conditional_objective_fq dominates: $M_0("fq"_"battery", "fq"_"speed")$
+- When FQ_battery is low (e.g., 0.1), the right branch dominates: $M_0(1-"fq"_"battery", "fq"_"efficiency")$ composed with $or_p$
+- The smooth transition ensures stable behavior as expected future battery level changes
+- Expected safety (fq_safety) is always enforced as a hard constraint via the $-∞$ parameter
 
-*Step 6: Implementation in BPG*
+*Step 6: Implementation in BPG (conceptual)*
 ```python
-def conditional_fpl_update(state, action, next_state):
-    # Compute individual fulfillments
-    f_safety = compute_safety_fulfillment(state, action)
-    f_speed = compute_speed_fulfillment(state, action, next_state)
-    f_efficiency = compute_efficiency_fulfillment(action)
-    f_battery = state.battery_level  # Already normalized to [0,1]
+def get_composed_fq_value(state, action, fq_safety, fq_speed, fq_efficiency, fq_battery):
+    # fq_battery might be f_battery_level(state) if used directly,
+    # or a learned FQ-value if predicting future battery fulfillment.
     
-    # Apply FPL formula
-    battery_speed = geometric_mean([f_battery, f_speed])
-    not_battery_eff = geometric_mean([1 - f_battery, f_efficiency])
-    conditional = arithmetic_mean([battery_speed, not_battery_eff])
+    # Apply FPL formula to FQ-values
+    not_fq_battery = 1 - fq_battery
+    battery_speed_fq = geometric_mean([fq_battery, fq_speed])
+    not_battery_eff_fq = geometric_mean([not_fq_battery, fq_efficiency])
     
-    # Final composition with safety
-    return min(f_safety, conditional)  # p → -∞ approximated as min
+    # FPL or_p for p=0 (example, assumes M_0 for underlying AND)
+    # u(A or_0 B) = 1 - sqrt((1-A)(1-B))
+    conditional_fq = 1 - geometric_mean([1 - battery_speed_fq, 1 - not_battery_eff_fq])
+    
+    # Final composition with safety FQ
+    return min(fq_safety, conditional_fq)  # p → -∞ approximated as min
 ```
 
-This example demonstrates how FPL can express sophisticated conditional behaviors that adapt based on system state while maintaining critical constraints.
+This example demonstrates how FPL can express sophisticated conditional behaviors by composing FQ-values derived from fulfillment reward functions and state-based fulfillment functions.
 
 === Threshold Behaviors
 
@@ -634,8 +641,8 @@ FPL is implemented through the Balanced Policy Gradient (BPG) algorithm, which o
 
 The BPG algorithm extends standard actor-critic methods to handle FPL specifications:
 
-*Critic Update*: Learn individual FQ-functions for each objective
-$ "FQ"_i(s,a) arrow.l r_i + gamma "FQ"_i(s', pi(s')) $
+*Critic Update*: Learn individual FQ-functions for each objective based on fulfillment rewards
+$ "FQ"_i(s,a) arrow.l r_i + gamma "FQ"_i(s', pi(s')) $ (where $r_i$ is $f_i(s,a,s')$, the fulfillment reward)
 
 *Composition*: Apply FPL formula to individual FQ-values
 $ "FQ"_"composed"(s,a) = u(phi("FQ"_1(s,a), "FQ"_2(s,a), ...)) $
@@ -649,7 +656,7 @@ FPL inherits the theoretical guarantees established for generalized means in Cha
 
 The key guarantees for practitioners are:
 
-1. *Minimum Fulfillment Bounds*: Conservative compositions ($p \leq 0$) provide concrete guarantees about individual objective satisfaction
+1. *Minimum Fulfillment Bounds*: Conservative compositions ($q \geq 1$) provide concrete guarantees about individual objective satisfaction
 2. *Semantic Preservation*: Improving any individual objective always improves the overall composition  
 3. *Conservation Properties*: Trade-offs between objectives are well-defined and predictable
 
@@ -667,13 +674,13 @@ This conceptual difference has profound implications for robotics applications, 
 
 *Technical Differences*:
 
-*Idempotence*: Unlike fuzzy logic where $x and x = x^2$, FPL maintains $x and_p x = x$, preserving the intuitive notion that composing an objective with itself should not change its fulfillment level. This distinction is crucial in robotics: if a tracking objective has 80% fulfillment, composing it with itself should still yield 80%, not 64% as fuzzy logic would suggest.
+*Idempotence*: Unlike fuzzy logic where $x and x = x^2$, FPL maintains $x and_p x = x$ (for $p \le 0$) and $x or_q x = x$ (for $q \ge 1$), preserving the intuitive notion that composing an objective with itself should not change its fulfillment level. This distinction is crucial in robotics: if a tracking objective has 80% fulfillment, composing it with itself should still yield 80%, not 64% as fuzzy logic would suggest.
 
-*Non-Associativity*: Power means are not t-norms as they are not associative for every $p$. This trade-off enables the continuous interpolation between logical operators while maintaining range preservation and other desirable properties.
+*Non-Associativity*: Power means are not t-norms as they are not associative for every $p$ or $q$. This trade-off enables the continuous interpolation between logical operators while maintaining range preservation and other desirable properties.
 
 *Fulfillment Semantics*: While fuzzy logic focuses on uncertainty, FPL emphasizes the degree to which objectives are fulfilled, providing a more natural interpretation for robotics applications where satisfaction levels are more relevant than membership degrees.
 
-*Parameter Continuity*: FPL's parameter $p$ provides smooth interpolation between conjunction and disjunction operators, enabling fine-grained control over preference composition that would require discrete operator selection in traditional fuzzy logic.
+*Parameter Continuity*: FPL's parameters $p$ (for $and_p$) and $q$ (for $or_p$) provide smooth interpolation between conjunction and disjunction operators, enabling fine-grained control over preference composition that would require discrete operator selection in traditional fuzzy logic.
 
 === Relationship to Probability Theory
 
@@ -724,13 +731,13 @@ where $epsilon_i$ is a noise term with $|epsilon_i| <= epsilon_"max"$ and $expec
 
 #todo("Check and formally prove this theorem - currently unproven theoretical direction")
 
-*Theorem 6* (Robustness Under Bounded Noise): For any FPL formula $phi$ with power-mean compositions using $p <= 0$, the expected fulfillment degradation under bounded noise is:
+*Theorem 6* (Robustness Under Bounded Noise): For any FPL formula $phi$ with power-mean conjunctions using $p <= 0$, the expected fulfillment degradation under bounded noise is:
 
 $ |expect[u(phi(tilde(f)_1, ..., tilde(f)_n))] - u(phi(f_1, ..., f_n))| <= epsilon_"max" dot K(p,n) $
 
 where $K(p,n) = n^(1/p - 1)$ is the noise amplification factor.
 
-*Proof Sketch*: The power mean's Hölder continuity ensures bounded sensitivity to input perturbations, with more negative $p$ values providing better worst-case robustness at the cost of increased average-case sensitivity.
+*Proof Sketch*: The power mean's Hölder continuity ensures bounded sensitivity to input perturbations, with more negative $p$ values (for conjunctions) providing better worst-case robustness at the cost of increased average-case sensitivity.
 
 ==== Minimum Fulfillment Bounds Under Uncertainty
 
@@ -738,7 +745,7 @@ The minimum fulfillment bounds remain valid in expectation:
 
 #todo("Validate this theorem with rigorous proof and empirical testing - theoretical work needed")
 
-*Theorem 7* (Probabilistic Fulfillment Bounds): For stochastic fulfillment with bounded noise, if $expect[M_p(tilde(f)_1, ..., tilde(f)_n)] >= y$, then:
+*Theorem 7* (Probabilistic Fulfillment Bounds): For stochastic fulfillment with bounded noise, if $expect[M_p(tilde(f)_1, ..., tilde(f)_n)] >= y$ (where $M_p$ is a conjunctive composition, $p \le 0$), then:
 
 $ Pr[min_i tilde(f)_i >= root(p, n((y - epsilon_"max")^p - 1) + 1)] >= 1 - delta $
 
@@ -748,17 +755,17 @@ where $delta$ depends on the noise distribution and can be bounded using concent
 
 For practitioners, this analysis provides concrete guidelines:
 
-1. *Parameter Selection Under Uncertainty*: More negative $p$ values provide stronger robustness guarantees but may reduce average performance
+1. *Parameter Selection Under Uncertainty*: For conjunctive compositions ($and_p$), more negative $p$ values provide stronger robustness guarantees but may reduce average performance. For disjunctive compositions ($or_p$), parameters closer to $p=0$ (geometric mean) might be more stable under noise than very negative $p$.
 2. *Noise Tolerance*: The framework degrades gracefully with bounded noise, maintaining semantic interpretability
 3. *Verification*: Fulfillment bounds can be verified probabilistically even under uncertainty
 
 === Fulfillment Value Supervision
 
-To ensure FQ-values accurately represent fulfillment, BPG includes a fulfillment supervision term:
+To ensure FQ-values accurately represent expected cumulative fulfillment rewards, BPG includes a fulfillment supervision term:
 
 $ L_"FV" = expect_(s,a) [("FQ"_i(s,a) - f_i^"observed"(s,a))^2] $
 
-where $f_i^"observed"(s,a)$ is the observed immediate fulfillment.
+where $f_i^"observed"(s,a)$ is the observed fulfillment reward from $f_i(s,a,s')$.
 
 This supervision ensures that learned FQ-values maintain their semantic meaning as fulfillment measures.
 
@@ -766,7 +773,7 @@ This supervision ensures that learned FQ-values maintain their semantic meaning 
 
 The differentiability of generalized means enables efficient gradient computation:
 
-$ (partial u(phi))/(partial "FQ"_i) = (partial M_p)/(partial "FQ"_i) dot (partial phi)/(partial M_p) $
+$ (partial u(phi))/(partial "FQ"_i) = (partial M_p)/(partial "FQ"_i) dot (partial phi)/(partial M_p) $ (for $and_p$ and derived $or_p$ based on $M_p$)
 
 This allows standard backpropagation through the FPL composition structure.
 
@@ -780,7 +787,7 @@ FPL can express any objective relationship that can be represented through conti
 
 === Type Safety
 
-The FPL type system ensures that all well-formed formulas produce valid fulfillment values in $[0,1]$ and that parameter constraints are enforced (e.g., $p \leq 0$ for AND operations).
+The FPL type system ensures that all well-formed formulas produce valid fulfillment values in $[0,1]$ and that parameter constraints are enforced (e.g., $q >= 1$ for OR operations).
 
 == Empirical Evaluation
 
@@ -807,7 +814,7 @@ Our results on several benchmark environments demonstrate significant improvemen
 #figure(
   image("/figures/violin_plots_timesteps.svg", width: 100%),
   caption: [Sample efficiency comparison across benchmark environments. Violin plots show the distribution of timesteps required to reach performance thresholds across 10 random seeds. The red horizontal line separates seeds failing to reach the threshold. BPG consistently requires fewer samples with lower variance.]
-)
+) <fig:fpl_lunar_lander_results>
 
 #figure(
   image("/figures/progress_plots.svg", width: 100%),
@@ -834,24 +841,24 @@ We demonstrate how FPL simplifies reward specification while maintaining or impr
 
 *Pendulum-v1*:
 - *Original*: $-theta^2 - 0.1 dot(theta)^2 - 0.001 text("torque")^2$
-- *FPL*: $F_"angle"^2 and_p F_"actuation"$
+- *FPL*: $F_"angle"^2 and_p F_"actuation"$ (e.g., $p=0$ or $p=-1$)
 
 Here $F_"angle"$ represents fulfillment for angle alignment, and $F_"actuation"$ represents minimizing actuation. The squared angle term emphasizes the primary task of angle alignment.
 
 *Reacher-v4*:
 - *Original*: $-text("distance") - 0.1||text("torque")||^2$
-- *FPL*: $F_"distance"^2 and_p bold(and)_p(bold(F)_"torque")$
+- *FPL*: $F_"distance"^2 and_p bold(and)_p(bold(F)_"torque")$ (e.g., $p=0$ or $p=-1$ for all $and_p$)
 
 Our FPL specification represents reaching the target with $F_"distance"$, squared for emphasis, and minimizing the torque fulfillments.
 
 *Hopper-v4*:
 - *Original*: $1 + (d x)/(d t) - 0.001 ||text("action")||_2^2$
-- *FPL*: $bold(and)_p(bold(F)_"speed") and_p bold(and)_p(bold(F)_"action")$
+- *FPL*: $bold(and)_p(bold(F)_"speed") and_p bold(and)_p(bold(F)_"action")$ (e.g., $p=0$ or $p=-1$ for all $and_p$)
 
 Here $bold(and)_p(bold(F)_"speed")$ represents the fulfillments for the velocity of each limb, and $bold(and)_p(bold(F)_"action")$ represents minimizing the three joint torques.
 
 *LunarLanderContinuous-v2*:
-The original reward is particularly complex, with distance, velocity, angle rewards, leg contact bonuses, engine penalties, and terminal rewards. Our FPL specification uses a hierarchical structure:
+The original reward is particularly complex, with distance, velocity, angle rewards, leg contact bonuses, engine penalties, and terminal rewards. Our FPL specification uses a hierarchical structure with conjunctive operators (e.g., $p=0$ or $p=-1$):
 
 $bold(and)_p({F_"near", [F_"very_near"]_0.1, [F_"legs"]_0.1, [F_"landed"]_0.1, [F_"fuel"]_0.5})$
 
@@ -872,13 +879,13 @@ Standard reward functions often embody fundamental limitations that FPL effectiv
     [Hopper-v4 Reward], [2288.80], [750.35]
   ),
   caption: [BPG Performance in Hopper-v4 (48k steps, 10 seeds). Beyond raw performance gains, agents without FPL frequently achieved rewards of ≈1000 by standing still—a reward hacking scenario. FPL assigned near-zero fulfillment values (3.8 × 10^-5) to such behaviors, correctly identifying them as failing to satisfy intended objectives.]
-)
+) <tab:fpl_ablation_study>
 
 Beyond raw performance gains with FPL, we observed a critical qualitative difference: without FPL, agents frequently achieved rewards of approximately 1000 by simply standing still—a reward hacking scenario where linear rewards were fulfilled but failed to achieve the intended behavior. Our FPL formulation assigned near-zero fulfillment values to such behaviors, correctly identifying them as failing to satisfy the intended objectives since the agent must move all limbs forward to be considered fulfilled.
 
 === Parameter Robustness
 
-FPL demonstrates robustness to reasonable variations in power mean parameters and offsets. We choose $p$ as either 0 or -1, which primarily serve to optimize sample efficiency rather than fundamentally changing the desired behavior. For example, not squaring the angle term in Pendulum would still result in an upright pendulum, but with slower convergence due to more conservative actions. This behavioral consistency persists across training runs, unlike linear weighted reward functions that often converge to different local optima depending on initialization.
+FPL demonstrates robustness to reasonable variations in power mean parameters and offsets. We choose $p$ for $and_p$ as either 0 or -1, and $q$ for $or_p$ typically as 1 or 2. These primarily serve to optimize sample efficiency rather than fundamentally changing the desired behavior. For example, not squaring the angle term in Pendulum would still result in an upright pendulum, but with slower convergence due to more conservative actions. This behavioral consistency persists across training runs, unlike linear weighted reward functions that often converge to different local optima depending on initialization.
 
 == Relationship to Multi-Objective Reinforcement Learning
 
@@ -943,8 +950,8 @@ FPL makes several fundamental theoretical contributions to multi-objective RL:
 
 *Solution*: Generalized means provide continuous extensions of logical operators:
 - AND semantics ($p <= 0$): Joint satisfaction required
-- OR semantics ($p >= 1$): Alternative satisfaction sufficient
-- Balanced composition ($p = 0$): Multiplicative trade-offs
+- OR semantics ($q >= 1$): Alternative satisfaction sufficient
+- Balanced composition ($p = 0$ for AND, $q=1$ for OR)
 
 *Theoretical Foundation*: Power means are the unique family of functions satisfying idempotence, monotonicity, and continuity while providing logical semantics.
 
@@ -1063,8 +1070,8 @@ Based on our experience applying FPL across multiple domains, we provide practic
 === Objective Identification
 
 1. *Identify Core Objectives*: List all behavioral requirements for the system
-2. *Define Fulfillment Functions*: Map each objective to a $[0,1]$ fulfillment measure
-3. *Test Individual Objectives*: Verify that fulfillment functions capture intended semantics
+2. *Define Fulfillment Reward Functions*: Map each objective to a $[0,1]$ fulfillment reward $f_i(s,a,s')$
+3. *Test Individual Fulfillment Reward Functions*: Verify that these functions capture intended semantics for transitions
 
 === Formula Construction
 
@@ -1075,30 +1082,28 @@ Based on our experience applying FPL across multiple domains, we provide practic
 
 === Parameter Selection
 
-1. *Conjunction Parameters*: Use $p <= 0$ for AND semantics
-   - $p = -infinity$: Strict requirements (safety-critical)
+1. *Conjunction Parameters*: Use $p <= 0$ for $and_p$ semantics
+   - $p = -∞$: Strict requirements (safety-critical)
    - $p = -2$: Conservative balancing
    - $p = 0$: Natural multiplicative balancing
 
-2. *Disjunction Parameters*: Use $p >= 1$ for OR semantics
-   - $p = 1$: Linear combination
-   - $p = 2$: Optimistic composition
-   - $p = infinity$: Pure maximum
+2. *Disjunction Parameters*: Use $q >= 1$ for $or_p$ semantics
+   - $q = 1$: Linear combination (geometric mean)
+   - $q = 2$: Optimistic composition
+   - $q -> infinity$: Pure maximum
 
 3. *Priority Offsets*: Use $delta in [-1,1]$ for priority adjustment
-   - Positive $delta$: Boost priority
-   - Negative $delta$: Reduce priority
 
 === Common Patterns
 
 *Safety-First Pattern*:
-$ phi = "safety" and_(-infinity) "performance" $
+$ phi = "safety" and_(-infinity) "performance"$
 
 *Balanced Multi-Objective*:
-$ phi = "obj1" and_0 "obj2" and_0 "obj3" $
+$ phi = "obj1" and_0 "obj2" and_0 "obj3"$
 
 *Hierarchical Priorities*:
-$ phi = ["high_priority"]_(0.3) and_(-2) ["medium_priority"]_(0.1) and_(-2) "low_priority" $
+$ phi = ["high"]_(0.3) and_(-2) ["medium"]_(0.1) and_(-2) "low"$
 
 === Comprehensive Multi-Domain Evaluation
 
@@ -1180,14 +1185,14 @@ Successful implementation requires a systematic four-phase approach:
 - Classify objectives by type (safety, performance, efficiency, quality, robustness)
 - Validate that objectives capture true intent
 
-*Phase 2: Fulfillment Function Design*
-- Design fulfillment functions $f_i: S times A times S -> [0,1]$ for each objective
+*Phase 2: Fulfillment Reward Function Design*
+- Design fulfillment reward functions $f_i(s,a,s')$ for each objective
 - Use hard constraint mappings for safety, smooth sigmoids for performance
 - Validate individual functions and ensure consistent scaling
 
 *Phase 3: Composition Design*
 - Analyze semantic relationships (competitive, complementary, hierarchical, independent)
-- Select appropriate parameters: $p -> -infinity$ (safety-critical), $p = -2$ (conservative), $p = 0$ (balanced), $p = 1$ (linear), $p = 2$ (optimistic)
+- Select appropriate parameters: e.g., $p -> -infinity$ (safety-critical AND), $p = 0$ (balanced AND), $q = 1$ (balanced OR), $q = 2$ (optimistic OR)
 - Use nested composition with priority offsets for complex structures
 
 *Phase 4: Integration and Testing*
@@ -1217,7 +1222,7 @@ Successful implementation requires a systematic four-phase approach:
 === Migration Strategy
 
 *Gradual Approach*:
-1. Create fulfillment functions equivalent to current reward weights
+1. Create fulfillment reward functions equivalent to current reward weights
 2. Refine functions for semantic accuracy while maintaining performance
 3. Optimize composition parameters and explore sophisticated relationships
 
@@ -1230,8 +1235,9 @@ Successful implementation requires a systematic four-phase approach:
 === Best Practices
 
 1. *Start Simple*: Begin with basic conjunctions and gradually add complexity
-2. *Validate Semantics*: Ensure fulfillment functions capture true intent before composition
-3. *Use Geometric Mean*: Default to $p = 0$ for balanced composition
+2. *Validate Semantics*: Ensure fulfillment reward functions capture true intent before composition
+3. *Use Geometric Mean for Conjunction*: Default to $p = 0$ for balanced $and_p$ composition.
+   *Use Arithmetic Mean for Disjunction*: Default to $q = 1$ for balanced $or_p$ composition.
 4. *Separate Concerns*: Handle universal objectives architecturally, task-specific compositionally
 5. *Monitor Individually*: Track each fulfillment value during training for debugging
 6. *Test Robustness*: Validate performance under parameter variations and distribution shift
@@ -1265,9 +1271,9 @@ While FPL provides significant improvements over traditional approaches, several
 
 This chapter has presented Fulfillment Priority Logic as a complete solution to the reward expressivity crisis in robot learning. The key contributions include:
 
-1. *Formal Language*: A mathematically rigorous language for expressing complex objective relationships while preserving semantic meaning.
+1. *Formal Language*: A mathematically rigorous language for expressing complex objective relationships while preserving semantic meaning, typically applied to FQ-values derived from fulfillment rewards.
 
-2. *FQ-Value Composition*: A novel approach to applying logical operators to Q-values rather than immediate rewards, enabling long-term trade-off reasoning.
+2. *FQ-Value Composition*: A novel approach to applying logical operators to FQ-values rather than immediate rewards, enabling long-term trade-off reasoning.
 
 3. *Algorithmic Implementation*: The Balanced Policy Gradient algorithm that efficiently optimizes FPL specifications while maintaining theoretical guarantees.
 
@@ -1275,6 +1281,6 @@ This chapter has presented Fulfillment Priority Logic as a complete solution to 
 
 5. *Practical Guidelines*: Comprehensive guidance for practitioners on how to construct and use FPL specifications effectively.
 
-FPL addresses the expressivity component of the intent-to-reality gap by providing practitioners with a principled way to specify their intentions without the semantic loss and brittleness of traditional reward engineering. The following chapters address the deployment component through universal behavioral objectives and multi-fulfillment optimization approaches that preserve critical behaviors across domains.
+FPL addresses the expressivity component of the intent-to-reality gap by providing practitioners with a principled way to specify their intentions (through operations on expected fulfillments, which are themselves based on per-timestep fulfillment rewards) without the semantic loss and brittleness of traditional reward engineering. The following chapters address the deployment component through universal behavioral objectives and multi-fulfillment optimization approaches that preserve critical behaviors across domains.
 
 Chapter 5 presents CAPS (Continuous Actor-Critic with Policy Smoothness), which addresses the deployment challenge by encoding universal behavioral objectives directly in policy architectures. Chapter 6 then presents the Anchor Critics framework for multi-fulfillment adaptation that preserves learned behaviors during sim-to-real transfer. 
