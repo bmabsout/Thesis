@@ -1,28 +1,28 @@
 #import "../commands.typ": *
 
-= The Fulfillment Framework: Semantic Bridges for Robot Learning
+= The Fulfillment Framework: Semantic Bridges for Robot Learning <chap:foundations>
 
 At the heart of this thesis lies a simple but profound insight: the intent-to-reality gap stems from a fundamental mismatch between how humans think about objectives and how machines optimize them. Humans think in terms of *requirements to satisfy*—"the robot should move smoothly," "the drone should avoid obstacles," "the arm should reach the target quickly." Traditional reinforcement learning, however, thinks in terms of *scores to maximize*—converting these natural requirements into numerical rewards that obscure their original meaning.
 
-The fulfillment framework provides *semantic bridges* that preserve the natural meaning of objectives throughout the optimization process. This chapter establishes the mathematical foundations for these bridges, showing how fulfillment functions translate high-level intentions into optimization-friendly values, and how continuous logic preserves their semantic relationships during composition.
+The fulfillment framework provides *semantic bridges* that preserve the natural meaning of objectives throughout the optimization process. This chapter establishes the mathematical foundations for these bridges, showing how *Fulfillment Functions* (which map relevant inputs to a $[0,1]$ satisfaction value) translate high-level intentions, and how, in the context of reinforcement learning, specific instances called *Fulfillment Reward Functions* provide per-timestep values for learning. We will also see how continuous logic preserves their semantic relationships during composition.
 
 == The Core Insight: Fulfillment as Semantic Alignment
 
 Consider a fundamental question: when you say "the robot should move smoothly," what do you actually mean? You have an intuitive sense of smoothness—you can look at robot motion and judge whether it appears smooth or jerky. The fulfillment framework formalizes this intuitive judgment.
 
-=== Fulfillment Functions: Formalizing Intuitive Judgment
+=== Fulfillment Reward Functions: Formalizing Intuitive Judgment for RL
 
-A *fulfillment function* $f: S times A times S -> [0,1]$ is a mathematical function that captures your intuitive judgment about how well an objective is being satisfied:
+In the context of reinforcement learning, we often define *Fulfillment Reward Functions*. A *Fulfillment Reward Function* $f: S times A times S -> [0,1]$ is a mathematical function that captures your intuitive judgment about how well an objective is being satisfied by a specific state transition:
 
-- $f(s,a,s') = 1.0$: "Perfect! This action completely satisfies my objective."
-- $f(s,a,s') = 0.8$: "Pretty good, mostly satisfies what I want."
-- $f(s,a,s') = 0.3$: "Not great, only partially satisfies my intent."
-- $f(s,a,s') = 0.0$: "Terrible! This completely fails to achieve what I want."
+- $f(s,a,s') = 1.0$: "Perfect! This action completely satisfies my objective for this transition."
+- $f(s,a,s') = 0.8$: "Pretty good, this transition mostly satisfies what I want."
+- $f(s,a,s') = 0.3$: "Not great, this transition only partially satisfies my intent."
+- $f(s,a,s') = 0.0$: "Terrible! This transition completely fails to achieve what I want."
 
-The key insight is that this $[0,1]$ value should *align with your semantic understanding* of the objective. If you look at the robot's behavior and think "that's about 70% as smooth as I'd like," then $f_"smoothness"$ should output approximately $0.7$.
+The key insight is that this $[0,1]$ value (a fulfillment reward or immediate fulfillment) should *align with your semantic understanding* of the objective for that specific transition. If you look at the robot's behavior resulting from $(s,a,s')$ and think "that's about 70% as smooth as I'd like for this step," then the fulfillment reward function $f_"smoothness"(s,a,s')$ should output approximately $0.7$.
 
-*Example: Smoothness Fulfillment*
-For a quadrotor control task, you might define smoothness fulfillment as:
+*Example: Smoothness Fulfillment Reward*
+For a quadrotor control task, you might define a smoothness fulfillment reward function as:
 ```
 f_smoothness(s, a, s') = exp(-λ × ||a - a_previous||²)
 ```
@@ -31,7 +31,7 @@ where $λ$ is chosen so that:
 - Large control changes (jerky motion) → $f_"smoothness" ≈ 0.0$
 - The mapping aligns with your intuitive sense of "smooth enough"
 
-*Example: Safety Fulfillment*
+*Example: Safety Fulfillment Reward*
 For obstacle avoidance, you might define:
 ```
 f_safety(s, a, s') = sigmoid((distance_to_obstacles - safe_threshold) / margin)
@@ -47,15 +47,15 @@ The critical requirement is *semantic alignment*: the fulfillment value should a
 
 1. *Domain Expertise Matters*: You need to understand what "good enough" means for each objective in your domain.
 
-2. *Validation is Essential*: You should test fulfillment functions by evaluating whether their outputs match your intuitive judgments.
+2. *Validation is Essential*: You should test fulfillment reward functions by evaluating whether their outputs match your intuitive judgments for specific transitions.
 
-3. *Iterative Refinement*: Like any engineering process, you may need to adjust fulfillment functions to better capture your intent.
+3. *Iterative Refinement*: Like any engineering process, you may need to adjust fulfillment reward functions to better capture your intent.
 
-4. *Interpretability by Design*: The $[0,1]$ scale provides immediate interpretability—you can always understand what a fulfillment value means.
+4. *Interpretability by Design*: The $[0,1]$ scale provides immediate interpretability—you can always understand what a fulfillment reward value means for a given transition.
 
 == The Composition Challenge: Preserving Semantic Relationships
 
-Once you have fulfillment functions that accurately capture individual objectives, the next challenge is combining them while preserving their semantic relationships. This is where traditional approaches fail catastrophically.
+Once you have fulfillment reward functions that accurately capture individual objectives per transition, the next challenge is combining them while preserving their semantic relationships. This is where traditional approaches fail catastrophically.
 
 === Why Linear Combination Destroys Semantics
 
@@ -170,7 +170,7 @@ $M_p(x, ..., x) = x$ for any $p$ and $x$. This ensures that composing identical 
 $M_p(x_1, ..., x_n) = M_p(x_sigma(1), ..., x_sigma(n))$ for any permutation $sigma$. This ensures that the order of composition does not affect the result.
 
 ==== Associativity
-Generalized means can be composed hierarchically while preserving their mathematical properties, enabling complex objective structures.
+Generalized means can be composed hierarchically, for example $M_p(M_q(x,y), z)$, and such nested compositions are well-defined, enabling complex objective structures. However, unlike some logical operators (e.g., Boolean AND/OR or t-norms like min/max), generalized means are not strictly associative for all $p, q$ and all inputs (i.e., $M_p(M_p(x,y),z) != M_p(x,M_p(y,z))$ does not generally hold if the same $p$ is used throughout and $p$ is not $minus infinity, 0, 1, plus infinity$ with specific weighting/normalization, or if different $p$ values are used in the hierarchy). The order of operations in FPL is defined by the explicit structure of the formula. This non-associativity for general $p$ is a trade-off for the rich, continuous interpolation of logical semantics they provide.
 
 ==== Continuity
 The generalized mean is continuous in both its arguments and parameter, ensuring smooth optimization landscapes.
@@ -307,7 +307,9 @@ Classical control performance specifications (settling time, overshoot, etc.) ca
 
 == Universal Behavioral Objectives
 
-A key insight in the composable fulfillment framework is that certain behavioral objectives are universal across robotics applications and should be encoded directly into the policy architecture rather than through reward engineering.
+A key insight in the composable fulfillment framework is that certain behavioral objectives are universal across robotics applications and should be encoded directly into the policy architecture rather than through reward engineering. These *Universal Behavioral Objectives (UBOs)*, such as control smoothness or system stability, are fundamental to good performance across a wide range of tasks.
+
+When a UBO is quantified by a fulfillment function, it becomes a *Universal Behavioral Fulfillment (UBF)*, representing its degree of satisfaction on a $[0,1]$ scale. For instance, smoothness, a UBO, can be translated into a UBF, $f_"smoothness"$, which measures how smooth the current control actions are.
 
 === The Smoothness Principle
 
@@ -329,11 +331,11 @@ $ L_T = ||a_t - a_(t-1)||^2 $
 *Spatial Smoothness*: Similar states should produce similar actions
 $ L_S = expect_(s,s') [||pi(s) - pi(s')||^2 / ||s - s'||^2] $
 
-These smoothness terms can be converted to fulfillment values and composed with task-specific objectives using the generalized mean framework.
+These smoothness terms can be converted to fulfillment values (i.e., UBFs such as $f_"temporal-smoothness"$ and $f_"spatial-smoothness"$) and composed with task-specific objectives using the generalized mean framework, or they can be encouraged directly through architectural means.
 
 === Architectural Integration
 
-Universal behavioral objectives should be integrated directly into the policy architecture rather than through reward engineering. This can be achieved through:
+Universal behavioral objectives (and their corresponding UBFs) should often be integrated directly into the policy architecture rather than through explicit FPL composition for every task. This ensures they are consistently promoted. This architectural integration can be achieved through:
 
 1. *Regularization Terms*: Adding smoothness penalties to the policy loss function
 2. *Architectural Constraints*: Designing network architectures that naturally produce smooth outputs
@@ -345,7 +347,8 @@ The composable fulfillment framework provides several important theoretical guar
 
 === Semantic Preservation
 
-*Theorem 1* (Semantic Preservation): *For any generalized mean composition $M_p(f_1, ..., f_n)$, improving any individual fulfillment $f_i$ while keeping others constant results in improvement of the overall composition.*
+==== Theorem (Semantic Preservation) <thm:semantic_preservation>
+*For any generalized mean composition $M_p(f_1, ..., f_n)$, improving any individual fulfillment $f_i$ while keeping others constant results in improvement of the overall composition.*
 
 *Proof*: This follows directly from the monotonicity property of generalized means. If $f_i <= f_i'$ and $f_j = f_j'$ for all $j != i$, then:
 $ M_p(f_1, ..., f_i, ..., f_n) <= M_p(f_1, ..., f_i', ..., f_n) $
@@ -354,7 +357,8 @@ This guarantee ensures that the optimization process remains interpretable and t
 
 === Minimum Fulfillment Bounds
 
-*Theorem 2* (Minimum Fulfillment Bound): *For any generalized mean with $p <= 0$, achieving overall fulfillment $y$ guarantees that all individual fulfillments have at least value $root(p, n(y^p - 1) + 1)$.*
+==== Theorem (Minimum Fulfillment Bound) <thm:min_fulfillment_bounds>
+*For any generalized mean with $p <= 0$, achieving overall fulfillment $y$ guarantees that all individual fulfillments have at least value $root(p, n(y^p - 1) + 1)$.*
 
 *Proof*: Let $y = M_p(f_1, ..., f_n)$ and assume without loss of generality that $f_1 = min(f_1, ..., f_n)$. Then:
 $ y^p = 1/n sum_(i=1)^n f_i^p >= 1/n sum_(i=1)^n f_1^p = f_1^p $
@@ -365,7 +369,8 @@ This theorem provides concrete guarantees about individual objective satisfactio
 
 === Pareto Optimality
 
-*Theorem 3* (Pareto Coverage): *For any Pareto optimal solution in the fulfillment space, there exists a parameter $p$ and weights such that the generalized mean composition achieves that solution.*
+==== Theorem (Pareto Coverage) <thm:pareto_coverage>
+*For any Pareto optimal solution in the fulfillment space, there exists a parameter $p$ and weights such that the generalized mean composition achieves that solution.*
 
 Unlike linear scalarization, the generalized mean framework can access the entire Pareto frontier through appropriate parameter selection.
 
@@ -387,81 +392,6 @@ For extreme values of $p$, numerical stability can become an issue. We address t
 
 1. *Clipping*: Bound fulfillment values to avoid numerical overflow
 2. *Smooth Approximations*: Use smooth approximations for limiting cases ($p -> plus.minus infinity$)
-3. *Adaptive Scheduling*: Gradually adjust parameters during optimization
-
-
-== Universal Behavioral Objectives
-
-While the generalized mean framework provides the mathematical foundation for composing task-specific objectives, certain objectives are universal across robotics applications and should be encoded directly into the system architecture rather than through objective composition.
-
-=== Identifying Universal Objectives
-
-Universal behavioral objectives share several characteristics:
-
-1. *Domain Independence*: They apply across different robotics tasks and environments
-2. *Architectural Suitability*: They can be naturally encoded in policy architectures
-3. *Continuous Relevance*: They should be maintained throughout task execution
-4. *Safety Criticality*: They often relate to system safety and hardware protection
-
-Common examples include:
-- *Control Smoothness*: Avoiding high-frequency control signals that damage actuators
-- *Action Bounds*: Ensuring actions remain within safe operational limits  
-- *Energy Efficiency*: Minimizing unnecessary energy consumption
-- *Stability Margins*: Maintaining system stability under disturbances
-
-=== Temporal and Spatial Smoothness
-
-Control smoothness is a prime example of a universal behavioral objective that should be encoded architecturally:
-
-*Temporal Smoothness*: Actions should be similar to previous actions
-$ L_"temporal" = ||a_t - a_(t-1)||^2 $
-
-*Spatial Smoothness*: Actions should vary smoothly across the action space
-$ L_"spatial" = ||nabla_a pi(s)||^2 $
-
-Universal behavioral objectives should be integrated directly into the policy architecture rather than through reward engineering. This can be achieved through:
-
-1. *Regularization Terms*: Adding smoothness penalties to the policy loss function
-2. *Architectural Constraints*: Designing policy networks with inherent smoothness properties
-3. *Action Filtering*: Post-processing actions to ensure smoothness constraints
-
-== Theoretical Guarantees
-
-The composable fulfillment framework provides several important theoretical guarantees that ensure well-behaved optimization and semantic preservation.
-
-=== Semantic Preservation Theorem
-
-*Theorem 1* (Semantic Preservation): For any fulfillment composition $f_"total" = M_p(f_1, ..., f_n)$, the individual fulfillment values $f_i$ maintain their semantic meaning throughout optimization.
-
-*Proof Sketch*: The monotonicity property of generalized means ensures that improving any individual fulfillment $f_i$ can only improve or maintain the overall composition $f_"total"$. This guarantee ensures that the optimization process remains interpretable and that individual objectives maintain their meaning throughout the learning process.
-
-=== Minimum Fulfillment Bounds
-
-*Theorem 2* (Minimum Fulfillment Bounds): For conservative compositions ($p <= 0$), the overall fulfillment is bounded by the minimum individual fulfillment:
-$ M_p(f_1, ..., f_n) <= min(f_1, ..., f_n) $ for $p <= 0$
-
-This property ensures that conservative compositions cannot achieve high overall fulfillment without satisfying all individual objectives.
-
-=== Pareto Optimality
-
-*Theorem 3* (Pareto Optimality): Solutions that maximize fulfillment compositions are Pareto optimal with respect to the individual objectives.
-
-This guarantee ensures that fulfillment-based optimization finds solutions that cannot be improved in one objective without degrading another.
-
-=== Gradient Computation
-
-The generalized mean operators are differentiable, enabling gradient-based optimization:
-
-$ (partial M_p)/(partial x_i) = (M_p(x_1, ..., x_n))^(1-p) / n dot x_i^(p-1) $
-
-This enables integration with standard optimization algorithms while preserving the logical semantics of the composition.
-
-=== Implementation Considerations
-
-For practical implementation, several considerations ensure robust optimization:
-
-1. *Numerical Stability*: Use log-space computation for extreme parameter values
-2. *Parameter Scheduling*: Start with balanced compositions and gradually adjust parameters
 3. *Adaptive Scheduling*: Gradually adjust parameters during optimization
 
 == Foundational Insights: Why Composable Fulfillment Works
@@ -488,9 +418,9 @@ The second insight is the *continuous logic principle*: effective multi-objectiv
 
 === The Behavioral Decomposition Principle
 
-The third insight is *behavioral decomposition*: complex behaviors decompose into universal objectives (handled architecturally) and task-specific relationships (handled compositionally).
+The third insight is *behavioral decomposition*: complex behaviors decompose into universal objectives (manifesting as UBFs, often handled architecturally) and task-specific relationships (handled compositionally via FPL).
 
-*Separation of Concerns*: Universal objectives like smoothness and stability transfer across domains and should be encoded architecturally. Task-specific relationships capture logical structure and should be handled through FPL composition.
+*Separation of Concerns*: Universal objectives like smoothness and stability (represented as UBFs) transfer across domains and should typically be encoded architecturally. Task-specific relationships capture logical structure and should be handled through FPL composition of their respective fulfillments.
 
 *Control-Theoretic Foundations*: This mirrors hierarchical control structures with inner loops for stability and outer loops for performance, providing a principled engineering approach.
 

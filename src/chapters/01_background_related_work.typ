@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Background and Related Work
+= Background and Related Work <chap:background_related_work>
 
 This chapter establishes the theoretical foundations and related work that inform our fulfillment-centric approach to robot learning. We organize the literature around five key areas: multi-objective optimization theory, multi-objective reinforcement learning, continuous logic and fuzzy systems, robust deployment and transfer learning, and control-theoretic approaches to robot learning.
 

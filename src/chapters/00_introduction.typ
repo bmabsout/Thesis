@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Introduction
+= Introduction <chap:introduction>
 
 Contemporary robot learning faces significant challenges in bridging the gap between designer intentions and deployed behavior. While reinforcement learning has achieved remarkable successes in simulated environments and controlled domains, real-world robotics applications continue to struggle with fundamental issues in objective specification and robust deployment. This thesis addresses what we term the *intent-to-reality gap*—the discrepancy between what practitioners intend their robots to do and what they actually learn to do in deployment.
 
