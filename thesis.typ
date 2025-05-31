@@ -12,8 +12,10 @@
 #import "@preview/t4t:0.4.3": get
 
 #let custom_style = get.dict-merge(default_style(), (
-  body: (text: font_options.source_serif_4), heading: (text: font_options.source_serif_4)
+  body: (text: font_options.source_serif_4), heading: (text: (font_options.source_serif_4+(font: "Source Serif 4 Subhead")))
 ))
+
+// #text(font: "source serif 4 heading")
 
 #let template = make_template(style: custom_style)
 
