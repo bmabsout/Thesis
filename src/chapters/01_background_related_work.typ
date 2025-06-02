@@ -64,6 +64,8 @@ Multi-objective reinforcement learning (MORL) extends traditional RL to handle m
 
 Early MORL approaches extended single-objective RL through scalarization. These approaches learn value functions for the scalarized objective: $Q(s,a) = sum_(i=1)^n w_i Q_i(s,a)$.
 
+#strong[While simple to implement, this linear combination inherently restricts practitioners from specifying nuanced ways for objectives to mix. It imposes a fixed "AND-like" aggregation where all objectives are traded off linearly, struggling to represent non-additive interactions, priorities, or conditional logic, and thus frequently loses crucial semantic meaning from the original multi-objective problem.]
+
 Comprehensive surveys @survey_seq_dec_morl demonstrate the broad applicability of scalarization-based MORL methods while highlighting the persistent challenge of weight selection. The brittleness of linear scalarization becomes particularly problematic in RL settings, where small changes in weights can lead to dramatically different learned behaviors.
 
 Recent work introduces dynamic weight adaptation during training, addressing some brittleness issues but introducing additional hyperparameters and computational complexity.

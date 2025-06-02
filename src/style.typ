@@ -1,13 +1,14 @@
-#let primary_hue = 10deg
+#let primary_hue = 5deg
 #let accent1_hue = 140deg
 #let accent2_hue = 200deg
 #let accent3_hue = -60deg
 #let accent4_hue = 48deg
+#let ref_hue = -20deg
 
 #let primary_gradient = gradient.linear(
   space: oklch,
   oklch(0%, 60%, primary_hue),
-  oklch(100%, 5%, primary_hue+20deg)
+  oklch(100%, 5%, primary_hue+15deg)
 )
 
 #let accent1_gradient = gradient.linear(
@@ -33,6 +34,32 @@
   oklch(0%, 50%, accent4_hue),
   oklch(70%, 70%, accent4_hue+10deg)
 )
+
+#let ref_gradient = gradient.linear(
+  space: oklch,
+  oklch(0%, 0%, ref_hue),
+  oklch(0%, 0%, ref_hue+10deg)
+)
+
+
+// Accent color variables
+#let accent-1-start = oklch(0%, 0.112, 196deg)
+#let accent-1-end = oklch(100%, 0.112, 196deg)
+#let accent-2-start = oklch(0%, 0.116, 136deg)
+#let accent-2-end = oklch(100%, 0.116, 136deg)
+#let accent-3-start = oklch(0%, 0.116, 256deg)
+#let accent-3-end = oklch(100%, 0.116, 256deg)
+#let accent-4-start = oklch(0%, 0.124, 46deg)
+#let accent-4-end = oklch(100%, 0.124, 46deg)
+#let accent-5-start = oklch(0%, 0.124, -14deg)
+#let accent-5-end = oklch(100%, 0.124, -14deg)
+#let accent-6-start = oklch(0%, 0.104, 166deg)
+#let accent-6-end = oklch(100%, 0.104, 166deg)
+
+// Gradient definitions
+#let accent1_gradient = gradient.linear(space: oklch, accent-3-start, accent-3-end)
+#let accent2_gradient = gradient.linear(space: oklch, accent-5-start, accent-5-end)
+#let accent3_gradient = gradient.linear(space: oklch, accent-6-start, accent-6-end)
 
 
 #let long_line = line(
@@ -118,8 +145,17 @@
 )
 
 
-#let default_style(gradient: primary_gradient) = (
-  primary_gradient: gradient,
+#let colors = (
+  primary: primary_gradient,
+  ref: ref_gradient,
+  accent1: accent1_gradient,
+  accent2: accent2_gradient,
+  accent3: accent3_gradient,
+  accent4: accent4_gradient,
+)
+
+#let default_style(colors: colors) = (
+  colors: colors,
   // Page-level layout properties
   page: (
     margins: (left: 1.5in, right: 1in, top: 1.5in, bottom: 1in),
@@ -141,17 +177,17 @@
     levels: (
       // Level 1 ~ Chapter
       (
-        text: (size: 1.5em, weight: "bold", fill: primary_gradient.sample(30%)),
+        text: (size: 1.5em, weight: "bold", fill: colors.primary.sample(30%)),
         spacing: (above: 2em, below: 2em)
       ),
       // Level 2 ~ Section
       (
-        text: (size: 1.4em, weight: "bold", fill: primary_gradient.sample(45%)),
+        text: (size: 1.4em, weight: "bold", fill: colors.primary.sample(45%)),
         spacing: (above: 2em, below: 2em)
       ),
       // Level 3 ~ Subsection
       (
-        text: (size: 1.3em, weight: "bold", fill: primary_gradient.sample(60%)),
+        text: (size: 1.3em, weight: "bold", fill: colors.primary.sample(60%)),
         spacing: (above: 2em, below: 1.5em)
       ),
       // Level 4 ~ Subsubsection

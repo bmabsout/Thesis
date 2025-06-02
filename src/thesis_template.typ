@@ -90,6 +90,26 @@
     set heading(numbering: "1.1")
     set math.equation(numbering: "(1)")
 
+    set ref(supplement: it => {
+      if it.func() == heading and it.level == 1 {
+        [Chapter]
+      } else if it.func() == heading {
+        [Section]
+      }
+    })
+
+    show ref: it => {
+      // set text(size: 0.9em)
+      show text: it => smallcaps(lower(it))
+      if it.element != none and it.element.func() == heading {
+        set text(fill: heading_style(style, level: it.element.level - 1).fill)
+        it
+      } else {
+        set text(fill: style.colors.ref.sample(60%))
+        it
+      }
+    } 
+
     let build_pages = (pages) => {
       for page in pages.filter(page => page != none and page != []).intersperse(pagebreak()) {
         page

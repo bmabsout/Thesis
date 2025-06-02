@@ -23,22 +23,22 @@ Our central hypothesis is that fulfillment functions can serve as *semantic brid
 This thesis makes the following primary contributions to robot learning:
 
 === 1. Unified Framework Analysis
-We provide the first systematic analysis demonstrating that expressivity and deployment challenges stem from similar underlying issues in multi-objective constraint satisfaction. This insight simplifies the conceptual landscape and enables integrated solution approaches.
+We provide the first systematic analysis demonstrating that expressivity and deployment challenges stem from similar underlying issues in multi-objective constraint satisfaction. This insight simplifies the conceptual landscape and enables integrated solution approaches, as detailed in @chap:problem_formulation.
 
 === 2. Objective Taxonomy and Treatment Framework
-We introduce a comprehensive taxonomy of objectives in robot learning—general objectives, behavioral objectives, and universal behavioral objectives—with appropriate treatment mechanisms for each category. This taxonomy clarifies when to use explicit composition versus architectural integration.
+We introduce a comprehensive taxonomy of objectives in robot learning—general objectives, behavioral objectives, and universal behavioral objectives—with appropriate treatment mechanisms for each category. This taxonomy clarifies when to use explicit composition versus architectural integration, detailed in @chap:foundations.
 
 === 3. Fulfillment Priority Logic (FPL)
-We develop Fulfillment Priority Logic, a formal specification language that enables practitioners to express complex objective relationships through continuous logic while preserving semantic meaning throughout the optimization process.
+We develop Fulfillment Priority Logic, a formal specification language that enables practitioners to express complex objective relationships through continuous logic while preserving semantic meaning throughout the optimization process, detailed in @chap:fpl.
 
 === 4. Architectural Integration Framework
-We present Conditioning for Action Policy Smoothness (CAPS), demonstrating how universal behavioral objectives can be integrated directly into policy architectures rather than through reward engineering, achieving superior performance with simplified specification.
+We present Conditioning for Action Policy Smoothness (CAPS), demonstrating how universal behavioral objectives can be integrated directly into policy architectures rather than through reward engineering, achieving superior performance with simplified specification, as detailed in @chap:ubos_caps.
 
 === 5. Robust Deployment Framework
-We introduce Anchor Critics, a multi-fulfillment adaptation framework that preserves semantic anchoring during sim-to-real transfer, enabling robust real-world deployment while maintaining interpretability.
+We introduce Anchor Critics, a multi-fulfillment adaptation framework that preserves semantic anchoring during sim-to-real transfer, enabling robust real-world deployment while maintaining interpretability, detailed in @chap:adaptation_anchors.
 
 === 6. Real-World Validation
-We provide comprehensive empirical validation including the first reinforcement learning system to outperform classical PID controllers in real quadrotor deployment, achieving 50-80% power reductions and demonstrating practical viability.
+We provide comprehensive empirical validation including the first reinforcement learning system to outperform classical PID controllers in real quadrotor deployment, achieving 50-80% power reductions and demonstrating practical viability, empirically demonstrated across chapters detailing FPL (@chap:fpl), CAPS (@chap:ubos_caps), and Anchor Critics (@chap:adaptation_anchors).
 
 == Empirical Results
 
@@ -49,26 +49,6 @@ Our approach achieves significant quantitative improvements across multiple doma
 - *Deployment Success*: 100% flight-worthy controllers in real-world quadrotor deployment through our RE+AL framework @how_to_train_your_quadrotor
 - *Training Consistency*: 100% successful sim-to-real transfer with reproducible training pipeline
 - *Transfer Robustness*: Up to 50% power consumption reduction during sim-to-real adaptation using Anchor Critics @anchor_critics
-
-== Thesis Organization
-
-This thesis is organized as follows:
-
-*Chapter 2* provides background on multi-objective optimization, reinforcement learning, and related work in robot learning, establishing the theoretical and empirical foundations for our approach.
-
-*Chapter 3* formalizes the intent-to-reality gap and presents our unified framework analysis, demonstrating the common underlying challenges in expressivity and deployment.
-
-*Chapter 4* introduces the mathematical foundations of the fulfillment framework, including generalized means as continuous logic operators and their relationship to existing mathematical frameworks.
-
-*Chapter 5* presents Fulfillment Priority Logic as a formal specification language, with comprehensive algorithmic implementation and empirical validation.
-
-*Chapter 6* demonstrates architectural integration through the CAPS framework, showing how universal behavioral objectives can be built into policy architectures.
-
-*Chapter 7* introduces the Anchor Critics framework for robust multi-fulfillment adaptation and sim-to-real transfer.
-
-*Chapter 8* presents the discovery story of how the fulfillment framework emerged from control-theoretic foundations, validating the approach through classical stability theory.
-
-*Chapter 9* synthesizes contributions and discusses future directions, positioning fulfillment-centric learning as a foundation for principled robot learning engineering.
 
 == Scope and Limitations
 
