@@ -167,8 +167,12 @@
   ),
 
   // Paragraph-specific styling
-  paragraph: (
+  par: (
     leading: 1.5em,
+    spacing: 2em,
+    first-line-indent: 0em,
+    // hanging-indent: 0em,
+    justify: true,
   ),
 
   // Heading styles
@@ -177,17 +181,17 @@
     levels: (
       // Level 1 ~ Chapter
       (
-        text: (size: 1.5em, weight: "bold", fill: colors.primary.sample(30%)),
+        text: (size: 1.8em, weight: "bold", fill: colors.primary.sample(30%)),
         spacing: (above: 2em, below: 2em)
       ),
       // Level 2 ~ Section
       (
-        text: (size: 1.4em, weight: "bold", fill: colors.primary.sample(45%)),
-        spacing: (above: 2em, below: 2em)
+        text: (size: 1.5em, weight: "bold", fill: colors.primary.sample(45%)),
+        spacing: (above: 2em, below: 1.5em)
       ),
       // Level 3 ~ Subsection
       (
-        text: (size: 1.3em, weight: "bold", fill: colors.primary.sample(60%)),
+        text: (size: 1.2em, weight: "bold", fill: colors.primary.sample(60%)),
         spacing: (above: 2em, below: 1.5em)
       ),
       // Level 4 ~ Subsubsection

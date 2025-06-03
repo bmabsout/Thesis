@@ -109,11 +109,11 @@ The semantic gap quantifies the loss of meaning when encoding intent into specif
 
 === Manifestations in Practice
 
-*Linear Scalarization Failure*: Traditional reward engineering uses linear combinations $R = sum_i w_i R_i$ that completely destroy semantic information. When a practitioner says "prioritize safety over efficiency," the weights $w_"safety"$ and $w_"efficiency"$ cannot capture the logical structure of this relationship.
+*Linear Scalarization Failure:* Traditional reward engineering uses linear combinations $R = sum_i w_i R_i$ that completely destroy semantic information. When a practitioner says "prioritize safety over efficiency," the weights $w_"safety"$ and $w_"efficiency"$ cannot capture the logical structure of this relationship.
 
-*Specification Brittleness*: Small changes in weights lead to dramatically different behaviors because the linear combination does not preserve the semantic structure of the original intent. A 0.1 increase in efficiency weight might cause a mobile robot to skip essential safety checks, violating the practitioner's true intent.
+*Specification Brittleness:* Small changes in weights lead to dramatically different behaviors because the linear combination does not preserve the semantic structure of the original intent. A 0.1 increase in efficiency weight might cause a mobile robot to skip essential safety checks, violating the practitioner's true intent.
 
-*Hidden Trade-offs*: Linear combinations obscure the actual trade-offs being made, making it impossible to verify that the system is behaving as intended. When the total reward equals 0.7, practitioners cannot determine whether this represents balanced performance across objectives or extreme performance in some areas.
+*Hidden Trade-offs:* Linear combinations obscure the actual trade-offs being made, making it impossible to verify that the system is behaving as intended. When the total reward equals 0.7, practitioners cannot determine whether this represents balanced performance across objectives or extreme performance in some areas.
 
 === Example: Quadrotor Navigation
 

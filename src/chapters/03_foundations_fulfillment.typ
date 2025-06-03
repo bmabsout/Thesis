@@ -92,14 +92,12 @@ In continuous logic using generalized means with $p ≤ 0$:
 *Key Property*: You can always inspect the individual values! If the overall fulfillment is 0.69, you can see it came from 0.8 smoothness and 0.6 safety. The semantic meaning is preserved.
 
 ==== The "OR" Relationship: Alternative Satisfaction  
-
 When you say "achieve high speed OR high efficiency," you mean either objective being satisfied is sufficient. Using generalized means with $p ≥ 1$:
 - $M_2(0.8, 0.3) = 0.61$ (one objective well satisfied → decent overall)
 - $M_2(0.3, 0.3) = 0.3$ (both partially satisfied → limited success)
 - $M_2(0.0, 0.9) = 0.64$ (one objective satisfied → acceptable overall)
 
 ==== Hierarchical Relationships: Complex Intent Structure
-
 Real robotics applications often have hierarchical intent: "Safety is absolutely required, but among safe actions, balance speed and efficiency."
 
 This can be expressed as:
@@ -283,7 +281,6 @@ The geometric mean also connects to information theory through its relationship 
 The fulfillment framework provides natural connections to classical control theory, bridging the gap between learning-based and traditional control approaches.
 
 ==== Lyapunov Stability as Fulfillment
-
 Classical control theory uses Lyapunov functions to analyze system stability. These can be naturally expressed as fulfillment objectives:
 
 $ f_"stability" = exp(-V(x)) $
@@ -291,7 +288,6 @@ $ f_"stability" = exp(-V(x)) $
 where $V(x)$ is a Lyapunov function. This formulation allows stability requirements to be composed with other objectives using the generalized mean framework.
 
 ==== Control Constraints
-
 Traditional control constraints (input limits, state constraints, etc.) can be expressed as fulfillment values:
 
 $ f_"constraint" = cases(
@@ -302,7 +298,6 @@ $ f_"constraint" = cases(
 This enables seamless integration of classical control constraints with learned behaviors.
 
 ==== Performance Specifications
-
 Classical control performance specifications (settling time, overshoot, etc.) can be formulated as fulfillment objectives, enabling hybrid approaches that combine learning with traditional control design principles.
 
 == Universal Behavioral Objectives

@@ -1,30 +1,38 @@
 #import "../commands.typ": *
 
 = Background and Related Work <chap:background_related_work>
-
-This chapter establishes the theoretical foundations and related work that inform our fulfillment-centric approach to robot learning. We organize the literature around five key areas: multi-objective optimization theory, multi-objective reinforcement learning, continuous logic and fuzzy systems, robust deployment and transfer learning, and control-theoretic approaches to robot learning.
+This chapter establishes the theoretical foundations and related work that underpin this thesis, organized around five key areas: reinforcement learning, multi-objective optimization, logical systems, robust deployment and transfer learning, and control-theoretic approaches to robot learning.
 
 == Reinforcement Learning Foundations
-
 Modern reinforcement learning provides the algorithmic foundation for robot learning, establishing both the successes and limitations that motivate our fulfillment-centric approach.
 
-=== The Reward Hypothesis and Its Limitations
+=== Reward Design and Engineering
+Traditional approaches to reward design rely on manual engineering of scalar reward functions. This approach has achieved remarkable successes in domains like game playing, where clear scoring mechanisms exist. However, robotics applications present fundamental challenges for manual reward engineering.
 
+==== The Reward Hypothesis and Its Limitations
 The foundational RL textbook @SuttonBarto establishes the reward hypothesis: "all of what we mean by goals and purposes can be well thought of as maximization of the expected value of the cumulative sum of a received scalar signal." This hypothesis has provided a unifying framework for RL research, enabling the development of powerful algorithms like Q-learning, policy gradients, and actor-critic methods.
 
 However, recent work has begun questioning the universal applicability of the reward hypothesis, particularly in multi-objective scenarios common in robotics applications. The fundamental challenge is that scalar rewards cannot capture the rich semantic relationships between objectives that characterize real-world robotics tasks.
 
-=== Reward Design and Engineering
+=== Avoiding Reward Engineering
+There are multiple subfields of reinforcement learning that focus efforts on avoiding the need for reward engineering.
 
-Traditional approaches to reward design rely on manual engineering of scalar reward functions. This approach has achieved remarkable successes in domains like game playing, where clear scoring mechanisms exist. However, robotics applications present fundamental challenges for manual reward engineering.
-
+==== Large Language Model-Based Reward Engineering
 Recent work by the Eureka system @eureka demonstrates how large language models can assist in reward design, automatically generating reward functions from natural language descriptions. While promising, these approaches still rely on scalar combination of objectives and inherit the fundamental limitations of linear scalarization.
 
-=== Inverse Reinforcement Learning
-
+==== Inverse Reinforcement Learning
 Inverse reinforcement learning provides an alternative approach to reward specification by learning reward functions from expert demonstrations. The foundational work of Ng and Russell @ng2000algorithms established the theoretical foundations for this approach, while Abbeel and Ng @abbeel2004apprenticeship demonstrated practical applications in robotics domains.
 
 IRL addresses some limitations of manual reward engineering by extracting preferences from demonstrated behavior rather than explicit specification. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
+
+==== Behavior Cloning
+Behavior cloning is a simple approach to learning from demonstrations, where the agent learns to imitate the behavior of an expert. This approach is often used in robotics applications, where expert demonstrations are often available.
+
+==== Imitation Learning
+Imitation learning is a subfield of reinforcement learning that focuses on learning from demonstrations. This approach is often used in robotics applications, where expert demonstrations are often available.
+
+
+
 
 == Multi-Objective Optimization Foundations
 
