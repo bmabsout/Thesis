@@ -3,3 +3,5 @@ Don't forget to think about notions of soundness apply in fulfillment logics and
 maybe add fig for taxonomy
 
 evaluate standard assumptions in MORL in terms of the competitive structure 
+
+My main thesis is that when behavior is not as expected, to debug it as the method not capturing hidden user intentions, then extending the algorithms we have today so that we can capture that

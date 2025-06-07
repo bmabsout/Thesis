@@ -1,8 +1,8 @@
 #import "style.typ": accent2_gradient, accent1_gradient, accent3_gradient, accent4_gradient
 // Color definitions for consistent visualization
-#let state_color = accent4_gradient.sample(60%)
-#let action_color = accent2_gradient.sample(60%)
-#let reward_color = accent1_gradient.sample(60%)
+#let state_color = accent1_gradient.sample(55%)
+#let action_color = accent2_gradient.sample(55%)
+#let reward_color = accent3_gradient.sample(55%)
 
 #let state(body) = text(fill: state_color, $#body$)
 #let action(body) = text(fill: action_color, $#body$)

@@ -209,16 +209,16 @@
 
 
 
-#let note(content) = align(center, box(
-  stroke: (paint: primary_gradient.sample(90%),
+#let note(content, gradient: primary_gradient) = align(center, box(
+  stroke: (paint: gradient.sample(90%),
     thickness: 3pt,
     dash: ("dot", 6pt),
     cap: "round",),
   radius: 12pt,
-  fill: primary_gradient.sample(97%),
+  fill: gradient.sample(99.5%),
   inset: 1em,
   align(left, [
-    #set text(fill: primary_gradient.sample(40%))
+    #set text(fill: gradient.sample(10%))
     #content
   ])
 ))

@@ -89,6 +89,8 @@
 
     set heading(numbering: "1.1")
     set math.equation(numbering: "(1)")
+    show math.equation: it => box(it) 
+    set figure(gap: 1.5em)
 
     set ref(supplement: it => {
       if it.func() == heading and it.level == 1 {

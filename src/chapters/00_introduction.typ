@@ -6,7 +6,7 @@ Contemporary robot learning faces significant challenges in bridging the gap bet
 
 == Problem Statement
 
-Robot learning systems must satisfy multiple competing objectives simultaneously: a quadrotor must track trajectories accurately while maintaining stability, conserving energy, and avoiding obstacles; a manipulation system must reach targets quickly while moving smoothly and respecting safety constraints. Traditional reinforcement learning approaches handle such multi-objective scenarios through linear scalarization—combining objectives into weighted sums that obscure individual objective meanings and create brittle, difficult-to-tune systems.
+Robot learning systems must satisfy multiple competing objectives simultaneously: a quadrotor must track trajectories accurately while maintaining stability, conserving energy, and avoiding obstacles. Traditional reinforcement learning approaches handle such multi-objective scenarios through linear scalarization—combining objectives into weighted sums that obscure individual objective meanings and create brittle, difficult-to-tune systems.
 
 This approach leads to two interconnected challenges. First, the *expressivity challenge*: linear combinations cannot capture the semantic relationships between objectives that characterize real robotics tasks. When a practitioner specifies that "safety should never be compromised for speed," this hierarchical relationship cannot be expressed through linear weights. Second, the *deployment challenge*: policies trained on linearly-scalarized objectives often fail catastrophically when transferred to deployment environments, as the brittle numerical relationships learned in training do not generalize across distribution shifts.
 

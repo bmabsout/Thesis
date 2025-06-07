@@ -82,7 +82,18 @@
   content("segment.tick", stp1+v(2pt), anchor: "north")
 })
 
-#let mdp = cetz.canvas({
+#let reward = group(name: "reward", {
+  content((rel: (0.5, 0), to: "transition.east"), $R($, name: "R", anchor: "west")
+  content("R.east", $#st$, name: "st", anchor: "west")
+  content("st.east", $,#h(0.2em)$, name: "comma1", anchor: "west")
+  content("comma1.east", $#at$, name: "at", anchor: "west")
+  content("at.east", $,#h(0.2em)$, name: "comma2", anchor: "west")
+  content("comma2.east", $#stp1$, name: "stp1", anchor: "west")
+  content("stp1.east", $) =$, name: "equals", anchor: "west")
+  content("equals.east", $#rt$, name: "rt", anchor: "west")
+})
+
+#let momdp = cetz.canvas({
     // Main components
     state
     pi_of_st
@@ -90,6 +101,7 @@
     tuple
     transition
     new_state
+    reward
     
     // Policy arrows
     line("state.segment.tick", "pi_of_st.bell.north",
@@ -121,5 +133,21 @@
     line("transition.bell.south", "new_state.segment.tick",
          mark: (end: "triangle"),
          stroke: (thickness: style.stroke, dash: "dashed"))
+
+    bezier(
+      "reward.stp1.south",
+      "new_state.segment.tick",
+      (rel: (-90deg-20deg, 0.7), to: "reward.stp1.south"),
+      (rel: (90deg-20deg, 0.5), to: "new_state.segment.tick"),
+      stroke: (thickness: style.stroke, paint: state_color)
+    )
+
+    bezier(
+      "reward.st.north",
+      "state.segment.tick",
+      (rel: (90deg+20deg, 2), to: "reward.st.north"),
+      (rel: (-90deg-20deg, -1), to: "state.segment.tick"),
+      stroke: (thickness: style.stroke, paint: state_color)
+    )
 })
 
