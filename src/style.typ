@@ -61,6 +61,29 @@
 #let accent2_gradient = gradient.linear(space: oklch, accent-5-start, accent-5-end)
 #let accent3_gradient = gradient.linear(space: oklch, accent-6-start, accent-6-end)
 
+// Accent Gradients
+// #let accent1_gradient = gradient.linear(
+//   oklch(0%, 44%, 89deg),
+//   oklch(100%, 44%, 89deg)
+// )
+// #let accent2_gradient = gradient.linear(
+//   oklch(0%, 36%, 257deg),
+//   oklch(100%, 36%, 257deg)
+// )
+// #let accent3_gradient = gradient.linear(
+//   oklch(0%, 55%, 137deg),
+//   oklch(100%, 55%, 137deg)
+// )
+// #let accent4_gradient = gradient.linear(
+//   oklch(0%, 73%, 43deg),
+//   oklch(100%, 73%, 43deg)
+// )
+// #let accent5_gradient = gradient.linear(
+//   oklch(0%, 74.44695113486235%, 317deg),
+//   oklch(100%, 74.44695113486235%, 317deg)
+// )
+
+
 
 #let long_line = line(
   length: 100%,

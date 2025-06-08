@@ -96,9 +96,14 @@
       if it.func() == heading and it.level == 1 {
         [Chapter]
       } else if it.func() == heading {
-        [Section]
+        if it.level == 4 {
+          [Definition]
+        } else {
+          [Section]
+        }
       }
     })
+
 
     show ref: it => {
       // set text(size: 0.9em)

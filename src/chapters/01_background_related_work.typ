@@ -72,11 +72,14 @@ A policy $pi : #S -> Delta(#A)$ defines the "decision maker", it maps states to 
   )
 ]
 
+==== The Reward Hypothesis <def-rew-hypothesis>
+Established in the foundational RL textbook by @SuttonBarto the hypothesis states: "all of what we mean by goals and purposes can be well thought of as maximization of the expected value of the cumulative sum of a received scalar signal." This hypothesis has provided a unifying framework for RL research, enabling the development of powerful algorithms like Q-learning, policy gradients, and actor-critic methods.
+
 === Value Functions and Q-Functions <def-value-function>
-The main goal in RL is to find policies that maximize the expected return.
+The main goal in RL is to find policies that maximize the expected return. 
 
 ==== Returns <def-return>
-The return is the discounted sum of rewards: $sum_(t=0)^infinity gamma^t reward(R)(#st,#at,#stp1)$. The discount factor $gamma$ determines how much to prioritize immediate versus future rewards.
+The return is the discounted sum of rewards: $sum_(t=0)^infinity reward(gamma)^t reward(R)(#st,#at,#stp1)$. The discount factor $reward(gamma)$ determines how much to prioritize immediate versus future rewards.
 
 
 ==== Value Functions
@@ -90,50 +93,27 @@ $ #V^pi (#state($s_0$)) = expect [ #Q^pi (#state($s_0$), #action($a_0$)) | #acti
 
 Value functions form the basis of deep reinforcement learning @DQN_paper, capturing the specific notion of optimality emerging from the chosen reward function. They are commonly approximated by neural networks.
 
-== Established Work on Policy Selection
-
-=== Rewards
-
-==== The Reward Hypothesis
-Established in the foundational RL textbook by @SuttonBarto the hypothesis states: "all of what we mean by goals and purposes can be well thought of as maximization of the expected value of the cumulative sum of a received scalar signal." This hypothesis has provided a unifying framework for RL research, enabling the development of powerful algorithms like Q-learning, policy gradients, and actor-critic methods.
-
-However, a large body of work questions the universal applicability of the reward hypothesis, particularly in multi-objective scenarios further explored in @def-morl common in robotics applications. The fundamental challenge is that scalar rewards cannot capture the rich semantic relationships between objectives that are intended in characterizing complex real-world robotics tasks.
-
-=== Avoiding Reward Engineering
-There are multiple subfields of reinforcement learning that focus efforts on avoiding the need for designing reward functions.
-
-==== Large Language Model-Based Reward Engineering
-Recent work such as the work of @eureka demonstrates how large language models can automate reward design. Eureka generates reward functions from natural language descriptions, employing a vision model for evaluating the adherence of the final policy to the original intentions representing in the textual description. While promising, such approaches still rely on standard reward engineering methodology inheriting their fundamental limitations.
-
-==== Imitation Learning
-Imitation learning provides an alternative to manual reward engineering by learning policies directly from expert demonstrations. Rather than designing reward functions, practitioners can leverage demonstrated expert behavior as the specification of desired behavior. This approach encompasses behavior cloning and inverse reinforcement learning, offering different strategies for avoiding manual reward specification.
-
-==== Behavior Cloning
-Behavior cloning completely avoids reward engineering by treating policy learning as supervised learning, directly mapping observed states to expert actions without any reward signal. While this represents the most direct form of reward avoidance, it suffers from distribution shift problems when the learned policy encounters states not present in the demonstration data.
-
-==== Inverse Reinforcement Learning
-Inverse reinforcement learning avoids manual reward engineering by automatically inferring reward functions from expert demonstrations rather than requiring explicit design. The work of @ng2000algorithms established the theoretical foundations, while @abbeel2004apprenticeship demonstrated practical applications. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
-
 
 == Multi-Objective Reinforcement Learning <def-morl>
 
-Multi-objective reinforcement learning extends the standard MDP framework defined in @def-mdp to handle multiple reward signals simultaneously. Instead of a single scalar reward function #R, MORL considers a vector of reward functions $bold(arrow(R)) = (R_1, R_2, ..., R_n)$ where each $R_i : #S times #A times #S -> RR$ represents a distinct objective @survey_seq_dec_morl @practical_guide.
+Multi-objective reinforcement learning extends the standard MDP framework defined in @def-mdp to handle multiple reward signals simultaneously. Instead of a single scalar reward function, MORL considers a vector reward function $reward(bold(arrow(R))) : #S times #A times #S -> RR^n$ composed of $n$ reward functions $(reward(R_1), reward(R_2), ..., reward(R_n))$ where each $reward(R_i) : #S times #A times #S -> RR$ represents a distinct objective @survey_seq_dec_morl @practical_guide.
 
-This extension fundamentally changes the optimization problem. Rather than maximizing a single expected return, the agent must now consider multiple expected returns:
+This extension fundamentally challenges the reward hypothesis in @def-rew-hypothesis, changing the optimization problem. Rather than maximizing a single expected return, the agent must now consider a vector of  expected returns, making the value function a vector-value function:
 
-$ bold(arrow(V))^pi(s) = (V_1^pi(s), V_2^pi(s), ..., V_n^pi(s)) quad "where" quad V_i^pi(s) = expect [ sum_(k=0)^infinity gamma^k R_i(s_(t+k), a_(t+k), s_(t+k+1)) ] $
+$ reward(bold(arrow(V)))^pi(s) = (reward(V_1)^pi(s), reward(V_2)^pi(s), ..., reward(V_n)^pi(s))
+space "where" space
+reward(V_i)^pi(s) = expect [ sum_(k=0)^infinity reward(gamma)^k reward(R_i) (s_(t+k), a_(t+k), s_(t+k+1)) ] $
 
-The challenge becomes balancing competing objectives @SAKAWA199819, as policies that excel at one objective may perform poorly on others. This field provides the most direct foundation for our work, though existing approaches face significant limitations that motivate our fulfillment-centric alternative. Put more formally, rather than a total ordering given by a single objective function, the multiplicity of objectives induces a partial ordering which is consolidated using a utility function.
+The challenge becomes balancing competing objectives @SAKAWA199819, as policies that excel at one objective may perform poorly on others. This field provides the most direct foundation for our work, though the existing formulations face significant limitations that motivate our fulfillment-centric alternative. Put more formally, rather than a total ordering given by a single objective function, the multiplicity of objectives induces a partial ordering which is consolidated using a utility function.
 
 
 === Utility Functions
-A utility function $U: RR^n -> RR$ is defined as a function that maps multi-objective returns to scalar values.
+A utility function $U: RR^n -> RR$ is defined as a function that maps multi-objective returns to scalar values, thereby flattenting the partial ordering introduced by having vector value functions.
 
-Linear scalarization, the most prevalent method, combines objectives as weighted sums: $U(bold(arrow(G))) = sum_(i=1)^n w_i G_i$ where $w_i >= 0$ and $sum_i w_i = 1$. This approach learns value functions for the scalarized objective:
+==== Linear Utility
+The most prevalent utility function in MORL based methods is the linear utility function, which combines objectives as weighted sums: $U(bold(arrow(G))) = sum_(i=1)^n w_i G_i$. Using this approach, we can define flattened Q-value functions as follows:
 
 $ Q^pi (s,a) = expect [ sum_(i=1)^n w_i sum_(t=0)^infinity gamma^t R_i(s_t, a_t, s_(t+1)) | s_0 = s, a_0 = a ] $
-
-#strong[While simple to implement, this linear combination inherently restricts practitioners from specifying nuanced ways for objectives to mix. It imposes a fixed "AND-like" aggregation where all objectives are traded off linearly, struggling to represent non-additive interactions, priorities, or conditional logic, and thus frequently loses crucial semantic meaning from the original multi-objective problem.]
 
 The brittleness of linear scalarization becomes particularly problematic in RL settings, where small changes in weights can lead to dramatically different learned behaviors due to the sequential nature of decision-making and the compounding effects of policy changes.
 
@@ -141,9 +121,9 @@ The brittleness of linear scalarization becomes particularly problematic in RL s
 
 === Pareto Optimality in Policy Space
 
-MORL adapts the foundational concept of Pareto optimality to policy space. A policy $pi^*$ is Pareto optimal if no other policy $pi'$ exists such that $V_i^{pi'}(s) >= V_i^{pi^*}(s)$ for all objectives $i$ and states $s$, with strict inequality for at least one objective-state pair. The Pareto frontier represents the set of all Pareto optimal policies, providing a complete characterization of optimal trade-offs in policy space.
+MORL adapts the foundational concept of Pareto optimality to policy space. A policy $pi^*$ is Pareto optimal if no other policy $pi'$ exists such that $reward(V_i)^{pi'}(s) >= reward(V_i)^{pi^*}(s)$ for all objectives $i$ and states $s$, with strict inequality for at least one objective-state pair. The Pareto frontier represents the set of all Pareto optimal policies, providing a complete characterization of optimal trade-offs in policy space.
 
-This differs from traditional multi-objective optimization where Pareto optimality applies to solution vectors. In MORL, we must consider Pareto optimality over entire value functions $bold(arrow(V))^pi = (V_1^pi, V_2^pi, ..., V_n^pi)$, making the problem significantly more complex than traditional multi-objective optimization.
+This differs from traditional multi-objective optimization where Pareto optimality applies to solution vectors. In MORL, we must consider Pareto optimality over entire value functions $reward(bold(arrow(V)))^pi = (reward(V_1)^pi, reward(V_2)^pi, ..., reward(V_n)^pi)$, making the problem significantly more complex than traditional multi-objective optimization.
 
 
 === Pareto-Based MORL
@@ -187,6 +167,22 @@ Traditional MORL approaches face several fundamental limitations that have hinde
 *Limited Logical Expressivity*: Traditional MORL approaches cannot directly express the logical relationships ("safety AND performance", "efficiency OR speed") that naturally characterize robotics objectives.
 
 *Computational Scalability*: Methods that maintain explicit Pareto frontiers face exponential growth in computational requirements as the number of objectives increases.
+
+
+== Avoiding Reward Engineering
+There are multiple subfields of reinforcement learning that focus efforts on avoiding the need for designing reward functions.
+
+==== Large Language Model-Based Reward Engineering
+Recent work such as the work of @eureka demonstrates how large language models can automate reward design. Eureka generates reward functions from natural language descriptions, employing a vision model for evaluating the adherence of the final policy to the original intentions representing in the textual description. While promising, such approaches still rely on standard reward engineering methodology inheriting their fundamental limitations.
+
+==== Imitation Learning
+Imitation learning provides an alternative to manual reward engineering by learning policies directly from expert demonstrations. Rather than designing reward functions, practitioners can leverage demonstrated expert behavior as the specification of desired behavior. This approach encompasses behavior cloning and inverse reinforcement learning, offering different strategies for avoiding manual reward specification.
+
+==== Behavior Cloning
+Behavior cloning completely avoids reward engineering by treating policy learning as supervised learning, directly mapping observed states to expert actions without any reward signal. While this represents the most direct form of reward avoidance, it suffers from distribution shift problems when the learned policy encounters states not present in the demonstration data.
+
+==== Inverse Reinforcement Learning
+Inverse reinforcement learning avoids manual reward engineering by automatically inferring reward functions from expert demonstrations rather than requiring explicit design. The work of @ng2000algorithms established the theoretical foundations, while @abbeel2004apprenticeship demonstrated practical applications. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
 
 == Continuous Logic and Fuzzy Systems
 
