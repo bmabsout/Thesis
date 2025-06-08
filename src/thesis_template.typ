@@ -60,7 +60,7 @@
       ..style.body.text,
       hyphenate: false,
     )
-    set par(justify: true, leading: style.paragraph.leading, spacing: 3em)
+    set par(..style.par)
 
     show heading: it => {
       set text(size: style.heading.text.size)
@@ -74,7 +74,7 @@
         #colbreak(weak: true)
         #if it.numbering != none [Chapter #counter(heading).display()\ ]
         #it.body
-        #long_line
+        #place(long_line, dy: -style.heading.levels.at(0).spacing.below/2)
       ] else {
         it
       }
@@ -83,12 +83,39 @@
   
 
     show heading.where(level: 4): it => {
-      box(inset: (right: 0.1em, bottom: 0em))[#text(weight: "bold", it)]
-      box(inset: (right: 0em, bottom: 0em))[#text(weight: "bold", ":")]
+      parbreak()
+      text(weight: "bold")[#box(it):#h(0.5em)]
     }
 
     set heading(numbering: "1.1")
     set math.equation(numbering: "(1)")
+    show math.equation: it => box(it) 
+    set figure(gap: 1.5em)
+
+    set ref(supplement: it => {
+      if it.func() == heading and it.level == 1 {
+        [Chapter]
+      } else if it.func() == heading {
+        if it.level == 4 {
+          [Definition]
+        } else {
+          [Section]
+        }
+      }
+    })
+
+
+    show ref: it => {
+      // set text(size: 0.9em)
+      show text: it => smallcaps(lower(it))
+      if it.element != none and it.element.func() == heading {
+        set text(fill: heading_style(style, level: it.element.level - 1).fill)
+        it
+      } else {
+        set text(fill: style.colors.ref.sample(60%))
+        it
+      }
+    } 
 
     let build_pages = (pages) => {
       for page in pages.filter(page => page != none and page != []).intersperse(pagebreak()) {
@@ -226,8 +253,8 @@
       ]
     ]
     v(1em)
-    align(center)[ // Continue with centered ABSTRACT heading
-      #heading(numbering: none, level: 2, outlined: false)[ABSTRACT] // Restored original line
+    align(center)[
+      #heading(numbering: none, level: 2, outlined: false)[ABSTRACT]
     ]
     abstract_body_content
   }
@@ -269,7 +296,6 @@
     if vita_content != none {
       block({
         heading(level: 1, numbering: none)[#title]
-        set par(justify: true, leading: style.paragraph.leading)
         vita_content
       })
     } else {[]}

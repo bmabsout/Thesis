@@ -85,16 +85,26 @@ Standard RL reward engineering (scalar rewards, linear scalarization for multi-o
 
 #heading(level: 4)[Claim 2: Limitations of Existing MORL Approaches]
 #label("claims:bg:limitations_morl")
-Beyond linear scalarization, other MORL methods also have significant drawbacks for practical robotics:
-- *Pareto-based methods (e.g., NSGA-II):* Computationally expensive (multiple policies), difficult to select a single policy for deployment, may not find desired trade-offs.
-- *Constraint-based methods (CMDPs):* Can be brittle if constraints are not perfectly defined, often struggle with soft preferences.
-- *Lexicographic/Hierarchical methods:* Can be rigid, require strict ordering that may not always be appropriate.
+Existing Multi-Objective Reinforcement Learning (MORL) methods, including but not limited to linear scalarization, exhibit significant drawbacks for practical robotics and the faithful representation of complex intent:
+
+- *Linear Scalarization's Expressive Failure:* Prevalent linear scalarization fundamentally fails to allow practitioners to specify how objectives should mix. It implicitly attempts a simplistic "AND-like" combination, losing semantic meaning and often failing in practice, especially with non-linear or competitive objective relationships.
+
+- *A Posteriori Selection with Pareto Fronts:* Focus on generating Pareto optimal sets defers critical intent specification, is often computationally expensive, and misaligned with achieving pre-defined goals directly.
+
+- *Limited Real-World Adoption & Utility:* MORL techniques see scarce adoption in complex robotics, with research often confined to simplified problems, indicating a significant practical deployment gap.
+
+- *Other Methodological Limitations:*
+  - *Constraint-based methods (CMDPs):* Can be brittle if constraints are not perfectly defined, often struggle with soft preferences or nuanced trade-offs.
+  - *Lexicographic/Hierarchical methods:* Can be rigid, requiring strict orderings that may not always be appropriate for dynamic situations or intertwined goals.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
     *Support:*
-    - Brief explanations of each MORL category and their typical drawbacks, supported by citations to comprehensive surveys (e.g., @survey_seq_dec_morl in @chap:background_related_work) and specific algorithmic critiques (e.g., @pareto_q_learning for Pareto Q-Learning, @Wingate_Temporal_MORL for temporal logic approaches, all discussed in @chap:background_related_work).
+    - Detailed critique of linear scalarization's semantic loss (see also Claim 1 justification and @chap:background_related_work).
+    - Analysis of Pareto-based MORL challenges (computational cost, selection difficulty, misalignment with upfront intent representation) as discussed in @chap:background_related_work.
+    - Evidence of limited MORL adoption in complex robotics and the practical deployment gap cited in @chap:background_related_work (e.g., @survey_seq_dec_morl).
+    - Brief explanations of drawbacks in other MORL categories (CMDPs, Lexicographic) supported by @chap:background_related_work, referencing surveys (e.g., @survey_seq_dec_morl) and specific critiques (e.g., @pareto_q_learning, @Wingate_Temporal_MORL).
 
-    *Justification:* The critiques of these MORL sub-fields are generally accepted within the MORL community, justifying the claim that no existing MORL paradigm fully solves the expressivity and deployment problem for complex robotics.
+    *Justification:* The critiques of these MORL paradigms and their limited practical impact are well-documented in the literature and comprehensively reviewed in @chap:background_related_work. This justifies the claim that no existing MORL approach fully solves the expressivity, interpretability, and deployment problem for complex robotics, necessitating a new perspective focused on upfront intent fulfillment.
   ]
 
 #heading(level: 4)[Claim 3: Issues with Sim-to-Real Transfer & Domain Adaptation]

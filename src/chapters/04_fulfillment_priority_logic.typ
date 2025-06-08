@@ -550,7 +550,6 @@ $ phi = "safety" and_(-infinity) (["efficiency"]_(-0.3) or_1 "tracking") $
 This expresses: "Safety is required, and either maintain minimum efficiency or optimize tracking."
 
 ==== Expanded Example: Adaptive Drone Delivery
-
 Consider a drone delivery system that must adapt its behavior based on battery level. We want to express: "Always maintain safety, but when battery is low, prioritize efficiency over speed; when battery is high, prioritize speed over efficiency."
 
 *Step 1: Define Base Fulfillment Reward Functions*
@@ -723,7 +722,6 @@ Mathematical continuous logic extends first-order logic to continuous structures
 Real-world robotics applications often involve stochastic dynamics and noisy observations, requiring analysis of FPL's robustness under uncertainty.
 
 ==== Stochastic Fulfillment Functions
-
 Consider fulfillment functions with bounded noise:
 $ tilde(f)_i(s,a,s') = f_i(s,a,s') + epsilon_i $
 
@@ -740,7 +738,6 @@ where $K(p,n) = n^(1/p - 1)$ is the noise amplification factor.
 *Proof Sketch*: The power mean's Hölder continuity ensures bounded sensitivity to input perturbations, with more negative $p$ values (for conjunctions) providing better worst-case robustness at the cost of increased average-case sensitivity.
 
 ==== Minimum Fulfillment Bounds Under Uncertainty
-
 The minimum fulfillment bounds remain valid in expectation:
 
 #todo("Validate this theorem with rigorous proof and empirical testing - theoretical work needed")
@@ -752,7 +749,6 @@ $ Pr[min_i tilde(f)_i >= root(p, n((y - epsilon_"max")^p - 1) + 1)] >= 1 - delta
 where $delta$ depends on the noise distribution and can be bounded using concentration inequalities.
 
 ==== Practical Implications
-
 For practitioners, this analysis provides concrete guidelines:
 
 1. *Parameter Selection Under Uncertainty*: For conjunctive compositions ($and_p$), more negative $p$ values provide stronger robustness guarantees but may reduce average performance. For disjunctive compositions ($or_p$), parameters closer to $p=0$ (geometric mean) might be more stable under noise than very negative $p$.
@@ -896,7 +892,6 @@ Multi-fulfillment optimization represents a fundamental advancement in multi-obj
 Traditional multi-objective RL approaches can be categorized into several paradigms, each with distinct limitations that fulfillment-centric learning addresses:
 
 ==== Scalarization-Based Approaches
-
 *Linear Scalarization*: The most common approach combines objectives through weighted sums:
 $ R_"total" = sum_(i=1)^n w_i R_i $
 
@@ -909,7 +904,6 @@ $ R_"total" = sum_(i=1)^n w_i R_i $
 *FPL Advancement*: Generalized means provide access to the entire Pareto frontier while preserving semantic meaning through continuous logic operators.
 
 ==== Pareto-Based Approaches
-
 *Multi-Objective Evolutionary Methods*: Maintain populations of solutions representing different trade-offs on the Pareto frontier.
 
 *Limitations*:
@@ -921,7 +915,6 @@ $ R_"total" = sum_(i=1)^n w_i R_i $
 *FPL Advancement*: Direct specification of desired trade-offs through logical composition, producing single policies that embody practitioner intent.
 
 ==== Constraint-Based Methods
-
 *Constrained MDPs*: Treat secondary objectives as constraints to be satisfied while optimizing primary objective.
 
 *Limitations*:
@@ -937,7 +930,6 @@ $ R_"total" = sum_(i=1)^n w_i R_i $
 FPL makes several fundamental theoretical contributions to multi-objective RL:
 
 ==== Semantic Preservation in Multi-Objective Learning
-
 *Problem*: Traditional MORL approaches suffer from semantic loss where individual objective meanings are obscured during learning.
 
 *Solution*: FPL maintains individual fulfillment values $f_i in [0,1]$ throughout learning, enabling direct monitoring of objective satisfaction.
@@ -945,7 +937,6 @@ FPL makes several fundamental theoretical contributions to multi-objective RL:
 *Theoretical Guarantee*: For any FPL composition $phi$, improving individual fulfillment $f_i$ monotonically improves overall composition $u(phi)$.
 
 ==== Continuous Logic for Multi-Objective Composition
-
 *Problem*: Existing MORL lacks principled methods for expressing complex objective relationships.
 
 *Solution*: Generalized means provide continuous extensions of logical operators:
@@ -956,7 +947,6 @@ FPL makes several fundamental theoretical contributions to multi-objective RL:
 *Theoretical Foundation*: Power means are the unique family of functions satisfying idempotence, monotonicity, and continuity while providing logical semantics.
 
 ==== Temporal Multi-Objective Reasoning
-
 *Problem*: Traditional MORL applies composition to immediate rewards, losing temporal trade-off information.
 
 *Innovation*: FQ-value composition applies logical operators to expected future fulfillment:
@@ -969,7 +959,6 @@ $ "FQ"_"composed"(s,a) = u(phi("FQ"_1(s,a), ..., "FQ"_n(s,a))) $
 Our comprehensive evaluation demonstrates significant advances over existing MORL approaches:
 
 ==== Sample Efficiency Improvements
-
 *Baseline Comparison*: We compared FPL against established MORL methods:
 - Linear scalarization with optimal weights
 - NSGA-II adapted for RL
@@ -979,7 +968,6 @@ Our comprehensive evaluation demonstrates significant advances over existing MOR
 *Results*: FPL achieves up to 84% faster convergence and 82% reduction in training steps across tested domains, with particularly strong performance in safety-critical scenarios where constraint satisfaction is essential.
 
 ==== Multi-Objective Performance Metrics
-
 *Hypervolume Indicator*: FPL policies achieve 40-60% higher hypervolume compared to Pareto-based methods, indicating better coverage of the objective space.
 
 *Individual Objective Satisfaction*: Unlike traditional approaches that may sacrifice individual objectives for overall performance, FPL maintains minimum satisfaction guarantees for all objectives.
@@ -991,19 +979,16 @@ Our comprehensive evaluation demonstrates significant advances over existing MOR
 FPL addresses key barriers to practical MORL deployment:
 
 ==== Specification Complexity
-
 *Traditional Challenge*: MORL requires extensive hyperparameter tuning (weights, constraint thresholds, population parameters).
 
 *FPL Solution*: Intuitive logical specification with robust performance across parameter ranges.
 
 ==== Interpretability
-
 *Traditional Challenge*: MORL policies are difficult to interpret and debug.
 
 *FPL Solution*: Direct monitoring of individual fulfillment values enables real-time understanding of multi-objective behavior.
 
 ==== Transfer Learning
-
 *Traditional Challenge*: MORL policies trained in one domain often fail to transfer multi-objective behaviors to new domains.
 
 *FPL Solution*: Semantic preservation enables robust transfer of multi-objective intent across domains.
@@ -1013,19 +998,16 @@ FPL addresses key barriers to practical MORL deployment:
 FPL opens several promising research directions for the MORL community:
 
 ==== Automated Multi-Objective Specification
-
 *Challenge*: Learning FPL formulas from demonstrations or preferences
 *Approach*: Inverse reinforcement learning extended to logical composition structures
 *Impact*: Democratize multi-objective RL for non-expert practitioners
 
 ==== Dynamic Multi-Objective Adaptation
-
 *Challenge*: Adapting objective relationships during learning based on performance
 *Approach*: Meta-learning over FPL parameter spaces
 *Impact*: Self-tuning multi-objective systems
 
 ==== Hierarchical Multi-Objective Decomposition
-
 *Challenge*: Automatic decomposition of complex objectives into FPL-expressible components
 *Approach*: Hierarchical reinforcement learning with fulfillment-based abstractions
 *Impact*: Scale to complex real-world multi-objective problems

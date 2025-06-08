@@ -127,7 +127,6 @@ To enable real-world validation, we developed SwaNNFlight, an open-source firmwa
 SwaNNFlight evolved from the Neuroflight framework, extending the open-source Betaflight flight-control firmware stack to allow neural network models to be embedded and updated in real-time. The key innovation is enabling modifications to neural network controllers without interrupting the control loop, supporting both weight updates and complete architecture changes.
 
 ==== Embedded Controller Architecture
-
 The core innovation of SwaNNFlight is its embedded controller design that enables autonomous operation independent of ground station connectivity:
 
 *Autonomous Neural Network Inference*: The flight controller runs neural network inference locally using TensorFlow Lite optimized for ARM Cortex-M processors (specifically MATEK-F722 controllers). This ensures that control decisions are made with minimal latency (< 1ms) regardless of communication status. The system supports networks with two hidden layers of 32 neurons each, optimized for real-time performance.
@@ -171,7 +170,6 @@ The core innovation of SwaNNFlight is its embedded controller design that enable
 For current deployments, we recommend working closely with regulatory bodies and potentially operating under experimental certificates that allow controlled testing of adaptive capabilities while gathering data to support future certification standards.
 
 ==== Ground Station Communication Architecture
-
 The ground station serves as the adaptation and learning hub while the embedded controller maintains autonomous operation:
 
 *Wireless Communication Protocol*: Communication is handled by Digi XBee ZigBee-PRO radio-frequency modules. The drone communicates observation data to an XBee through a UART port, while the ground station uses an XBee to send updated network graphs back to the drone. This represents the only hardware addition, with negligible impact on weight and power consumption.
@@ -191,7 +189,6 @@ The ground station serves as the adaptation and learning hub while the embedded 
 - *Performance Buffer*: The system maintains a 300ms buffer of recent control outputs to detect instabilities
 
 ==== Connection Loss Handling
-
 A critical feature of SwaNNFlight is its robust handling of communication interruptions, which are common in real-world deployment scenarios. The system is designed to maintain full flight capability even during extended communication outages:
 
 *Autonomous Operation During Disconnection*: The embedded controller continues normal operation using the most recent neural network model when ground station communication is lost. This ensures uninterrupted flight capability for the duration of the mission, as the neural network inference runs entirely on-board.
@@ -205,7 +202,6 @@ A critical feature of SwaNNFlight is its robust handling of communication interr
 *Connection Quality Assessment*: The system continuously monitors communication quality and proactively buffers critical updates when connection degradation is detected, ensuring smooth operation across varying signal conditions.
 
 ==== Safety and Reliability Features
-
 *Atomic Model Updates with Rollback*: Neural network models are updated atomically to prevent partial updates that could cause control instability. The system maintains both current and previous models, enabling instant rollback if issues are detected. The 134ms switching time ensures minimal disruption to control performance.
 
 *Model Validation and Integrity Checks*: New models undergo validation testing using recent flight data before deployment, ensuring that updates improve rather than degrade performance. All model updates include cryptographic signatures and checksums verified through the CRC protocol.
@@ -215,7 +211,6 @@ A critical feature of SwaNNFlight is its robust handling of communication interr
 *Redundant Safety Systems*: Beyond communication redundancy, the system maintains multiple fallback options including classical PID controllers, emergency landing protocols, and hardware-level safety switches that can override neural network control if necessary.
 
 ==== Implementation Details
-
 *Hardware Requirements*: SwaNNFlight runs on standard flight controller hardware (STM32F4/F7 series, specifically tested on MATEK-F722 controllers) with minimal additional memory requirements (< 512KB for typical neural networks). The only hardware addition is the XBee ZigBee-PRO module for wireless communication.
 
 *Real-Time Performance*: The system maintains real-time control loop performance (1kHz) while running neural network inference, data collection, and communication tasks concurrently. Neural network inference latency is kept below 1ms to ensure responsive control.
