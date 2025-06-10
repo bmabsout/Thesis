@@ -215,11 +215,6 @@ Recent work introduces conservative policy optimization methods that prevent cat
 
 The challenge of learning multiple tasks while avoiding catastrophic forgetting has driven research in continual learning methods @catastrophic-forgetting-binici @catastrophic-forgetting-wolczyk. In multi-objective contexts, catastrophic forgetting can be particularly severe when objectives conflict, motivating our multi-fulfillment adaptation approach that preserves objective-specific information during adaptation.
 
-== Control-Theoretic Approaches
-
-Classical control theory provides essential foundations for robot learning, particularly for safety-critical applications and stability guarantees. This work informs our integration of control-theoretic principles with learning-based methods.
-while highlighting challenges in real-world deployment.
-
 == Research Gaps and Motivation
 
 The literature review reveals several important gaps that motivate our fulfillment-centric approach:

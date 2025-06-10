@@ -90,7 +90,7 @@
   stroke: (
     paint: primary_gradient.sample(90%),
     thickness: 3pt,
-    dash: ("dot", 6pt),
+    dash: ("dot", 6.1pt),
     cap: "round",
   )
 )
@@ -262,3 +262,8 @@
 //   locate(loc => ())
 //   text(red, [TODO: #message])
 // }
+// 
+// 
+#let local_outline(style: default_style()) = context {
+  outline(target: selector(heading.where(level: 2).or(heading.where(level: 3))).after(here()).before(heading.where(level: 1).after(here())), title: none)
+}

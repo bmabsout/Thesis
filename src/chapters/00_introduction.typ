@@ -47,22 +47,22 @@ Beyond specification, we also show that intentionality extends to architectural 
 
 This thesis makes the following primary contributions to robot learning:
 
-=== 1. Unified Framework Analysis
+=== Unified Framework Analysis
 We provide the first systematic analysis demonstrating that expressivity and deployment challenges stem from similar underlying issues in multi-objective constraint satisfaction. This insight simplifies the conceptual landscape and enables integrated solution approaches, as detailed in @chap:problem_formulation.
 
-=== 2. Objective Taxonomy and Treatment Framework
+=== Objective Taxonomy and Treatment Framework
 We introduce a comprehensive taxonomy of objectives in robot learning—general objectives, behavioral objectives, and universal behavioral objectives—with appropriate treatment mechanisms for each category. This taxonomy clarifies when to use explicit composition versus architectural integration, detailed in @chap:foundations.
 
-=== 3. Fulfillment Priority Logic (FPL)
+=== Fulfillment Priority Logic (FPL)
 We develop Fulfillment Priority Logic, a formal specification language that enables practitioners to express complex objective relationships through continuous logic while preserving semantic meaning throughout the optimization process, detailed in @chap:fpl.
 
-=== 4. Architectural Integration Framework
+=== Architectural Integration Framework
 We present Conditioning for Action Policy Smoothness (CAPS), demonstrating how universal behavioral objectives can be integrated directly into policy architectures rather than through reward engineering, achieving superior performance with simplified specification, as detailed in @chap:ubo.
 
-=== 5. Robust Deployment Framework
+=== Robust Deployment Framework
 We introduce Anchor Critics, a multi-fulfillment adaptation framework that preserves semantic anchoring during sim-to-real transfer, enabling robust real-world deployment while maintaining interpretability, detailed in @chap:adaptation_anchors.
 
-=== 6. Real-World Validation
+=== Real-World Validation
 We provide comprehensive empirical validation including the first reinforcement learning system to outperform classical PID controllers in real quadrotor deployment, achieving 50-80% power reductions and demonstrating practical viability, empirically demonstrated across chapters detailing FPL (@chap:fpl), CAPS (@chap:ubo), and Anchor Critics (@chap:adaptation_anchors).
 
 == Empirical Results

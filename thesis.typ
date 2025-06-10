@@ -71,7 +71,7 @@
   [#include "src/chapters/abstract.typ"] // Abstract body content
 )
 
-#let table_of_contents = (template.make_table_of_contents)(title: "Contents", depth: 3)
+#let table_of_contents = (template.make_table_of_contents)(title: "Contents", depth: 2)
 // Optional: Generate List of Figures/Tables if you have them
 // #let list_of_figures = make_list_of_figures(title: "List of Figures")
 // #let list_of_tables = make_list_of_tables(title: "List of Tables")
@@ -80,7 +80,7 @@
   // Part I: Introduction and Foundations
   #include "src/chapters/00_introduction.typ"
   #include "src/chapters/01_background_related_work.typ" 
-  #include "src/chapters/02_problem_formulation.typ"
+  #include "src/chapters/02_intent_to_reality.typ"
   
   // Part II: Theoretical Framework
   #include "src/chapters/03_foundations_fulfillment.typ"
@@ -92,6 +92,7 @@
   
   // Part IV: Validation and Synthesis
   #include "src/chapters/07_fulfillment_lyapunov_control.typ"
+  #include "src/chapters/07_architecture.typ"
   #include "src/chapters/08_synthesis_future.typ"
 
   // Include the Claims.typ document
@@ -138,4 +139,5 @@
   // appendices: appendices, // Optional
   bibliography: bibliography_content,
   vita: vita,
+  local_outlines: false,
 )

@@ -1,4 +1,4 @@
-#import "style.typ": default_style, heading_style, long_line
+#import "style.typ": default_style, heading_style, long_line, local_outline
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -45,6 +45,7 @@
     appendices: none, // Optional
     bibliography: none,
     vita: none,
+    local_outlines: true,
   ) = {
 
     // --- Document Setup ---
@@ -70,18 +71,23 @@
 
       let spacing = style_props.at("spacing", default: (above: 0em, below: 0em))
       v(spacing.above, weak: true)
-      if it.level == 1 [
-        #colbreak(weak: true)
-        #if it.numbering != none [Chapter #counter(heading).display()\ ]
-        #it.body
-        #place(long_line, dy: -style.heading.levels.at(0).spacing.below/2)
-      ] else {
+      if it.level == 1 {
+        colbreak(weak: true)
+        if it.numbering != none [Chapter #counter(heading).display()\ ]
+        it.body
+        place(long_line, dy: -style.heading.levels.at(0).spacing.below/2)
+        if local_outlines {
+          local_outline(style: style)
+          v(-0.2em)
+          long_line
+          v(-1em)
+        }
+      } else {
         it
       }
       v(spacing.below, weak: true)
     }
   
-
     show heading.where(level: 4): it => {
       parbreak()
       text(weight: "bold")[#box(it):#h(0.5em)]
@@ -115,7 +121,25 @@
         set text(fill: style.colors.ref.sample(60%))
         it
       }
-    } 
+    }
+
+    show outline: it => {
+      set text(size: style.heading.text.size)
+      // long_line
+      it
+      // long_line
+      // // v(12pt)
+      // block(
+      // it, breakable: true)
+      // // v(5pt)
+      // long_line
+    }
+
+    show outline.entry: it => {
+      set text(..heading_style(style, level: it.level - 1), size: 1em)
+      box(it)
+    }
+
 
     let build_pages = (pages) => {
       for page in pages.filter(page => page != none and page != []).intersperse(pagebreak()) {
@@ -261,12 +285,11 @@
 
   let make_table_of_contents(title: "Contents", depth: 2) = {
     heading(level: 2, numbering: none, outlined: false, title)
-    show outline.entry: it => {
-      set text(..heading_style(style, level: it.level - 1), size: 1em)
-      it
-    }
+    long_line
     outline(title: none, indent: 3em, depth: depth)
+    long_line
   }
+
 
   let make_list_of_figures(title: "List of Figures") = {
     heading(level: 2, numbering: none, outlined: false, title)
