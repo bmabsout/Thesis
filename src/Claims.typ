@@ -36,7 +36,7 @@ The thesis proposes "fulfillment-centric learning" as a new paradigm to address 
     - Introduction of the core concepts at a high level: "fulfillment," "Fulfillment Priority Logic (FPL)," "Universal Behavioral Objectives (UBOs)," "Conditioning for Action Policy Smoothness (CAPS)," "Anchor Critics" (as introduced in @chap:introduction in main thesis).
     - Statement that these components work together to enable more direct expression of intent and more robust deployment.
 
-    *Justification:* This is the central claim of the thesis. The introduction (see @chap:introduction in main thesis) serves to state this proposed solution. The justification and detailed support for why this solution is effective are the focus of the subsequent chapters (e.g., @chap:foundations, @chap:fpl, @chap:ubos_caps, @chap:adaptation_anchors in main thesis).
+    *Justification:* This is the central claim of the thesis. The introduction (see @chap:introduction in main thesis) serves to state this proposed solution. The justification and detailed support for why this solution is effective are the focus of the subsequent chapters (e.g., @chap:foundations, @chap:fpl, @chap:ubo, @chap:adaptation_anchors in main thesis).
   ]
 
 #heading(level: 4)[Claim 3: Thesis Contributions]
@@ -44,7 +44,7 @@ The thesis proposes "fulfillment-centric learning" as a new paradigm to address 
 The thesis will offer contributions in mathematical foundations, algorithmic development, empirical validation, and practical implementation to establish fulfillment-centric learning.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* A brief outline of the thesis structure (see @chap:introduction in main thesis), indicating which chapters will cover these different types of contributions (e.g., foundations in @chap:foundations, FPL in @chap:fpl, UBOs/CAPS in @chap:ubos_caps, Adaptation/Anchors in @chap:adaptation_anchors, all referring to main thesis chapters).
+    *Support:* A brief outline of the thesis structure (see @chap:introduction in main thesis), indicating which chapters will cover these different types of contributions (e.g., foundations in @chap:foundations, FPL in @chap:fpl, UBOs/CAPS in @chap:ubo, Adaptation/Anchors in @chap:adaptation_anchors, all referring to main thesis chapters).
 
     *Justification:* This claim is justified by the subsequent chapters which detail these contributions. The introduction appropriately sets the stage for these.
   ]
@@ -188,11 +188,11 @@ These sub-gaps are interconnected and can compound each other, making the overal
 #label("claims:prob_form:fulfillment_addresses_gaps")
 The fulfillment-centric approach, particularly FPL and related architectural/adaptation strategies, is designed to systematically address each of these sub-gaps (as outlined in @chap:problem_formulation of the main thesis and detailed in subsequent chapters):
 - *Semantic Gap:* FPL aims to reduce this by providing a more expressive language for specifications (@chap:fpl).
-- *Intent-to-Behavior Gap:* FQ-values, algorithms like BPG (@chap:fpl), and architectural handling of UBOs (@chap:ubos_caps) are designed for more effective and aligned learning.
+- *Intent-to-Behavior Gap:* FQ-values, algorithms like BPG (@chap:fpl), and architectural handling of UBOs (@chap:ubo) are designed for more effective and aligned learning.
 - *Sim-to-Real Gap & Distributional Sim-to-Real Gap:* Adaptation strategies like Anchor Critics (@chap:adaptation_anchors) and robust architectural choices aim to improve generalization and robustness to real-world conditions and distributional shifts.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* For each sub-gap, @chap:problem_formulation briefly states how the proposed methods (detailed in later chapters like @chap:fpl, @chap:ubos_caps, @chap:adaptation_anchors of the main thesis) are intended to address it. The chapter itself also outlines mitigation strategies for each gap.
+    *Support:* For each sub-gap, @chap:problem_formulation briefly states how the proposed methods (detailed in later chapters like @chap:fpl, @chap:ubo, @chap:adaptation_anchors of the main thesis) are intended to address it. The chapter itself also outlines mitigation strategies for each gap.
 
     *Justification:* This claim sets the stage for the rest of the thesis. The justification relies on the successful demonstration of these methods in the subsequent chapters. For a problem formulation chapter, it is appropriate to state *how* the proposed solution maps to the formulated problem components.
   ]
@@ -256,12 +256,12 @@ Fulfillment logic is conceptually distinct from Fuzzy Logic, Probability Theory,
 
 #heading(level: 4)[Claim 5: Universal Behavioral Objectives/Fulfillments - UBOs/UBFs]
 #label("claims:foundations:ubos_ubfs")
-Certain objectives (UBOs) become UBFs when quantified by fulfillment functions and are often best encoded architecturally. This concept is introduced in @chap:foundations and expanded in @chap:ubos_caps of the main thesis.
+Certain objectives (UBOs) become UBFs when quantified by fulfillment functions and are often best encoded architecturally. This concept is introduced in @chap:foundations and expanded in @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
     *Support:* Logical arguments and proposal for architectural integration are in @chap:foundations.
 
-    *Justification:* This is a key design principle, justified by claimed benefits of separating concerns (see @chap:foundations and @chap:ubos_caps).
+    *Justification:* This is a key design principle, justified by claimed benefits of separating concerns (see @chap:foundations and @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 6: Theoretical Guarantees of the Framework]
@@ -380,79 +380,79 @@ FPL specifically addresses the Semantic Gap and Specification-Policy Gap, as arg
 == Chapter 5: Universal Behavioral Objectives and Architectural Integration
 #label("claims:section:ubos_caps")
 
-*Overall Assessment:* Very strong and thoroughly supported. CAPS is well-motivated, formulated, theoretically grounded, and validated by results in @chap:ubos_caps of the main thesis.
+*Overall Assessment:* Very strong and thoroughly supported. CAPS is well-motivated, formulated, theoretically grounded, and validated by results in @chap:ubo of the main thesis.
 
 === Key Claims & Analysis:
 
 #heading(level: 4)[Claim 1: Problem of Oscillatory Control]
 #label("claims:caps:problem_oscillatory_control")
-Standard neural network policies often exhibit non-smooth, oscillatory control, a problem detailed in @chap:ubos_caps of the main thesis.
+Standard neural network policies often exhibit non-smooth, oscillatory control, a problem detailed in @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Logical arguments and critique of traditional mitigation are in @chap:ubos_caps.
+    *Support:* Logical arguments and critique of traditional mitigation are in @chap:ubo.
 
-    *Justification:* Well-recognized problems in RL for robotics motivate better solutions (see @chap:ubos_caps).
+    *Justification:* Well-recognized problems in RL for robotics motivate better solutions (see @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 2: Universal Behavioral Objectives/Fulfillments - UBOs/UBFs]
 #label("claims:caps:ubos_ubfs_definition")
-UBOs become UBFs and are often best handled via architectural integration, a concept from @chap:foundations and central to @chap:ubos_caps of the main thesis.
+UBOs become UBFs and are often best handled via architectural integration, a concept from @chap:foundations and central to @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Definition, characteristics, and argument for architectural integration are in @chap:ubos_caps.
+    *Support:* Definition, characteristics, and argument for architectural integration are in @chap:ubo.
 
-    *Justification:* Principled way to categorize and handle fundamental desirable behaviors (see @chap:ubos_caps).
+    *Justification:* Principled way to categorize and handle fundamental desirable behaviors (see @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 3: CAPS - Conditioning for Action Policy Smoothness]
 #label("claims:caps:caps_formulation")
-CAPS is a regularization approach ($J_theta^"CAPS" = J_theta - lambda_T L_T - lambda_S L_S$) promoting smoothness, formulated in @chap:ubos_caps of the main thesis.
+CAPS is a regularization approach ($J_theta^"CAPS" = J_theta - lambda_T L_T - lambda_S L_S$) promoting smoothness, formulated in @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Clear mathematical formulation and explanation of terms are in @chap:ubos_caps.
+    *Support:* Clear mathematical formulation and explanation of terms are in @chap:ubo.
 
-    *Justification:* The formulation directly encourages smoother policies (see @chap:ubos_caps).
+    *Justification:* The formulation directly encourages smoother policies (see @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 4: CAPS Theoretical Foundation - Lipschitz Regularization]
 #label("claims:caps:theoretical_foundation")
-CAPS approximates Lipschitz regularization, as explained in @chap:ubos_caps of the main thesis, citing @scaman2018lipschitz, @miyato2018spectral, @cisse2017parseval.
+CAPS approximates Lipschitz regularization, as explained in @chap:ubo of the main thesis, citing @scaman2018lipschitz, @miyato2018spectral, @cisse2017parseval.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Definition of Lipschitz continuity and explanation of approximation are in @chap:ubos_caps.
+    *Support:* Definition of Lipschitz continuity and explanation of approximation are in @chap:ubo.
 
-    *Justification:* Provides strong theoretical underpinning for CAPS (see @chap:ubos_caps).
+    *Justification:* Provides strong theoretical underpinning for CAPS (see @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 5: CAPS Integration & Efficiency]
 #label("claims:caps:integration_efficiency")
-CAPS is algorithm-agnostic and computationally efficient, as argued in @chap:ubos_caps of the main thesis.
+CAPS is algorithm-agnostic and computationally efficient, as argued in @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Explanation of modification and logical argument for minimal overhead are in @chap:ubos_caps.
+    *Support:* Explanation of modification and logical argument for minimal overhead are in @chap:ubo.
 
-    *Justification:* The design of CAPS supports these claims (see @chap:ubos_caps).
+    *Justification:* The design of CAPS supports these claims (see @chap:ubo).
   ]
 
 #heading(level: 4)[Claim 6: Empirical Validation of CAPS]
 #label("claims:caps:empirical_validation")
-CAPS consistently improves control smoothness with benefits like power reduction, as shown by results in @chap:ubos_caps of the main thesis (e.g., Toy Problem @fig:caps_toy_problem_results, OpenAI Gym @tab:caps_gym_benchmarks_results, Quadrotor @fig:caps_quadrotor_power, @tab:caps_quadrotor_quantitative_results).
+CAPS consistently improves control smoothness with benefits like power reduction, as shown by results in @chap:ubo of the main thesis (e.g., Toy Problem @fig:caps_toy_problem_results, OpenAI Gym @tab:caps_gym_benchmarks_results, Quadrotor @fig:caps_quadrotor_power, @tab:caps_quadrotor_quantitative_results).
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
     *Support:*
-    - Toy Problem, OpenAI Gym, Quadrotor Control (Neuroflight) results are detailed in @chap:ubos_caps.
+    - Toy Problem, OpenAI Gym, Quadrotor Control (Neuroflight) results are detailed in @chap:ubo.
 
-    *Justification:* Extensive empirical evidence in @chap:ubos_caps strongly supports CAPS's effectiveness.
+    *Justification:* Extensive empirical evidence in @chap:ubo strongly supports CAPS's effectiveness.
   ]
 
 #heading(level: 4)[Claim 7: Architectural Integration Principles & Complementarity with FPL]
 #label("claims:caps:architectural_principles_fpl")
-CAPS exemplifies direct policy conditioning for UBOs, complementary to FPL, a principle discussed in @chap:ubos_caps of the main thesis.
+CAPS exemplifies direct policy conditioning for UBOs, complementary to FPL, a principle discussed in @chap:ubo of the main thesis.
 
   #box(fill: luma(240), inset: 8pt, radius: 3pt)[
-    *Support:* Discussion of advantages and division of responsibility are in @chap:ubos_caps.
+    *Support:* Discussion of advantages and division of responsibility are in @chap:ubo.
 
-    *Justification:* These principles from @chap:ubos_caps offer a coherent strategy for robust policy design.
+    *Justification:* These principles from @chap:ubo offer a coherent strategy for robust policy design.
   ]
 
 == Chapter 6: Multi-Fulfillment Adaptation and Domain Transfer

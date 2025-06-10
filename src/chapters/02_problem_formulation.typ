@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= The Intent-to-Reality Gap: A Taxonomy for Real Robotic Control <chap:problem_formulation>
+= The Intent-to-Reality Gap <chap:problem_formulation>
 
 The intent-to-reality gap represents a fundamental challenge in translating human intentions into successful robot deployment. This chapter formalizes this gap by decomposing it into three distinct but interconnected components that collectively explain why robot learning systems fail to achieve intended behaviors in real-world deployment.
 
@@ -26,7 +26,7 @@ Analysis of reported robot learning failures across industries reveals several p
 
 This 2:1 ratio between specification and transfer failures highlights that the majority of deployment problems stem from fundamental issues in how we translate human intent into formal specifications - a gap that existing taxonomies largely ignore.
 
-== Existing Taxonomies and Their Limitations
+== Existing Taxonomies
 
 Current research has developed several taxonomies for understanding deployment failures in robot learning, primarily focused on specific aspects of the transfer problem.
 

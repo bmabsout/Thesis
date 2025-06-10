@@ -71,8 +71,7 @@
   [#include "src/chapters/abstract.typ"] // Abstract body content
 )
 
-#let table_of_contents = (template.make_table_of_contents)(title: "Contents", depth: 2)
-
+#let table_of_contents = (template.make_table_of_contents)(title: "Contents", depth: 3)
 // Optional: Generate List of Figures/Tables if you have them
 // #let list_of_figures = make_list_of_figures(title: "List of Figures")
 // #let list_of_tables = make_list_of_tables(title: "List of Tables")

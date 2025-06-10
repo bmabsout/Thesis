@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= Multi-Fulfillment Adaptation and Domain Transfer <chap:adaptation_anchors>
+= Adaptation as Specification <chap:adaptation_anchors>
 
 The previous chapters established the theoretical foundations of fulfillment-centric learning and demonstrated its application to complex objective relationships and universal behavioral objectives. However, a critical challenge remains: how to preserve fulfillment-centric behaviors when adapting policies across domains, particularly during sim-to-real transfer where distribution shifts can cause catastrophic forgetting of intended behaviors.
 
@@ -202,13 +202,14 @@ A critical feature of SwaNNFlight is its robust handling of communication interr
 *Connection Quality Assessment*: The system continuously monitors communication quality and proactively buffers critical updates when connection degradation is detected, ensuring smooth operation across varying signal conditions.
 
 ==== Safety and Reliability Features
-*Atomic Model Updates with Rollback*: Neural network models are updated atomically to prevent partial updates that could cause control instability. The system maintains both current and previous models, enabling instant rollback if issues are detected. The 134ms switching time ensures minimal disruption to control performance.
 
-*Model Validation and Integrity Checks*: New models undergo validation testing using recent flight data before deployment, ensuring that updates improve rather than degrade performance. All model updates include cryptographic signatures and checksums verified through the CRC protocol.
++ *Atomic Model Updates with CRC Checks*: Neural network models are updated atomically to prevent partial updates that could cause control instability. The system maintains both current and previous models, enabling instant rollback if issues are detected. The 134ms switching time ensures minimal disruption to control performance.
 
-*Multi-Layer Emergency Protocols*: The system includes multiple layers of emergency protocols, from neural network output validation to complete fallback to classical control systems. Safety monitoring occurs at multiple levels: output validation, stability assessment, and performance monitoring.
++ *Model Validation and Integrity Checks*: New models undergo validation testing using recent flight data before deployment, ensuring that updates improve rather than degrade performance. All model updates include cryptographic signatures and checksums verified through the CRC protocol.
 
-*Redundant Safety Systems*: Beyond communication redundancy, the system maintains multiple fallback options including classical PID controllers, emergency landing protocols, and hardware-level safety switches that can override neural network control if necessary.
++ *Multi-Layer Emergency Protocols*: The system includes multiple layers of emergency protocols, from neural network output validation to complete fallback to classical control systems. Safety monitoring occurs at multiple levels: output validation, stability assessment, and performance monitoring.
+
++ *Redundant Safety Systems*: Beyond communication redundancy, the system maintains multiple fallback options including classical PID controllers, emergency landing protocols, and hardware-level safety switches that can override neural network control if necessary.
 
 ==== Implementation Details
 *Hardware Requirements*: SwaNNFlight runs on standard flight controller hardware (STM32F4/F7 series, specifically tested on MATEK-F722 controllers) with minimal additional memory requirements (< 512KB for typical neural networks). The only hardware addition is the XBee ZigBee-PRO module for wireless communication.

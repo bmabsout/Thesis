@@ -1,23 +1,26 @@
 #import "../commands.typ": *
 
-= Universal Behavioral Objectives and Architectural Integration <chap:ubos_caps>
+= Universal Behavioral Objectives <chap:ubo>
 
-The previous chapters established the mathematical foundations of Fulfillment Priority Logic and demonstrated its application to complex objective relationships. However, not all requirements in robotics systems should be expressed as explicit objectives in FPL formulas. As established in Chapter 1's taxonomy of objectives, some behaviors—*universal behavioral objectives*—are so fundamental to robotics applications that they should be considered requirements that transcend specific task definitions.
+The previous chapters established that fulfillment logic can give us a language for composing various objectives. However, we deemed the building of fulfillment values as a task-specific process, but some objectives are so widely applicable in robotics to merit special treatment.
 
-Universal behavioral objectives, as defined in our taxonomy, are behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks, domains, or application contexts. These include smoothness, stability, basic safety, and robustness. When these UBOs are quantified by fulfillment functions, they become *Universal Behavioral Fulfillments (UBFs)*, representing their degree of satisfaction on a $[0,1]$ scale. For instance, the UBO of "smoothness" gives rise to a $f_"smoothness"$ UBF.
+==== Universal Behavioral Objectives
+These are behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks, domains, or application contexts. These include smoothness, stability, and robustness. When these objectives are quantified by fulfillments, they become *Universal Behavioral Fulfillments*.
 
-Rather than forcing practitioners to explicitly specify these fundamental requirements (as UBFs) in every FPL formula, this chapter introduces the concept of *architectural integration*—encoding and promoting UBOs (and thus their corresponding UBFs) directly into policy architectures. This ensures a baseline level of desirable behavior without cluttering task-specific FPL specifications.
+By focusing on a general class of objectives and defining ways to compute and optimize them, we get to reuse them across different applications. With enough use, they will be part of popular implementations of such learning algorithms.
 
 This chapter presents Conditioning for Action Policy Smoothness (CAPS) as a paradigm for this architectural approach. CAPS demonstrates how smoothness (a UBO, represented by $f_"smoothness"$ UBF) can be encouraged directly into policy architectures rather than relying on reward engineering or constant FPL inclusion. We show how this architectural approach complements FPL by handling fundamental behavioral requirements (UBFs) at the policy level while allowing FPL to focus on task-specific behavioral objective relationships.
 
 *The Architectural vs. Compositional Distinction*: This approach reflects a key insight from our objective taxonomy (and the Behavioral Decomposition Principle from Chapter 3): different types of objectives (and their fulfillments) require different treatment mechanisms. Task-specific behavioral objectives (and their fulfillments) benefit from explicit composition through FPL, allowing practitioners to express complex logical relationships. Universal Behavioral Objectives (and their UBFs, like $f_"smoothness"$) should typically be promoted via the architecture itself, ensuring they are automatically encouraged without burdening the specification process. However, UBFs *can* still be part of an FPL formula if their interaction with other fulfillments needs explicit logical management in a particular context.
 
-== The Problem of Oscillatory Control in Neural Policies
+== Smoothness as a Universal Behavioral Objective
+
+
+=== The Problem of Oscillatory Control in Neural Policies
 
 A critical problem with the practical utility of controllers trained with deep Reinforcement Learning is the notable lack of smoothness in the actions learned by RL policies. This trend often presents itself in the form of control signal oscillation and can result in poor control, high power consumption, and undue system wear.
 
-=== Manifestations of Non-Smooth Control
-
+==== Manifestations of Non-Smooth Control
 The problem of oscillatory control responses is particularly pronounced in continuous control applications where controller response can vary infinitely within the limits of acceptable outputs. This issue is further accentuated by the domain gap in sim-to-real transfer, where policies trained in simulation exhibit erratic behavior when deployed on real hardware.
 
 - *Power Consumption*: High-frequency oscillations in control signals lead to increased power consumption as actuators work against each other or make unnecessary corrections. In our quadrotor experiments, non-smooth controllers consumed up to 80% more power than smooth alternatives.
@@ -28,8 +31,7 @@ The problem of oscillatory control responses is particularly pronounced in conti
 
 - *Safety Concerns*: In safety-critical applications, oscillatory control can lead to instability and loss of control. The unpredictable nature of these oscillations makes it difficult to provide safety guarantees for deployed systems.
 
-=== Why Traditional Approaches Fail
-
+==== Why Traditional Approaches Fail
 The black-box nature of neural network-based controllers limits mitigation of bad behavior at run-time. Classical control techniques such as filtering, which might normally be used to address oscillatory problems, behave inconsistently with neural network controllers and can lead to catastrophic failures.
 
 - *Filtering Incompatibility*: Neural network policies are not typically trained with integrated filters, so deploying them with a filter changes the dynamical response expected by the network and can result in anomalous behavior. Our experiments showed that naively introducing filters can cause complete loss of control.
@@ -38,25 +40,7 @@ The black-box nature of neural network-based controllers limits mitigation of ba
 
 - *Surrogate Function Issues*: Research has shown that RL algorithms can be very sensitive to learning hyperparameters, input normalization, and reward scales. The surrogate optimization functions learned by policy gradient algorithms can present a very different optimization space compared to the true value function, making it difficult to trust nuanced information transfer from environment rewards to action policy optimization.
 
-== Universal Behavioral Objectives
-
-We propose that certain behavioral requirements are so fundamental to robotics applications that they should be treated as *universal behavioral objectives*—requirements that apply across tasks and domains rather than being specific to particular applications.
-
-=== Characteristics of Universal Behavioral Objectives
-
-Universal behavioral objectives share several key characteristics:
-
-- *Task Independence*: They apply regardless of the specific task being performed. Smoothness, for example, is desirable whether the robot is performing manipulation, navigation, or control tasks.
-
-- *Domain Robustness*: They improve performance across different domains and during sim-to-real transfer. Smooth policies are more likely to transfer successfully from simulation to reality.
-
-- *Safety Enhancement*: They contribute to overall system safety by reducing the likelihood of erratic or unpredictable behavior.
-
-- *Efficiency Improvement*: They often lead to more efficient operation in terms of power consumption, computational requirements, or mechanical wear.
-
-- *Architectural Suitability*: They can be effectively encouraged at the policy architecture level rather than requiring explicit representation in reward functions or routine FPL specifications for every task.
-
-=== Smoothness as a Universal Behavioral Objective
+=== Conditioning for Action Policy Smoothness (CAPS)
 
 Smoothness represents the paradigmatic example of a universal behavioral objective. Its corresponding UBF, $f_"smoothness"$, would quantify the degree of achieved smoothness. Smooth control policies exhibit two key properties:
 
@@ -66,7 +50,6 @@ Smoothness represents the paradigmatic example of a universal behavioral objecti
 
 These properties are desirable across virtually all robotics applications, making smoothness (and its $f_"smoothness"$ UBF) an ideal candidate for architectural integration rather than task-specific reward engineering or mandatory inclusion in all FPL formulas.
 
-== CAPS: Conditioning for Action Policy Smoothness
 
 We introduce Conditioning for Action Policy Smoothness (CAPS), an effective yet intuitive regularization approach that promotes the UBF of smoothness directly at the policy level. CAPS operates by adding regularization terms to the policy optimization objective that encourage both temporal and spatial smoothness, thereby promoting a high $f_"smoothness"$.
 
@@ -152,8 +135,8 @@ Standard RL agents learned highly aggressive control policies, akin to binary st
 
 We evaluated CAPS on four continuous control benchmarks: Pendulum-v0, LunarLanderContinuous-v2, Reacher-v2, and Ant-v2. Results show that CAPS consistently produces smoother policies across all tested algorithms (DDPG, SAC, TD3, PPO) and environments.
 
-*Smoothness Metric*: We define a smoothness measure based on the Fast Fourier Transform (FFT) frequency spectrum:
-$ "Sm" = (2)/(n f_s) sum_(i=1)^n M_i f_i $
+*Abrasion Metric*: We define an abrasion measure based on the Fast Fourier Transform (FFT) frequency spectrum:
+$ "Ab" = (2)/(n f_s) sum_(i=1)^n M_i f_i $
 
 where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ is the sampling frequency. This metric provides the mean weighted normalized frequency, with lower values indicating smoother control.
 
@@ -164,7 +147,7 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     columns: 9,
     align: center,
     [*Algorithm*], [*Pendulum-v0*], [], [*LunarLanderContinuous-v2*], [], [*Reacher-v2*], [], [*Ant-v2*], [],
-    [], [Reward ↑], [Smoothness (Sm×10³) ↓], [Reward ↑], [Smoothness (Sm×10³) ↓], [Reward ↑], [Smoothness (Sm×10³) ↓], [Reward ↑], [Smoothness (Sm×10³) ↓],
+    [], [Reward ↑], [Abrasion (Ab×10³) ↓], [Reward ↑], [Abrasion (Ab×10³) ↓], [Reward ↑], [Abrasion (Ab×10³) ↓], [Reward ↑], [Abrasion (Ab×10³) ↓],
     [DDPG], [-145.56 ± 10.64], [47.6 ± 10.64], [217.04 ± 51.61], [34.9 ± 1.36], [-4.26 ± 0.25], [4.56 ± 0.45], [225.23 ± 362.88], [2.73 ± 0.65],
     [DDPG + CAPS], [-188.16 ± 22.53], [*7.09 ± 1.65*], [181.98 ± 87.18], [*16.7 ± 2.92*], [-5.03 ± 1.89], [*3.69 ± 1.13*], [*253.30 ± 187.93*], [*1.31 ± 0.71*],
     [SAC], [-139.86 ± 8.29], [9.32 ± 1.13], [277.62 ± 11.02], [8.14 ± 0.81], [-5.96 ± 0.47], [5.99 ± 0.91], [3366.07 ± 1522.45], [6.53 ± 2.26],
@@ -174,7 +157,7 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     [PPO], [-668.60 ± 551.85], [9.29 ± 5.51], [169.08 ± 56.59], [11.4 ± 1.36], [-4.37 ± 1.74], [4.49 ± 0.43], [3734.58 ± 988.29], [6.09 ± 1.19],
     [PPO + CAPS], [*-590.35 ± 295.86*], [*8.09 ± 2.13*], [140.71 ± 23.03], [*10.0 ± 2.92*], [-4.69 ± 2.05], [*3.38 ± 0.36*], [*4256.93 ± 570.88*], [*1.60 ± 0.26*]
   ),
-  caption: [Comparing rewards and smoothness scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Sm values) across all algorithms and environments. Bold values indicate improvements over vanilla algorithms.]
+  caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Ab values) across all algorithms and environments. Bold values indicate improvements over vanilla algorithms.]
 ) <tab:caps_gym_benchmarks_results>
 
 Interestingly, soft-policies such as PPO and SAC appear to learn relatively smoother policies on their own, which we hypothesize is due to stochasticity in the policies allowing for improved exploration of the state and action spaces.
@@ -188,7 +171,7 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
 *CAPS vs. Baseline Comparison*: By stripping training rewards down to basic tracking error components and comparing agents trained with CAPS against those without, we demonstrated clear improvements in motor actuation smoothness.
 
 #figure(
-  image("/figures/withVSwoCAPS_v3.svg", width: 100%),
+  image("/figures/withVSwoCAPS_v3.svg" ),
   caption: [PPO trained for quadrotor control with just tracking error reward compared against the same algorithm with CAPS optimization. Note the significant reduction in motor signal amplitude and oscillation, despite maintaining similar tracking performance. CAPS agents were flight-worthy while vanilla agents posed significant risk.]
 ) <fig:caps_quadrotor_power>
 
@@ -200,7 +183,7 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
   table(
     columns: 4,
     align: center,
-    [*Agent*], [*MAE (deg/s) ↓*], [*Current (Amps) ↓*], [*Smoothness (Sm×10³) ↓*],
+    [*Agent*], [*MAE (deg/s) ↓*], [*Current (Amps) ↓*], [*Abrasion $(times 10^3)$ ↓ *],
     [colspan(4)[*Simulated Validation*]],
     [PID], [11.41], [-NA-], [0.29],
     [Neuroflight], [7.30], [-NA-], [3.23],
@@ -214,7 +197,7 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
     [PPO + Spatial], [14.85 ± 6.85], [4.59 ± 2.70], [0.37 ± 0.22],
     [PPO + CAPS], [*9.28 ± 2.31*], [*4.86 ± 2.32*], [*0.16 ± 0.02*]
   ),
-  caption: [Flight performance comparison showing Mean Absolute Error (MAE), current consumption, and smoothness (Sm). CAPS achieves the best balance of tracking accuracy, power efficiency, and smoothness. Variance statistics computed over 10 independently trained agents.]
+  caption: [Flight performance comparison showing Mean Absolute Error (MAE), current consumption, and abrasion (Ab). CAPS achieves the best balance of tracking accuracy, power efficiency, and smoothness. Variance statistics computed over 10 independently trained agents.]
 ) <tab:caps_quadrotor_quantitative_results>
 
 *Power Consumption Analysis*: CAPS-optimized agents consumed significantly less power (4.86 ± 2.32 Amps) compared to Neuroflight (22.87 Amps) and even outperformed the PID controller (8.07 Amps), demonstrating that neural network controllers can exceed classical control efficiency when properly regularized.
@@ -238,31 +221,23 @@ CAPS demonstrates particular value in sim-to-real transfer scenarios, where the 
 
 *Power Efficiency*: The smooth control signals produced by CAPS-trained agents resulted in significantly lower power consumption on real hardware, extending flight times and reducing thermal stress on components.
 
-== Architectural Integration Principles
+=== Integration Into Policy Optimization
 
 The success of CAPS demonstrates broader principles for integrating universal behavioral objectives into policy architectures.
 
-=== Direct Policy Conditioning vs. Reward Engineering
-
+==== Direct Policy Conditioning vs. Reward Engineering
 CAPS represents a fundamental shift from reward engineering to direct policy conditioning. Rather than trying to encode desired behaviors through complex reward functions, we condition the policy optimization process directly.
 
 *Advantages of Direct Conditioning*:
-1. *Transparency*: The relationship between regularization terms and resulting behavior (and thus the UBF) is direct and interpretable
-2. *Robustness*: Architectural constraints promoting UBFs are less sensitive to domain shifts than reward-based approaches
-3. *Efficiency*: Simpler reward structures or FPL formulas can be used when UBFs for universal objectives are handled architecturally
-4. *Guarantees*: Direct constraints provide stronger guarantees about resulting behavior than indirect reward signals
++ *Transparency*: The relationship between regularization terms and resulting behavior (and thus the UBF) is direct and interpretable
++ *Robustness*: Architectural constraints promoting UBFs are less sensitive to domain shifts than reward-based approaches
++ *Efficiency*: Simpler reward structures or FPL formulas can be used when UBFs for universal objectives are handled architecturally
++ *Guarantees*: Direct constraints provide stronger guarantees about resulting behavior than indirect reward signals
 
 *When to Use Direct Conditioning*: Universal behavioral objectives that apply across tasks and domains are ideal candidates for architectural integration. Task-specific objectives are better handled through FPL formulations.
 
-=== Complementarity with FPL
-
-CAPS and FPL are complementary approaches that address different aspects of the intent-to-reality gap:
-
-*CAPS for Universal Objectives*: Handles fundamental behavioral requirements (promoting their UBFs like $f_"smoothness"$, $f_"stability"$, and $f_"efficiency"$) that apply across all robotics applications by directly conditioning the policy.
-
-*FPL for Task-Specific Relationships*: Expresses complex relationships between task-specific objectives (and their fulfillments) while preserving semantic meaning. UBFs can also be included here if needed.
-
-*Combined Approach*: The most effective systems use architectural integration (like CAPS) to ensure fundamental behavioral properties (i.e., promote high UBFs) while employing FPL to express task-specific objective relationships. This division of responsibility simplifies both the architectural design and the FPL specifications.
+=== The Fulfillment Treatment <chap:ubo:fulfillment>
+We can expressing CAPS objectives as fulfillments as is done in @anchor_critics, 
 
 === Design Guidelines for Universal Objectives
 
@@ -302,18 +277,4 @@ While CAPS demonstrates significant benefits, several limitations and opportunit
 
 *Integration with Model-Based Methods*: Exploring how universal behavioral objectives can be integrated with model-based RL and planning methods.
 
-== Chapter Summary
-
-This chapter has introduced the concept of universal behavioral objectives and demonstrated their architectural integration through CAPS. The key contributions include:
-
-1. *Universal Behavioral Objectives*: A new paradigm for identifying and handling behavioral requirements that apply across tasks and domains.
-
-2. *CAPS Framework*: A practical method for encoding smoothness (a UBO) and promoting its UBF ($f_"smoothness"$) through direct policy regularization.
-
-3. *Empirical Validation*: Comprehensive demonstration of CAPS benefits across simulation benchmarks and real-world robotics applications.
-
-4. *Architectural Integration Principles*: Guidelines for when and how to integrate UBOs (by promoting their UBFs) into policy architectures rather than relying solely on reward functions or FPL.
-
-5. *Complementarity with FPL*: Clear delineation of when to use architectural integration (for UBFs of universal objectives) versus FPL formulations (for task-specific fulfillments, potentially including UBFs if specific logical relations are needed).
-
-The architectural approach demonstrated by CAPS provides a powerful complement to FPL, handling fundamental behavioral requirements (by promoting their UBFs) at the policy level while allowing FPL to focus on expressing complex task-specific objective relationships. The next chapter extends this framework to multi-domain adaptation, showing how universal objectives and fulfillment-centric learning can be preserved during sim-to-real transfer and domain adaptation. 
+== Learning Lyapunov Stability as Fulfillment

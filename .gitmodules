@@ -13,3 +13,6 @@
 [submodule "latex/REAL"]
 	path = latex/REAL
 	url = https://git@git.overleaf.com/5f04e92543a84a0001fd1a1d
+[submodule "latex/AsymmetricAC"]
+	path = latex/AsymmetricAC
+	url = https://git@git.overleaf.com/60352f6eb6dfc55db789e083

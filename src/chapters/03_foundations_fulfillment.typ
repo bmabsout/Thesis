@@ -1,6 +1,6 @@
 #import "../commands.typ": *
 
-= The Fulfillment Framework: Semantic Bridges for Robot Learning <chap:foundations>
+= Encoding Intentionality <chap:foundations>
 
 At the heart of this thesis lies a simple but profound insight: the intent-to-reality gap stems from a fundamental mismatch between how humans think about objectives and how machines optimize them. Humans think in terms of *requirements to satisfy*—"the robot should move smoothly," "the drone should avoid obstacles," "the arm should reach the target quickly." Traditional reinforcement learning, however, thinks in terms of *scores to maximize*—converting these natural requirements into numerical rewards that obscure their original meaning.
 

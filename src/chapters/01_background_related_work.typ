@@ -7,11 +7,11 @@
 
 = Background and Related Work <chap:background_related_work>
 
-== Standard Reinforcement Learning Definitions
+== Background
 
+=== Reinforcement Learning
 
-=== Discrete-Time Markov Decision Processes <def-mdp>
-
+==== Discrete-Time Markov Decision Processes <def-mdp>
 The standard formalization in Reinforcement Learning of sequential decision making @SuttonBarto @barto2017some, defined by a tuple $(#S, #A, TT, #R, gamma)$, where:
 
 #note(gradient: primary_gradient)[
@@ -52,9 +52,7 @@ A trajectory is a sequence of transitions:
 )
 
 ==== The Memoryless Property
-The key property is that the transition function $TT$ is only defined with respect to the current #state(state) and #action(action), with no _knowledge_ of the history of transitions. This property enables many of the techniques used in RL.
-
-=== Making Decisions in MDPs
+The key property is that the transition function $TT$ is only defined with respect to the current #state(state) and #action(action), with no _knowledge_ of the history of transitions. This property enables many of the techniques employed in RL.
 
 ==== Policies <def-policy>
 A policy $pi : #S -> Delta(#A)$ defines the "decision maker", it maps states to a probability distribution over actions. For deterministic policies, this would be a function $pi : #S -> #A$.
@@ -63,23 +61,19 @@ A policy $pi : #S -> Delta(#A)$ defines the "decision maker", it maps states to 
   mdp,
   caption: [The Markov Decision Process showing how a state #st in the state space #S and action $#at ~ pi(#st)$ determine the probability distribution $#stp1 ~ TT(#st,#at)$ over next states. Dashed arrows (#box[#{import "@preview/cetz:0.3.4"; cetz.canvas(cetz.draw.line((0,0), (0.6,0), mark: (end: "triangle"), stroke: (dash: "dashed", thickness: 0.7pt)))}]) indicate sampling from a distribution.]
 )
-#block(breakable: false)[
-  ==== Rewards <def-reward>
+==== Rewards <def-reward>
   The reward function $R : #S times #A times #S -> RR$ is a function that maps a transition to a real-valued reward, in RL it is our main interface for choosing which policies are better at solving the task at hand than others.
   #figure(
     make_trajectory(with_policy: true, with_reward: true),
     caption: [Transitions produced by a policy's actions results in a reward signal.]
   )
-]
 
 ==== The Reward Hypothesis <def-rew-hypothesis>
 Established in the foundational RL textbook by @SuttonBarto the hypothesis states: "all of what we mean by goals and purposes can be well thought of as maximization of the expected value of the cumulative sum of a received scalar signal." This hypothesis has provided a unifying framework for RL research, enabling the development of powerful algorithms like Q-learning, policy gradients, and actor-critic methods.
 
-=== Value Functions and Q-Functions <def-value-function>
-The main goal in RL is to find policies that maximize the expected return. 
 
 ==== Returns <def-return>
-The return is the discounted sum of rewards: $sum_(t=0)^infinity reward(gamma)^t reward(R)(#st,#at,#stp1)$. The discount factor $reward(gamma)$ determines how much to prioritize immediate versus future rewards.
+The return is the discounted sum of rewards: $sum_(t=0)^infinity reward(gamma)^t reward(R)(#st,#at,#stp1)$. The discount factor $reward(gamma)$ determines how much to prioritize immediate versus future rewards. Mapping a trajectory to a value in $RR$. The main goal in RL is to find policies that maximize the expected return. 
 
 
 ==== Value Functions
@@ -93,66 +87,68 @@ $ #V^pi (#state($s_0$)) = expect [ #Q^pi (#state($s_0$), #action($a_0$)) | #acti
 
 Value functions form the basis of deep reinforcement learning @DQN_paper, capturing the specific notion of optimality emerging from the chosen reward function. They are commonly approximated by neural networks.
 
+// ==== The Bellman Equations
 
-== Multi-Objective Reinforcement Learning <def-morl>
+// $ #V^pi (#state($s_0$)) = expect [ reward(R)(#st,#at,#stp1) + gamma #V^pi (#state($s_1$)) | #stp1 ~ TT(#st,#at), #at ~ pi(#st) ] $
 
-Multi-objective reinforcement learning extends the standard MDP framework defined in @def-mdp to handle multiple reward signals simultaneously. Instead of a single scalar reward function, MORL considers a vector reward function $reward(bold(arrow(R))) : #S times #A times #S -> RR^n$ composed of $n$ reward functions $(reward(R_1), reward(R_2), ..., reward(R_n))$ where each $reward(R_i) : #S times #A times #S -> RR$ represents a distinct objective @survey_seq_dec_morl @practical_guide.
+// $ #Q^pi (#state($s_0$), #action($a_0$)) = reward(R)(#st,#at,#stp1) + gamma #V^pi (#state($s_1$)) $
 
-This extension fundamentally challenges the reward hypothesis in @def-rew-hypothesis, changing the optimization problem. Rather than maximizing a single expected return, the agent must now consider a vector of  expected returns, making the value function a vector-value function:
+// $ #Q^pi (#state($s_0$), #action($a_0$)) = reward(R)(#st,#at,#stp1) + gamma expect [ #Q^pi (#state($s_1$), #action($a_1$)) | #stp1 ~ TT(#st,#at), #at ~ pi(#st) ] $
 
-$ reward(bold(arrow(V)))^pi(s) = (reward(V_1)^pi(s), reward(V_2)^pi(s), ..., reward(V_n)^pi(s))
+==== Optimal Policy
+A policy is considered optimal and denoted as $pi^*$ if it has the highest possible value in all states:
+$forall_pi forall_(state(s) in #S) #V^pi^*(state(s)) >= #V^pi(state(s))$
+
+
+=== Multi-Objective Reinforcement Learning <def-morl>
+
+Multi-objective reinforcement learning extends standard MDPs with multiple reward signals simultaneously forming MOMDPs. 
+
+==== Vector Reward Functions
+Instead of a single scalar reward, MORL considers vector reward functions $reward(bold(arrow(R))) : #S times #A times #S -> RR^n$ composed of $n$ reward functions $reward(bold(arrow(R)))(state(s), action(a), state(s')) = (reward(R_1)(state(s), action(a), state(s')), reward(R_2)(state(s), action(a), state(s')), ..., reward(R_n)(state(s), action(a), state(s')))$ where each $reward(R_i) : #S times #A times #S -> RR$ represents a distinct objective @survey_seq_dec_morl @practical_guide.
+
+This extension fundamentally challenges the reward hypothesis in @def-rew-hypothesis, changing the optimization problem.
+
+==== Vector Value Functions
+Rather than maximizing a single expected return, the agent must now consider a vector of expected returns, making the value function a vector-value function:
+
+$ reward(bold(arrow(V)))^pi (state(s)) = (reward(V_1)^pi (state(s)), reward(V_2)^pi (state(s)), ..., reward(V_n)^pi (state(s)))
 space "where" space
-reward(V_i)^pi(s) = expect [ sum_(k=0)^infinity reward(gamma)^k reward(R_i) (s_(t+k), a_(t+k), s_(t+k+1)) ] $
+reward(V_i)^pi (state(s)) = expect [ sum_(k=0)^infinity reward(gamma)^k reward(R_i) (state(s_t), action(a_t), state(s_(t+1))) ] $
 
-The challenge becomes balancing competing objectives @SAKAWA199819, as policies that excel at one objective may perform poorly on others. This field provides the most direct foundation for our work, though the existing formulations face significant limitations that motivate our fulfillment-centric alternative. Put more formally, rather than a total ordering given by a single objective function, the multiplicity of objectives induces a partial ordering which is consolidated using a utility function.
+==== Partial Ordering
+In the single valued case of standard MDPs, we can compare one value with another as the reals form a total order. This allows us to define the optimal policy as one forming the highest value. The multi-valued nature of MOMDPs, however, introduces a partial ordering instead. To highlight the issue consider the following example:
+$#V^(pi_1)(state(s)) = (2.3, 4.5)$ and $#V^(pi_2)(state(s)) = (7.3, 6.5)$. It is clear the $pi_2$ is better than $pi_1$ on both objectives on state $s$, we can make the statement $#V^pi_1(state(s)) < #V^pi_2(state(s))$, this is known as *pareto dominance*. However, how do we judge $#V^(pi_3)(state(s)) = (1.3, 7.5)$? 
 
+Policy $pi_3$ performs worse than $pi_1$ on the first objective but better on the second. Similarly, $pi_3$ is significantly worse than $pi_2$ on the first objective but superior on the second. Neither $pi_1$ nor $pi_2$ pareto dominates $pi_3$. This creates an incomparable relationship where we cannot definitively rank these policies without flattening the partial ordering, motivating the use of utility functions.
 
-=== Utility Functions
-A utility function $U: RR^n -> RR$ is defined as a function that maps multi-objective returns to scalar values, thereby flattenting the partial ordering introduced by having vector value functions.
+==== Utility Functions
+A utility function $U: RR^n -> RR$ is defined as a function that maps multi-objective returns to scalar values, flattenting the partial ordering introduced by having vector value functions, allowing us to recover optimality.
 
-==== Linear Utility
+==== Linear Utilities
 The most prevalent utility function in MORL based methods is the linear utility function, which combines objectives as weighted sums: $U(bold(arrow(G))) = sum_(i=1)^n w_i G_i$. Using this approach, we can define flattened Q-value functions as follows:
 
-$ Q^pi (s,a) = expect [ sum_(i=1)^n w_i sum_(t=0)^infinity gamma^t R_i(s_t, a_t, s_(t+1)) | s_0 = s, a_0 = a ] $
+$ #Q^pi (state(s_0), action(a_0)) =sum_(i=1)^n w_i expect [ sum_(t=0)^infinity gamma^t R_i (state(s_t), action(a_t), state(s_(t+1)))] = expect [ sum_(t=0)^infinity sum_(i=1)^n w_i gamma^t R_i (state(s_t), action(a_t), state(s_(t+1)))] =  $
 
-The brittleness of linear scalarization becomes particularly problematic in RL settings, where small changes in weights can lead to dramatically different learned behaviors due to the sequential nature of decision-making and the compounding effects of policy changes.
-
-
-
-=== Pareto Optimality in Policy Space
-
-MORL adapts the foundational concept of Pareto optimality to policy space. A policy $pi^*$ is Pareto optimal if no other policy $pi'$ exists such that $reward(V_i)^{pi'}(s) >= reward(V_i)^{pi^*}(s)$ for all objectives $i$ and states $s$, with strict inequality for at least one objective-state pair. The Pareto frontier represents the set of all Pareto optimal policies, providing a complete characterization of optimal trade-offs in policy space.
-
-This differs from traditional multi-objective optimization where Pareto optimality applies to solution vectors. In MORL, we must consider Pareto optimality over entire value functions $reward(bold(arrow(V)))^pi = (reward(V_1)^pi, reward(V_2)^pi, ..., reward(V_n)^pi)$, making the problem significantly more complex than traditional multi-objective optimization.
+Note that linear utilitilities enjoy the property that a utility function over the rewards produces the same value as a utility function over the value functions.
 
 
-=== Pareto-Based MORL
 
-To address scalarization limitations, Pareto-based approaches explicitly optimize for multiple non-dominated policies. The Pareto Q-Learning algorithm @pareto_q_learning maintains sets of Pareto optimal Q-vectors for each state-action pair:
+==== Pareto Optimality in Policy Space
+MORL adapts the foundational concept of Pareto optimality to policy space. A policy $pi^*$ is Pareto optimal if no other policy $pi'$ exists such that $reward(V_i)^(pi')(state(s)) >= reward(V_i)^(pi^*)(state(s))$ for all objectives $i$ and states $s$, with strict inequality for at least one objective-state pair. The Pareto frontier represents the set of all Pareto optimal policies, providing a complete characterization of optimal trade-offs in policy space.
 
-$ Q_"Pareto"(s,a) = {bold(arrow(q)) in RR^n : bold(arrow(q)) text(" is Pareto optimal in ") {bold(arrow(Q))^pi(s,a) : pi in Pi}} $
+== Logical Specifications for Robotics
 
-While theoretically elegant, this approach faces significant computational and memory challenges. The number of Pareto optimal Q-vectors can grow exponentially with the number of objectives, making the approach intractable for high-dimensional objective spaces or large state-action spaces common in robotics applications.
+The mathematical foundations for composing multiple objectives draw extensively from continuous logic and fuzzy systems theory. This work provides essential tools for extending discrete logical relationships to continuous domains.
 
-=== Constraint-Based Approaches
+=== Fuzzy Logic Foundations
 
-Constraint-based MORL treats some objectives as hard constraints while optimizing others. This approach modifies the standard MDP to include constraint functions $C_j : #S times #A times #S -> RR$ and constraint thresholds $c_j$:
+Fuzzy logic extends Boolean logic to the continuous interval $[0,1]$, enabling smooth reasoning about concepts that admit degrees of truth. T-norms and T-conorms provide the mathematical foundations for continuous logical operations, satisfying commutativity, associativity, and monotonicity properties while extending AND and OR operations to continuous domains.
 
-$ max_pi expect [ sum_(t=0)^infinity gamma^t R_"primary"(s_t, a_t, s_(t+1)) ] quad text("subject to") quad expect [ sum_(t=0)^infinity gamma^t C_j(s_t, a_t, s_(t+1)) ] <= c_j $
+Fuzzy systems theory establishes connections between fuzzy logic and probability theory, multi-valued logic, and approximate reasoning, demonstrating the broad applicability of continuous logic operators across diverse domains.
 
-These approaches ensure constraint satisfaction during learning but require practitioners to distinguish between primary objectives and constraints, which may not align with natural problem specifications. They struggle with soft constraints and the complex hierarchical relationships common in robotics where objectives may need to be violated temporarily to achieve better long-term performance.
 
-=== Multi-Objective Value Functions
-
-MORL requires extensions to standard value function concepts. Multi-objective Q-functions become vector-valued:
-
-$ bold(arrow(Q))^pi(s,a) = (Q_1^pi(s,a), Q_2^pi(s,a), ..., Q_n^pi(s,a)) $
-
-where each component $Q_i^pi(s,a)$ represents the expected return for objective $i$. Similarly, multi-objective value functions become:
-
-$ bold(arrow(V))^pi(s) = (V_1^pi(s), V_2^pi(s), ..., V_n^pi(s)) $
-
-The Bellman equations must be adapted to handle vector returns, leading to vector Bellman operators that preserve the multi-objective structure throughout learning.
+== Related Work
 
 === Fundamental Limitations of MORL
 
@@ -169,7 +165,7 @@ Traditional MORL approaches face several fundamental limitations that have hinde
 *Computational Scalability*: Methods that maintain explicit Pareto frontiers face exponential growth in computational requirements as the number of objectives increases.
 
 
-== Avoiding Reward Engineering
+=== Avoiding Reward Engineering
 There are multiple subfields of reinforcement learning that focus efforts on avoiding the need for designing reward functions.
 
 ==== Large Language Model-Based Reward Engineering
@@ -184,33 +180,8 @@ Behavior cloning completely avoids reward engineering by treating policy learnin
 ==== Inverse Reinforcement Learning
 Inverse reinforcement learning avoids manual reward engineering by automatically inferring reward functions from expert demonstrations rather than requiring explicit design. The work of @ng2000algorithms established the theoretical foundations, while @abbeel2004apprenticeship demonstrated practical applications. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
 
-== Continuous Logic and Fuzzy Systems
 
-The mathematical foundations for composing multiple objectives draw extensively from continuous logic and fuzzy systems theory. This work provides essential tools for extending discrete logical relationships to continuous domains.
-
-=== Fuzzy Logic Foundations
-
-Fuzzy logic extends Boolean logic to the continuous interval [0,1], enabling smooth reasoning about concepts that admit degrees of truth. T-norms and t-conorms provide the mathematical foundations for continuous logical operations, satisfying commutativity, associativity, and monotonicity properties while extending AND and OR operations to continuous domains.
-
-Fuzzy systems theory establishes connections between fuzzy logic and probability theory, multi-valued logic, and approximate reasoning, demonstrating the broad applicability of continuous logic operators across diverse domains.
-
-=== Applications to Multi-Criteria Decision Making
-
-Fuzzy logic has found extensive application in multi-criteria decision making (MCDM), providing methods for combining multiple criteria with linguistic or imprecise information. These approaches provide precedent for using continuous logic in multi-objective optimization, though they typically focus on discrete decision scenarios rather than continuous control.
-
-=== Limitations for Robot Learning
-
-While fuzzy logic provides essential mathematical tools, direct application to robot learning faces several challenges:
-
-*Semantic Interpretation*: Traditional fuzzy logic focuses on uncertainty and partial membership rather than objective satisfaction and semantic meaning.
-
-*Optimization Integration*: Fuzzy systems are typically designed for inference rather than gradient-based optimization, making them challenging to integrate with modern RL algorithms.
-
-*Parameter Selection*: Fuzzy systems often require extensive parameter tuning that can be as challenging as weight selection in traditional approaches.
-
-Our fulfillment framework draws on the mathematical foundations of continuous logic while addressing these limitations through semantic anchoring and optimization-friendly formulations.
-
-== Robust Deployment and Transfer Learning
+=== Robust Deployment and Transfer Learning
 
 The deployment challenge in robot learning has driven extensive research in domain adaptation, transfer learning, and sim-to-real transfer. This work provides essential context for our multi-fulfillment adaptation approach.
 
@@ -247,18 +218,7 @@ The challenge of learning multiple tasks while avoiding catastrophic forgetting 
 == Control-Theoretic Approaches
 
 Classical control theory provides essential foundations for robot learning, particularly for safety-critical applications and stability guarantees. This work informs our integration of control-theoretic principles with learning-based methods.
-
-=== Reinforcement Learning in Control
-
-The foundational reinforcement learning textbook @SuttonBarto establishes comprehensive foundations for integrating learning with control systems. Recent applications @barto2017some demonstrate the broad potential for RL in control applications while highlighting challenges in safety-critical systems.
-
-=== Safety-Critical Control
-
-Barrier function approaches @Cheng_Orosz_Murray_Burdick_2019 provide methods for maintaining safety guarantees in learning-based control systems. These approaches enable aggressive learning while maintaining stability guarantees, demonstrating the potential for integrating learning and control-theoretic safety guarantees.
-
-=== Multi-Objective Control in Applications
-
-Multi-objective optimization has found application in various control domains, including water resource management @castelletti2013multiobjective and power systems. These applications demonstrate the practical importance of multi-objective approaches while highlighting challenges in real-world deployment.
+while highlighting challenges in real-world deployment.
 
 == Research Gaps and Motivation
 

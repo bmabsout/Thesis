@@ -7,3 +7,5 @@ fulfillment logic generalizes both the cross entropy and L_p norm
 evaluate standard assumptions in MORL in terms of the competitive structure 
 
 My main thesis is that when behavior is not as expected, to debug it as the method not capturing hidden user intentions, then extending the algorithms we have today so that we can capture that
+
+should have a chapter for a systems perspective xO
