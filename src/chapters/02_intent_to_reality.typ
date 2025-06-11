@@ -1,244 +1,142 @@
+#import "../style.typ": note, primary_gradient
+
 #import "../commands.typ": *
 #import "../style.typ": local_outline
 
 = The Intent-to-Reality Gap <chap:problem_formulation>
 
-The intent-to-reality gap represents a fundamental challenge in translating human intentions into successful robot deployment. This chapter formalizes this gap by decomposing it into three distinct but interconnected components that collectively explain why robot learning systems fail to achieve intended behaviors in real-world deployment.
+The central challenge in deploying autonomous systems is the *Intent-to-Reality Gap*: the discrepancy between a practitioner's high-level goals and the robot's final, deployed behavior. This gap is not a single problem but a cascade of interconnected challenges that arise at each stage of translation---from the encoding of human intuition into a formal specification, to the optimization of a policy in an idealized model, to the execution of that policy on real embedded hardware subject to scheduling jitter and resource constraints, and finally to the interaction with noisy sensors and unpredictable physical world.
 
-Understanding this decomposition is crucial for real robotic control because each gap type requires different theoretical and practical solutions. Rather than treating deployment failures as monolithic problems, this taxonomy enables targeted interventions that address specific failure modes while recognizing their interconnected nature. It is especially important to consider the gap between intent and policy optimization, which is not commonly considered or evaluated.
+This chapter introduces a formal taxonomy to deconstruct this gap. By dissecting it into three primary components—the *Intent-to-Specification Gap*, the *Specification-to-Behavior Gap*, and the *Simulation-to-Reality Gap*—we can systematically communicate, analyze, measure, and ultimately mitigate the distinct failure modes that prevent reliable real-world robot learning. This framework provides the conceptual foundation for the solutions developed in this thesis.
 
-== The Critical Need for Systematic Understanding
+== Defining Behavior: Trajectory Sets and Decorations
 
-Real-world robotics deployment faces unprecedented challenges with massive economic and safety implications. Unlike academic benchmarks where approximate solutions suffice, deployed robots must satisfy multiple competing objectives simultaneously while maintaining safety, efficiency, and task performance under variable conditions.
+Before describing the gaps, we must first formalize what we mean by "behavior". While the term is often left undefined in the literature, it is fruitful to define it precisely within the context of MDPs.
 
-=== Economic and Safety Stakes
+==== Behavior
+We define a *behavior* $beta$ as a set of trajectories, where each trajectory $tau$ is a sequence of state-action tuples:
+$ beta = { tau | tau = ((s_0, a_0), (s_1, a_1), (s_2, a_2), ...)) } $
 
-The practical consequences of intent-to-reality gaps extend far beyond academic interest. The automotive industry has invested over \$100 billion in autonomous vehicle development, yet full deployment remains elusive due to persistent challenges in handling complex multi-objective scenarios safely and reliably. Manufacturing automation faces significant difficulties when factory robots learn policies that optimize for speed but damage equipment, resulting in production delays and safety concerns.
+This definition allows us to treat behavior as a formal mathematical object. The power of this approach comes from *decorating* this set with different functions, which allows us to recover many fundamental concepts in robot learning as specific instances of a more general idea:
 
-Analysis of reported robot learning failures reveals systematic patterns that demand urgent attention. These failures are not random but stem from predictable issues in specification, transfer, and adaptation that current approaches fail to address comprehensively.
++ *Behavioral Metrics:* By attaching a *metric* $d(beta_1, beta_2)$ to pairs of behaviors, we can quantify the difference between them. This is crucial for measuring the simulation-to-reality gap, where we compare the behavior in simulation $beta_"sim"$ to the behavior in reality $beta_"real"$. Many imitation learning approaches can be understood as minimizing different kinds of metrics between the learned policy's behavior and an expert's. Instead of simple per-action losses, modern methods minimize sophisticated trajectory-level metrics (e.g., Chamfer distance) or distributional divergences (e.g., f-divergences) to better capture behavioral similarity. #todo[Citations for trajectory-level IL metrics, e.g., Chen 2023, Ke 2020]
 
-=== Systematic Failure Patterns
++ *Probabilistic Views:* By decorating a behavior with a *probability distribution* $P(tau | pi)$, we can model the likelihood of different trajectories occurring under a given policy $pi$. This perspective is the foundation of methods like Behavioral Cloning (BC), which seeks to learn a policy that reproduces the trajectory distribution from a set of expert demonstrations.
 
-Analysis of reported robot learning failures across industries reveals several primary categories:
++ *Value-Centric RL:* For any non-trivial robotic task, defining the set of all "good" behaviors is computationally intractable. The dominant paradigm in Reinforcement Learning provides a powerful, practical solution to this problem. Instead of defining the set of good behaviors directly, it creates a tractable proxy: decorating each potential trajectory $tau$ with a scalar *value*, defined via a function of a transition tuple forming the expected discounted return $E[sum gamma^t r_t | tau]$. The goal of an RL algorithm is then to find a policy whose behavior $beta$ maximizes this value. This reduces the intractable problem of enumerating good behaviors to the tractable one of finding a reward function that induces the desired behavior. However, because this structure leaves the value unbounded, it provides only a *relative* measure of performance; it can tell us if one behavior is better than another, but not whether a given behavior is good or bad at following our objectives in an absolute sense.
 
-*Specification-Related Failures*: Reward hacking, specification brittleness, objective conflicts, and inadequate semantic capture account for approximately two-thirds of documented incidents.
++ *Fulfillment-Centric Design:* This thesis introduces a new decoration: the *fulfillment function* $F(beta)$. In contrast to an unbounded value, fulfillment maps a behavior to a normalized score in $[0, 1]$, capturing the degree to which it satisfies a structured, logical objective. This provides a richer, more semantically grounded representation of policy performance, enabling absolute judgments about whether a behavior is satisfactory.
 
-*Transfer-Related Failures*: Distributional shift, adaptation challenges, and sim-to-real discrepancies comprise the remaining third of failures.
+By defining behavior in this way, we create a unified lens from which to analyze different methods for learning robot behavior. In the context of the gaps, it allows us to formally represent the Specification-to-Behavior and Simulation-to-Reality gaps.
 
-This 2:1 ratio between specification and transfer failures highlights that the majority of deployment problems stem from fundamental issues in how we translate human intent into formal specifications - a gap that existing taxonomies largely ignore.
+== The Three Gaps: A Formal Decomposition
 
-== Existing Taxonomies
+We can formalize the *Intent-to-Reality Gap* by treating the development pipeline as a sequence of functional transformations. This allows us to precisely define each gap as an error introduced by these transformations.
 
-Current research has developed several taxonomies for understanding deployment failures in robot learning, primarily focused on specific aspects of the transfer problem.
+Let's define the core operators in the pipeline:
+=== Operators
+#note(gradient: primary_gradient)[
+  #table(
+    columns: (auto, auto, auto),
+    row-gutter: 2em,
+    align: (right, left, left),
+    stroke: none,
+    column-gutter: (-0.5em, 0.5em),
+    `enc`, [: $I -> "Spec"$], [
+      An *Encoding* operation that translates intent to specification ($ #`spec` = #`enc`\("human intent")$). Usually a human process.
+    ],
+    $#`opt`_"c"$, [: $"Spec" -> pi$], [
+      An *Optimize* operation that takes a specification and produces a policy by optimizing within a given context $c$ ($pi = #`opt`_(c)("spec")$).
+    ],
+    $#`exec`_"c"$, [: $(pi) -> beta$], [
+      An *Execute* operation that runs a policy in a given context $c$, producing behavior ($beta = #`exec`_c(pi)$).
+    ],
+  )
+]
 
-=== Sim-to-Real Transfer Taxonomies
+=== Example Instantiations
+These abstract operators can be instantiated in different ways depending on the learning paradigm:
 
-Recent work has provided valuable categorizations of sim-to-real discrepancies. @valassakis2020crossing categorizes these into two primary types:
-- *Observation Shift*: Differences in sensor modalities and resulting data between simulation and real world
-- *Dynamics Shift*: Differences in underlying physics and how actions affect state
++ If we instantiate the `opt` operation to be RL optimization, `Spec` becomes the set of reward functions. Setting the context to a simulator, the operation is in that case the familiar RL pipeline, with $pi = #`RL`_("sim")("reward function")$.
 
-@jiang2024transic offers a more granular breakdown for contact-rich manipulation:
-- *Perception Error Gap*: Visual inputs, sensor noise, and calibration differences
-- *Controller Gap*: Differences in control interfaces and capabilities  
-- *Embodiment Mismatch*: Physical differences between simulated and real robots
-- *Dynamics Difference*: Discrepancies in physical laws and parameters
-- *Object Asset Mismatch*: Variations in object properties
++ If we instantiate `Spec` to be an expert behavior $beta_"expert"$, we can see how this frames the problem for imitation learning. Given that the behavior of any policy $pi$ is $beta_pi = #`exec`_("sim")(pi)$, various imitation learning algorithms can be seen as operators that minimize some behavioral divergence $d(beta_pi, beta_"expert")$ to find the optimal policy: $pi^* = #`IL`\(beta_"expert")$.
 
-=== Multi-Objective Reinforcement Learning Approaches
++ The `enc` operator can also be instantiated as a composition of functions. We can see this in methods like Eureka @eureka, where the high-level `enc` operation is composed of two sub-stages: a human translating their intent into a textual prompt ($"text" = #`enc`_1("intent")$), and an LLM which acts as a second encoder to produce the final specification ($"spec" = #`enc`_2("text")$).
 
-Existing MORL taxonomies focus primarily on algorithmic approaches:
-- Scalarization-based methods (linear combinations)
-- Pareto-based methods (frontier construction)
-- Constraint-based methods (CMDPs)
+#todo[Add a diagram of the pipeline]
 
-However, these taxonomies treat objective specification as given and focus on optimization rather than the fundamental challenge of translating intent into formal specifications.
+This functional decomposition provides the formal foundation for our analysis.
 
-=== Limitations of Existing Frameworks
+#figure(
+  todo[Add diagram visualizing the compounding errors across the three gaps.],
+  caption: [The Intent-to-Reality Gap, decomposed into its three primary components. Errors introduced at each stage cascade and compound, leading to a significant divergence between the original intent and the final deployed behavior.]
+)
 
-While valuable, existing taxonomies exhibit critical limitations that prevent systematic solutions to deployment failures:
+This decomposition into three critical, interconnected gaps provides the structure for our analysis.
 
-*Narrow Scope*: Most focus on specific transfer problems (sim-to-real) or algorithmic approaches (MORL) rather than the complete intent-to-deployment pipeline. This fragmented view prevents understanding of how specification problems cascade into deployment failures.
+=== The Intent-to-Specification Gap
 
-*Missing Semantic Dimension*: No existing framework addresses the fundamental challenge of preserving semantic meaning when translating human intent into formal specifications. This represents the largest source of failures yet remains unaddressed.
+The *Intent-to-Specification Gap* is the semantic error from the `enc` operator. It represents the loss of fidelity when translating human intent $I$ into the formal specification `spec` and is not typically easily quantifiable. This discrepancy is arguably the most significant and least addressed challenge in robot learning. It is fundamentally an *encoding error* that arises from a mismatch between the human's mental model and the resulting mathematical representation. This error typically stems from two sources:
 
-*Disconnected Components*: Transfer taxonomies and specification approaches are treated as independent problems rather than interconnected challenges. This prevents unified solutions that address multiple failure modes simultaneously.
++ *Limited Expressivity*: The specification language itself may be too restrictive to capture the rich, nuanced, and often qualitative nature of human intent.
++ *Flawed Translation*: The practitioner may struggle to correctly or completely translate their mental model into the formal language, a difficulty that is exacerbated by languages that are not intuitive or easy to use.
 
-*Post-Hoc Analysis*: Existing frameworks primarily classify failures after they occur rather than providing systematic understanding to prevent them. With billions invested in deployment, reactive approaches are insufficient.
+*Mathematical Characterization*: This gap quantifies the loss of fidelity when encoding intent $I$ into a specification `spec`. It occurs when `spec` fails to capture the semantic relationships, priorities, and logical structure inherent in $I$. For example, a utility function $U("spec")$ derived from the specification might not be a faithful representation of the practitioner's true utility $U(I)$.
 
-*Inadequate for Multi-Objective Systems*: Current taxonomies fail to address the specific challenges of multi-objective robotics, where semantic relationships between objectives are crucial for safe and effective deployment.
+*Manifestations in Practice*:
++ *Linear Scalarization Failure:* The most common specification method, a weighted sum of reward terms ($R = sum_i w_i R_i$), is a prime example of limited expressivity. When a practitioner says "prioritize safety above efficiency," the weights $w_"safety"$ and $w_"efficiency"$ cannot capture the lexicographical nature of this relationship. They treat all objectives as linearly tradeable, fundamentally misrepresenting the intent.
++ *Specification Brittleness:* Because the semantic structure is lost in translation, small changes in specification parameters (like weights) can lead to dramatically different and unexpected behaviors. A minor tweak to an efficiency weight might cause a mobile robot to skip essential safety checks, directly violating the original intent.
++ *Obscured Trade-offs:* Poorly expressive specifications, like linear combinations, hide the true nature of the trade-offs being made, making it impossible to verify that the system is behaving as intended. A total reward of 0.7 is meaningless without understanding the underlying performance on each constituent objective.
 
-These limitations leave practitioners without systematic guidance for preventing the most common and costly deployment failures, necessitating a unified framework that addresses the complete intent-to-reality pipeline.
+*Example: Quadrotor Navigation*: Consider the intent: "Fly efficiently to the target while maintaining safety and smoothness. Safety is non-negotiable." A traditional specification like $R = 0.5 R_"efficiency" + 0.3 R_"safety" + 0.2 R_"smoothness"$ is semantically hollow. It fails on both fronts of the intent-to-specification gap: the language of weighted sums is not expressive enough for the hard constraint, and the chosen weights are an arbitrary translation of "efficiently" and "smoothness." Our fulfillment framework, detailed in later chapters, directly addresses this by preserving semantic meaning through compositional logic.
 
-== A Unified Intent-to-Reality Taxonomy
+=== The Specification-to-Behavior Gap
+#label("gap:optimization")
 
-The critical limitations of existing approaches, combined with the systematic nature of deployment failures and massive economic stakes, necessitate a comprehensive framework that addresses the complete pipeline from human intent to deployed robot behavior. 
+The *Specification-to-Behavior Gap* is the optimization error from the `opt` operator. Given a policy optimized in simulation, $pi_"sim" = #`opt`_("sim")(#`spec`)$, this gap measures how well its resulting behavior, $#`exec`_("sim")(pi_"sim")$, adheres to the original specification. This discrepancy arises when a learning algorithm fails to produce a policy that behaves according to the intended specification, *even within the controlled confines of the idealized model*. Its sources include:
 
-Our unified taxonomy addresses these gaps by:
-- Capturing the complete intent-to-deployment pipeline rather than isolated components
-- Introducing the crucial semantic dimension that accounts for the majority of failures  
-- Showing systematic interconnections between specification and transfer challenges
-- Providing proactive guidance for preventing failures rather than post-hoc classification
-- Specifically addressing multi-objective systems where semantic relationships are critical
+*Sources of the Gap*:
++ *Optimization Pathologies*: The optimization landscape may be fraught with poor local minima. An algorithm may find a policy that is locally optimal with respect to the specification `spec` but which is behaviorally flawed (e.g., exhibits high-frequency control oscillations that are not explicitly penalized).
++ *Reward Hacking*: Policies are notorious for finding loopholes in specifications. A delivery drone in simulation might learn to minimize flight time by flying through simulated walls if collision penalties are imperfectly specified, thus achieving a high reward for a behavior that violates unstated assumptions.
++ *Exploration Limitations*: Insufficient exploration during training may prevent the discovery of the globally optimal policy. The learned policy may perform well in visited states but fail in unexplored regions of the simulation.
++ *Function Approximation Errors*: Neural networks, as universal function approximators, still introduce inherent errors and biases. The learned policy $pi_"sim"$ is an approximation of the true optimal policy $pi^ast_text("spec")$, and this approximation error contributes to the gap.
 
-=== Formal Decomposition of the Intent-to-Reality Gap
+=== The Simulation-to-Reality Gap
+#label("gap:reality")
 
-We formalize the overall *Intent-to-Reality Gap* as the discrepancy between a practitioner's true intent and the actual, deployed behavior of the robot in the real world. This gap can be primarily decomposed into two major stages: the translation of intent into a formal specification, and the translation of that specification into real-world robot behavior.
+The *Simulation-to-Reality Gap* is the execution error from the `exec` operator. For a policy $pi_"sim" = #`opt`_("sim")("reward")$ trained in simulation, this gap is the behavioral divergence that arises when changing the execution context from simulation to reality: $d(#`exec`_("sim")(pi_"sim"), #`exec`_("real")(pi_"sim"))$. This is the classic "sim-to-real" problem, where the core failure is that the *behavior* generated in simulation is not a perfect proxy for the *behavior* that manifests in reality. We can decompose this gap into two fundamental types of mismatch:
 
-Let $I$ represent the practitioner's true intent, $S$ the formal specification used for training (e.g., a reward function or an FPL expression), $pi_"sim"$ the policy learned in simulation based on $S$, $beta_"sim"$ the behavior of $pi_"sim"$ in the simulation, and $beta_"real"$ the actual deployed behavior of the policy in the real world.
++ *Dynamical Mismatch*: This can be quantified by attaching a dynamical systems-based divergence to the full behaviors ($beta_"sim"$ vs. $beta_"real"$). For example this can be the difference between differential equation gains arising from system identification and the ones estimated from information about the real system. This captures model errors, as it measures differences in how the system evolves on a trajectory-by-trajectory basis.
 
-The total Intent-to-Reality Gap can be expressed as:
-$ "Gap"_"Intent-to-RealBehavior"(I, beta_"real") = "Gap"_"Semantic"(I, S) + "Gap"_"Spec-to-RealBehavior"(S, beta_"real") $
++ *Distributional Mismatch*: This can be quantified by first flattening the behaviors to their marginal state visitation probabilities and then measuring the divergence between these distributions. This precisely defines the gap between the distributions of states encountered in simulation versus reality.
 
-The first component, the *Semantic Gap*, captures the challenges in translating human intent $I$ into a formal specification $S$. The second component, the *Specification-to-Real-Behavior Gap*, encompasses all challenges in getting a robot to achieve the behavior implied by $S$ in the real world.
+==== Sources of Dynamical Mismatch
+Prior work has identified several sources of dynamical mismatch:
++ *Dynamics & Model Discrepancies*: The core of the gap lies in the differences between the simulated physics and real-world dynamics. This includes both *aleatoric* uncertainty (inherent randomness in the world) and *epistemic* uncertainty, which represents gaps in our model's knowledge such as unmodeled effects like friction, air resistance, and motor delays. These correspond to the "dynamics shift" identified by @valassakis2020crossing and @jiang2024transic.
++ *Observation & Perception Discrepancies*: Real sensors have noise, latency, and calibration errors not perfectly modeled in simulation. This is the "observation shift" or "perception error gap".
++ *Embodiment and Control Mismatches*: Physical differences between the simulated robot model and the real hardware, or differences in the control interfaces, contribute significantly to the gap.
 
-Given the prevalence of simulation-based training in modern robotics, the $"Gap"_"Spec-to-RealBehavior"$ can be further decomposed:
-$ "Gap"_"Spec-to-RealBehavior"(S, beta_"real") = "Gap"_"Spec-to-SimBehavior"(S, beta_"sim") + "Gap"_"Sim-to-Real"(beta_"sim", beta_"real") $
+While dynamical mismatches are a classic focus of sim-to-real transfer, the *distributional mismatch* becomes especially critical during long-term operation. The real world is not static, and an agent must be able to adapt as the distribution of tasks and conditions evolves. This problem of *ongoing adaptation* is a primary focus of this thesis, particularly in the chapter on Anchor Critics, which treats adaptation itself as a specification problem.
 
-Here:
-- $"Gap"_"Spec-to-SimBehavior"$ is the gap between the specified intent $S$ and the behavior $beta_"sim"$ achieved by the policy $pi_"sim"$ *within the simulation environment*. This involves challenges like reward hacking and optimization difficulties, detailed below.
-- $"Gap"_"Sim-to-Real"$ is the gap encountered when transferring the simulated behavior $beta_"sim"$ to actual real-world behavior $beta_"real"$. This involves discrepancies between simulation and reality, detailed subsequently.
+*Example: Quadrotor Control*: A quadrotor policy trained in a simulation that assumes perfect state estimation, idealized motor responses, and simplified aerodynamics will inevitably produce a different behavior when deployed. In the real world, it must contend with noisy IMU data and true motor dynamics (dynamical mismatches), as well as unmodeled wind gusts that change over time (a distributional mismatch). These sources compound, creating a significant simulation-to-reality gap.
 
-Additionally, the distributional dimension addresses natural evolution encountered during extended deployment in potentially changing real-world conditions. This multi-level decomposition enables a targeted analysis of failure modes and the development of specific solutions for each component, while recognizing their interconnected nature.
+== Empirical Validation and Relation to Prior Work
 
-== The Semantic Gap: From Intent to Specification
+The taxonomy presented here is not merely theoretical; it is grounded in the systematic analysis of real-world deployment failures and provides a more comprehensive alternative to existing frameworks.
 
-The semantic gap captures the fundamental challenge of translating human intentions into formal specifications that can be optimized by learning algorithms. This gap arises because current specification languages cannot preserve the semantic meaning and relationships inherent in human intentions.
+=== Empirical Validation
+Our taxonomy is grounded in the systematic analysis of real-world deployment failures. While precise quantification is difficult, empirical studies of robot failures reveal patterns that align with our proposed decomposition, particularly concerning the *Specification-to-Behavior* and *Simulation-to-Reality* gaps.
 
-=== Mathematical Characterization
+These gaps manifest as failures arising from policy execution in novel environments and mismatches between simulation and reality. Research into sim-to-real transfer provides a broad catalogue of such issues, generally categorizing them into perception, dynamics, and embodiment mismatches, and shows that systematically addressing them is key to improving performance @sim-to-real-survey. More detailed frameworks for analyzing policy failures demonstrate how specific environmental configurations can trigger execution failures that were not apparent during training, reinforcing the need for a structured understanding of the specification-to-behavior pipeline @robofail.
 
-The semantic gap quantifies the loss of meaning when encoding intent into specifications. This occurs when the formal specification $S$ fails to capture the semantic relationships, priorities, and logical structure inherent in the practitioner's intent $I$.
+By providing a structured decomposition, our framework helps to categorize these disparate failure modes, underscoring that the challenge of building reliable robotic systems extends far beyond just sim-to-real transfer.
 
-=== Manifestations in Practice
+=== Relation to Prior Work and Its Limitations
+Existing taxonomies, while valuable, offer a fragmented view of the problem.
++ *Sim-to-Real Taxonomies*: Frameworks like those from @valassakis2020crossing and @jiang2024transic provide a granular breakdown of the sources of the *Simulation-to-Reality Gap*. However, they do not address the preceding intent-to-specification and specification-to-behavior gaps, which our analysis shows are the largest source of failures.
++ *MORL Taxonomies*: Taxonomies in Multi-Objective Reinforcement Learning focus on algorithmic approaches (e.g., scalarization-based vs. Pareto-based) but treat the objective specification as a given. They optimize the formula they are handed, without questioning if the formula correctly captures the original intent.
 
-*Linear Scalarization Failure:* Traditional reward engineering uses linear combinations $R = sum_i w_i R_i$ that completely destroy semantic information. When a practitioner says "prioritize safety over efficiency," the weights $w_"safety"$ and $w_"efficiency"$ cannot capture the logical structure of this relationship.
-
-*Specification Brittleness:* Small changes in weights lead to dramatically different behaviors because the linear combination does not preserve the semantic structure of the original intent. A 0.1 increase in efficiency weight might cause a mobile robot to skip essential safety checks, violating the practitioner's true intent.
-
-*Hidden Trade-offs:* Linear combinations obscure the actual trade-offs being made, making it impossible to verify that the system is behaving as intended. When the total reward equals 0.7, practitioners cannot determine whether this represents balanced performance across objectives or extreme performance in some areas.
-
-=== Example: Quadrotor Navigation
-
-Consider specifying intentions for quadrotor navigation:
-
-*Human Intent*: "Fly efficiently to the target while maintaining safety and smoothness. Safety is non-negotiable, smoothness is important for passenger comfort, and efficiency matters for battery life."
-
-*Traditional Specification*: $R = 0.5 R_"efficiency" + 0.3 R_"safety" + 0.2 R_"smoothness"$
-
-The semantic gap is enormous: the weights cannot express that safety is "non-negotiable" or that smoothness relates to "passenger comfort." The linear combination treats all objectives as tradeable commodities, fundamentally misrepresenting the practitioner's intent.
-
-=== Addressing the Semantic Gap
-
-Our fulfillment framework directly addresses the semantic gap by preserving semantic meaning through:
-
-*Semantic Anchoring*: Each fulfillment function has clearly defined meaning with $f(tau) = 0$ meaning "completely unacceptable" and $f(tau) = 1$ meaning "satisfactory."
-
-*Compositional Logic*: Relationships between objectives are expressed through continuous logic operators that preserve semantic meaning: $f_"safety" and f_"efficiency"$ means "both safety AND efficiency must be satisfied."
-
-*Interpretable Values*: Intermediate values maintain semantic meaning throughout optimization, enabling practitioners to understand and debug system behavior.
-
-== The Specification-to-Sim-Behavior Gap: From Specification to Simulated Policy Behavior
-#label("gap:spec_to_sim_behavior")
-
-The Specification-to-Sim-Behavior Gap captures the challenges that arise when learning algorithms fail to produce policies that behave according to the intended specification, *even within the controlled confines of the simulation environment*. This gap occurs when the learned policy $pi_"sim"$ exhibits behavior $beta_"sim"$ in simulation that deviates from the behavior intended by the specification $S$.
-
-=== Sources of Specification-to-Sim-Behavior Gap
-
-*Optimization Pathologies (in Simulation)*: Learning algorithms may get trapped in local optima that satisfy the specification numerically but not behaviorally within the simulation. A policy might achieve high average rewards while exhibiting unintended oscillatory behavior in the simulator.
-
-*Reward Hacking (in Simulation)*: Policies discover behaviors in the simulated environment that maximize the specified objective while violating unstated assumptions or exploiting simulator loopholes. A delivery drone in simulation might minimize flight time by flying through simulated walls if collision penalties are imperfectly specified.
-
-*Exploration Limitations (in Simulation)*: Insufficient exploration during simulated training may prevent the discovery of policies that truly satisfy the specification across all relevant simulated states. The learned policy may perform well in visited simulated states but fail in unexplored regions of the simulation.
-
-*Function Approximation Errors*: Neural network approximations may introduce biases that cause the learned policy to deviate from the optimal policy for the given specification, even with perfect information within the simulation.
-
-== The Sim-to-Real Gap: From Simulated Behavior to Real-World Performance
-#label("gap:sim_to_real")
-
-The Sim-to-Real Gap captures the fundamental challenges that arise when policies trained in simulation are deployed on real hardware, leading to different real-world behaviors. This gap encompasses the discrepancies identified in existing sim-to-real taxonomies while positioning them within our broader intent-to-reality framework.
-
-=== Integration with Existing Sim-to-Real Taxonomies
-
-Our sim-to-real gap incorporates and extends existing taxonomies. The categorizations from @valassakis2020crossing (observation shift, dynamics shift) and @jiang2024transic (perception errors, controller gaps, embodiment mismatches, dynamics differences, object asset mismatches) all represent specific manifestations of the fundamental discrepancy between simulated and real-world behaviors.
-
-The key insight is that these existing categorizations describe *sources* of the sim-to-real gap rather than the gap itself. Our framework positions these as components within a systematic understanding of how simulation limitations affect deployed behavior.
-
-=== Sources of Sim-to-Real Gap
-
-The sources of the Sim-to-Real Gap, building on the established literature, include:
-
-1.  *Observation & Perception Discrepancies*: Real sensors exhibit noise, delays, calibration inaccuracies, and failure modes not perfectly captured in simulation. This encompasses @valassakis2020crossing's "observation shift" and @jiang2024transic's "perception error gap."
-
-2.  *Dynamics & Model Discrepancies*: Discrepancies in simulated physical laws and parameters versus the real system, including unmodeled contact forces, friction, or material properties. This corresponds to @valassakis2020crossing's "dynamics shift" and @jiang2024transic's "dynamics difference."
-
-3.  *Embodiment and Control Mismatches*: Physical differences between simulated and real robots (@jiang2024transic's "embodiment mismatch") and differences in control interfaces (@jiang2024transic's "controller gap").
-
-4.  *Environmental Complexity*: Real environments contain countless unmodeled details that simulation cannot perfectly capture.
-
-=== Example: Quadrotor Control
-
-The quadrotor example illustrates how these sources manifest in practice:
-
-*Simulated Training*: Assumes perfect state estimation, idealized actuator models, and simplified aerodynamics.
-
-*Real Deployment*: Encounters noisy sensor data (observation shift), actual motor dynamics (dynamics shift), and unmodeled environmental factors, demonstrating how multiple gap sources compound to create deployment failures.
-
-== The Distributional Dimension: Ongoing Adaptation in Deployment
-#label("gap:distributional")
-
-The distributional dimension captures an inherent and expected aspect of real-world deployment: the distribution of states, disturbances, task variations, and environmental conditions encountered during extended deployment naturally evolves over time. Rather than viewing this as a "gap" to be eliminated, modern robot learning methods should account for this distributional shift as a fundamental characteristic of real-world operation.
-
-This distributional evolution is distinct from the initial sim-to-real transfer problem, focusing instead on the robot's ability to maintain performance as conditions change during deployment. Well-designed methods should anticipate and gracefully handle these distributional changes rather than assuming static environments.
-
-== Empirical Validation of the Taxonomy
-
-Analysis of reported robot learning failures across industries provides empirical support for our taxonomy. Deployment failures consistently map to our three core components:
-
-=== Specification-Related Failures (≈ 67% of incidents)
-
-*Reward Hacking*: Policies discover behaviors that maximize specified rewards while violating unstated assumptions - a manifestation of the semantic gap where formal specifications fail to capture true intent.
-
-*Specification Brittleness*: Small changes in objective weights lead to dramatically different behaviors - indicating that linear scalarization fails to preserve semantic relationships.
-
-*Objective Conflicts*: Linear combinations fail to capture intended relationships between competing objectives - demonstrating the inadequacy of current specification approaches.
-
-=== Transfer-Related Failures (≈ 33% of incidents)
-
-*Sim-to-Real Discrepancies*: Policies fail when encountering real-world conditions not captured in simulation - directly mapping to our sim-to-real gap.
-
-*Distributional Shift*: Performance degradation as deployment conditions evolve - validating the importance of the distributional dimension.
-
-*Adaptation Challenges*: Difficulties updating policies during deployment without catastrophic forgetting - highlighting the interconnected nature of our taxonomy components.
-
-This empirical validation demonstrates that our taxonomy captures the systematic patterns underlying deployment failures, rather than merely providing a theoretical categorization.
-
-== Interconnections and Compounding Effects
-
-While we analyze these components separately for clarity, they are fundamentally interconnected and exhibit significant compounding effects. Poor performance in one area amplifies challenges in others.
-
-=== Semantic-to-Deployment Cascade
-
-Poor semantic specification amplifies deployment failures. A policy with proper semantic structure (well-specified safety constraints) degrades gracefully under distributional changes, while a policy with poor semantic structure (linear safety-efficiency trade-offs) fails catastrophically.
-
-=== Specification-to-Transfer Interactions
-
-Policies that exhibit reward hacking during training are particularly vulnerable to sim-to-real transfer and distributional shift. A policy that exploits simulator artifacts will fail more dramatically in real deployment than a policy that learns robust behaviors.
-
-=== Design Implications
-
-This analysis leads to several design principles:
-
-*Semantic-First Design*: Address semantic gaps early in the design process, as they cascade to amplify all other challenges.
-
-*Robust Specification*: Design specifications that are inherently robust to the types of challenges that will be encountered.
-
-*Distribution-Aware Training*: Structure training procedures to anticipate distributional changes rather than optimizing for training performance alone.
-
-*Unified Solutions*: Develop solutions that address multiple challenges simultaneously rather than treating them independently.
-
-== Chapter Summary
-
-This chapter establishes a formal taxonomy of the intent-to-reality gap that provides a foundation for understanding deployment failures in robot learning systems.
-
-The key insight is that deployment failures stem from three core challenges: the semantic gap (intent to specification), the specification-to-sim-behavior gap (learning in simulation), and the sim-to-real gap (transfer to reality). These challenges are interconnected, with poor semantic specification cascading to amplify deployment failures.
-
-Additionally, real-world deployment involves natural distributional evolution that should be anticipated rather than eliminated. This taxonomy motivates semantic-first design principles and the development of unified frameworks that address multiple challenges simultaneously.
+Our unified framework addresses these limitations by:
+1.  *Capturing the Full Pipeline*: It provides an end-to-end view from intent to deployment.
+2.  *Prioritizing the Intent-to-Specification Gap*: It is the first to formally identify and name the intent-to-specification gap as the primary source of failures.
+3.  *Connecting the Components*: It explicitly models how the gaps are interconnected and how failures cascade through the system.

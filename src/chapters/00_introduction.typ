@@ -2,10 +2,22 @@
 
 = Introduction <chap:introduction>
 
-Contemporary robot learning has achieved remarkable successes in controlled environments, from game-playing agents mastering complex strategies #todo[AlphaGo] to robotic manipulation systems demonstrating impressive dexterity in laboratory settings #todo[OpenAI Dactyl]. However, a significant gap persists between these research achievements and practical deployment in real-world robotics applications.
+Contemporary robot learning has achieved remarkable successes in controlled environments, from game-playing agents mastering complex strategies #todo[AlphaGo] to robotic manipulation systems demonstrating impressive dexterity in laboratory settings #todo[OpenAI Dactyl]. However, a significant gap persists between these research achievements and practical deployment in real-world robotics applications. Practitioners repeatedly encounter:
 
-Consider the challenges faced by practitioners attempting to deploy learned behaviors in real robotics systems. Autonomous quadrotors trained to perform aggressive maneuvers in simulation often exhibit unstable or unsafe behavior when transferred to physical platforms #todo[sim2real quadrotor]. Industrial robotic arms that learn manipulation tasks through reinforcement learning may optimize for task completion while ignoring energy efficiency, leading to impractical power consumption in production environments #todo[energy aware manipulation]. Warehouse robots trained with carefully crafted reward functions may develop unexpected behaviors that satisfy the mathematical objective while violating implicit safety assumptions #todo[reward gaming warehouse].
++ *Objective-specification difficulty* — scalar rewards are hard to craft so that they reflect designer intent.
++ *Simulation–reality brittleness* — controllers that look good in sim often oscillate or crash on hardware.
++ *Catastrophic forgetting* during adaptation to real data.
++ *Sample inefficiency* — popular RL algorithms demand lengthy, expensive data collection.
 
+Taken together, these shortcomings underscore the breadth of the *intent-to-reality gap*—the discrepancy between designer intention and deployed robot behaviour.
+
+Examining what contributes to this gap, we identify critical expressiveness limitations in how objectives are specified and optimized. User intentions encoded as scalar rewards often fail to capture the behaviors produced by policy optimization. Even in simulated benchmark tasks designed by researchers in the field, these reward functions tend to be difficult to interpret, often contain redundant terms, and even worse, produce algorithm-, environment-, and seed-specific formulations.
+
+If rewards are the answer, then what is the question? The _reward hypothesis_ states that scalar rewards can precisely represent all that we care about in robot control. However, it says nothing about the difficulty in expressing such rewards. Can adding more structure to this interface of value and reward functions help us express our intentions more precisely?
+
+To address this question, we instead treat objectives as continuous and bounded logical values to be fulfilled. This fulfillment-centric reasoning serves as a semantic bridge, translating intuitive judgments like "this robot moves 80% as smoothly as I want, and 30% as fast as I want" into mathematically precise, differentiable, and composable fulfillment values that remain aligned with intention throughout optimization. From this perspective, we unify the aforementioned challenges under the guise of accurate, or missing, specification.
+
+Reasoning across the entire stack, from user intention to careful treatment of the embedded systems running on-robot, is essential for bridging the intent-to-reality gap. This wholistic approach enabled the achievement of several state-of-the-art results: the first RL attitude controller to outperform classical PID controllers on real racing quadrotors, reductions in power consumption by 50-80%, live and robust neural network adaptation, and consistent policy search with up to 3$times$ faster learning than Soft Actor Critic across various robotic domains.
 
 == Problem Statement
 
@@ -27,9 +39,7 @@ The requirement for prohibitively long training runs due to the inherently low s
 
 Despite their apparent diversity, these four challenges share a common contributing factor: critical expressiveness limitations in how objectives are specified and optimized in robot learning. Current approaches lack the representational structures necessary to capture and preserve the semantic meaning of practitioner intentions throughout the learning pipeline, which exacerbates each of these challenges.
 
-The fundamental issue lies in the predominant reliance on scalar optimization primitives that cannot adequately represent logical relationships between objectives. When practitioners specify intentions like "achieve both speed and smoothness," they typically mean that both objectives matter, but whichever is less satisfied should become more important to improve.
-
-Consider the mathematical inadequacy when practitioners specify "smooth and fast flight." The intended relationship is that both objectives matter, but less fulfilled objectives should receive more attention, this requires structured composition that linear utilities cannot express. Linear scalarization attempts $R = w_1 R_"smooth" + w_2 R_"speed"$, but this treats both objectives equally regardless of their current satisfaction levels. If smoothness is at 0.3 and speed is at 0.9, the practitioner would want to focus on improving smoothness, but linear combination cannot encode this adaptive prioritization, fundamentally violating the practitioner's intent #todo[Pareto optimal RL]. To account for this, many use sum of squares, but as we will see this can be seen as an instance of a more general operator to maximize.
+The fundamental issue lies in the predominant reliance on scalar optimization primitives that cannot adequately represent logical relationships between objectives. When practitioners specify intentions like "achieve both speed and smoothness," they typically mean that both objectives matter, but whichever but less fulfilled objectives should receive more attention, this requires structured composition that linear utilities cannot express. Linear scalarization attempts $R = w_1 R_"smooth" + w_2 R_"speed"$, but this treats both objectives equally regardless of their current satisfaction levels. If smoothness is at 0.3 and speed is at 0.9, the practitioner would want to focus on improving smoothness, but linear combination cannot encode this adaptive prioritization, fundamentally violating the practitioner's intent #todo[Pareto optimal RL]. To account for this, many use sum of squares, but as we will see this can be seen as an instance of a more general operator to maximize.
 
 This semantic erosion propagates throughout the learning pipeline, manifesting as each of the four challenges. Practitioners cannot directly express their intentions, leading to brittle numerical approximations that fail under distributional shifts, cause catastrophic forgetting during adaptation, and require inefficient high-dimensional search over poorly structured optimization landscapes.
 
@@ -45,34 +55,25 @@ Beyond specification, we also show that intentionality extends to architectural 
 
 == Key Contributions
 
-This thesis makes the following primary contributions to robot learning:
++ *Taxonomy of the Intent-to-Reality Gap* — Identifies the aspects usually overlooked in robot-learning literature (objective expressiveness, behavioural preservation, deployment constraints) and organises them into a coherent taxonomy that complements traditional foci on reward maximisation and sim-to-real transfer.
 
-=== Unified Framework Analysis
-We provide the first systematic analysis demonstrating that expressivity and deployment challenges stem from similar underlying issues in multi-objective constraint satisfaction. This insight simplifies the conceptual landscape and enables integrated solution approaches, as detailed in @chap:problem_formulation.
++ *Fulfilment-Centric Specification (FPL)* — Introduces Fulfilment Priority Logic and the Balanced Policy Gradient algorithm, providing an expressive, differentiable language for multi-objective intent. Thus, allowing the unification of a large portion of the contributions in this thesis.
 
-=== Objective Taxonomy and Treatment Framework
-We introduce a comprehensive taxonomy of objectives in robot learning—general objectives, behavioral objectives, and universal behavioral objectives—with appropriate treatment mechanisms for each category. This taxonomy clarifies when to use explicit composition versus architectural integration, detailed in @chap:foundations.
++ *Universal Behavioural Objectives* — Defines cross-domain objectives such as smoothness and stability (Lyapunov safety) and supplies general integration techniques—including CAPS—that embed these objectives directly in policy architecture.
 
-=== Fulfillment Priority Logic (FPL)
-We develop Fulfillment Priority Logic, a formal specification language that enables practitioners to express complex objective relationships through continuous logic while preserving semantic meaning throughout the optimization process, detailed in @chap:fpl.
++ *Adaptation as Specification* — Presents Anchor Critics, reframing on-the-fly adaptation as a multi-fulfilment optimisation that preserves simulation intent and averts catastrophic forgetting during real-world fine-tuning.
 
-=== Architectural Integration Framework
-We present Conditioning for Action Policy Smoothness (CAPS), demonstrating how universal behavioral objectives can be integrated directly into policy architectures rather than through reward engineering, achieving superior performance with simplified specification, as detailed in @chap:ubo.
-
-=== Robust Deployment Framework
-We introduce Anchor Critics, a multi-fulfillment adaptation framework that preserves semantic anchoring during sim-to-real transfer, enabling robust real-world deployment while maintaining interpretability, detailed in @chap:adaptation_anchors.
-
-=== Real-World Validation
-We provide comprehensive empirical validation including the first reinforcement learning system to outperform classical PID controllers in real quadrotor deployment, achieving 50-80% power reductions and demonstrating practical viability, empirically demonstrated across chapters detailing FPL (@chap:fpl), CAPS (@chap:ubo), and Anchor Critics (@chap:adaptation_anchors).
++ *Embedded-System Architecture* — Combines asymmetric actor–critic sizing with the SwaNNFlight firmware stack, enabling resource-aware deployment and hot-swappable neural controllers on real-time hardware.
 
 == Empirical Results
 
 Our approach achieves significant quantitative improvements across multiple domains:
 
-- *Sample Efficiency*: Up to 6.4× speedup on LunarLander and 5.6× speedup on Hopper compared to baseline methods, with FPL consistently outperforming state-of-the-art algorithms like SAC and CrossQ @fpl2025
+- *Sample Efficiency*: Up to 5$times$ faster learning than Soft Actor Critic on standard Gymnasium benchmark tasks @fpl2025
+- *Training Stability*: Across Gymnasium benchmarks the standard deviation of learning curves is reduced by 40–50\%, indicating more repeatable training runs @fpl2025
 - *Energy Consumption*: Almost 80% power reductions in quadrotor control demonstrated through CAPS regularization @caps2021  
 - *Deployment Success*: 100% flight-worthy controllers in real-world quadrotor deployment through our RE+AL framework @how_to_train_your_quadrotor
-- *Training Consistency*: 100% successful sim-to-real transfer with reproducible training pipeline
+- *Training Consistency*: 100% successful sim-to-real transfers with reproducible training runs, and 40–50\% lower reward variance across Gymnasium benchmarks @how_to_train_your_quadrotor @fpl2025
 - *Transfer Robustness*: Up to 50% power consumption reduction during sim-to-real adaptation using Anchor Critics @anchor_critics
 
 == Scope and Limitations

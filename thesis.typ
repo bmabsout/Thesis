@@ -83,8 +83,8 @@
   #include "src/chapters/02_intent_to_reality.typ"
   
   // Part II: Theoretical Framework
-  #include "src/chapters/03_foundations_fulfillment.typ"
-  #include "src/chapters/04_fulfillment_priority_logic.typ"
+  #include "src/chapters/03_encoding_intentionality.typ"
+  #include "src/chapters/04_fpl.typ"
   
   // Part III: Implementation and Applications
   #include "src/chapters/05_universal_behavioral_objectives.typ"
@@ -96,7 +96,7 @@
   #include "src/chapters/08_synthesis_future.typ"
 
   // Include the Claims.typ document
-  #include "src/Claims.typ"
+  // #include "src/Claims.typ"
 ]
 
 // Optional: Generate Appendices content if you have them
@@ -139,5 +139,5 @@
   // appendices: appendices, // Optional
   bibliography: bibliography_content,
   vita: vita,
-  local_outlines: false,
+  local_outlines: true,
 )

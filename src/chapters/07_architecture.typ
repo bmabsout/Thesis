@@ -1,4 +1,4 @@
-= Importance of Architectural Consideration <chap:architecture>
+= Architectural Considerations <chap:architecture>
 
 == Embedded Systems Considerations
 

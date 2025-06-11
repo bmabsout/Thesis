@@ -9,3 +9,14 @@ evaluate standard assumptions in MORL in terms of the competitive structure
 My main thesis is that when behavior is not as expected, to debug it as the method not capturing hidden user intentions, then extending the algorithms we have today so that we can capture that
 
 should have a chapter for a systems perspective xO
+
+Structure in mind:
+- Introduction: what you just read
+- Background and Related Work
+- The Intent-to-Reality Gap, I intend to introduce my definitions in this chapter (I have a precise definition for things like behavior and such)
+- Encoding Intentionality (this is the chapter about fulfillments and fpl)
+- Universal Behavioral Objectives (where caps belongs), basically I define things like smoothness as a universal behavioral objective and then a universal behavioral fulfillment
+- Adaptation as Specification, this is the anchor stuff
+- Architectural Considerations, this is where things like Optimizing nn architecture and swannflight come in
+- Synthesis and Future Directions
+

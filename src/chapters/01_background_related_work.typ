@@ -4,7 +4,6 @@
 #import "../../figures/momdp.typ": momdp
 #import "../../figures/transitions.typ": make_trajectory
 
-
 = Background and Related Work <chap:background_related_work>
 
 == Background
@@ -137,128 +136,60 @@ Note that linear utilitilities enjoy the property that a utility function over t
 ==== Pareto Optimality in Policy Space
 MORL adapts the foundational concept of Pareto optimality to policy space. A policy $pi^*$ is Pareto optimal if no other policy $pi'$ exists such that $reward(V_i)^(pi')(state(s)) >= reward(V_i)^(pi^*)(state(s))$ for all objectives $i$ and states $s$, with strict inequality for at least one objective-state pair. The Pareto frontier represents the set of all Pareto optimal policies, providing a complete characterization of optimal trade-offs in policy space.
 
-== Logical Specifications for Robotics
-
-The mathematical foundations for composing multiple objectives draw extensively from continuous logic and fuzzy systems theory. This work provides essential tools for extending discrete logical relationships to continuous domains.
-
-=== Fuzzy Logic Foundations
-
-Fuzzy logic extends Boolean logic to the continuous interval $[0,1]$, enabling smooth reasoning about concepts that admit degrees of truth. T-norms and T-conorms provide the mathematical foundations for continuous logical operations, satisfying commutativity, associativity, and monotonicity properties while extending AND and OR operations to continuous domains.
-
-Fuzzy systems theory establishes connections between fuzzy logic and probability theory, multi-valued logic, and approximate reasoning, demonstrating the broad applicability of continuous logic operators across diverse domains.
-
 
 == Related Work
 
-=== Fundamental Limitations of MORL
+The following review is organised around the four recurring challenges that motivate this thesis.
 
-Traditional MORL approaches face several fundamental limitations that have hindered their adoption in complex robotics applications:
+=== Objective Specification
 
-*Semantic Loss*: Even vector-valued approaches ultimately compress multi-objective information into scalar decisions during action selection, losing the semantic meaning of individual objectives.
+Designers must translate rich, often conflicting intentions into a reward signal that an optimiser can process.
 
-*Specification Complexity*: MORL requires practitioners to specify preferences, constraints, or selection criteria that are often as difficult to design as the original reward functions.
+==== Reward Design
+Reward design strategies fall into two flavours that serve distinct purposes.
 
-*Deployment Brittleness*: MORL policies trained for specific trade-offs often struggle when deployed in environments with different objective relationships.
++ *Reward engineering* designs the reward function itself.  The most common pattern is a weighted sum of heuristics (progress, energy, safety, constraint penalties) whose coefficients are adjusted by hand, though other handcrafted scalarisations appear.  A successful departure from simple weighting is the *tokamak plasma controller* @tokamak: seven normalised terms—shape, stability margins, coil limits, etc.—were combined with a geometric mean (rather than a weight vector) to stabilise a fusion plasma. This pattern of practitioners gravitating toward structured compositional approaches is also seen in other multi-objective domains like @radiotherapy, @pianosi2013tree, and @VERSTRAETEN2019428. In contrast, much of applied RL simply re-uses reward templates from prior papers and then tweaks the weights after eyeballing a few roll-outs; this copy-paste approach may pass benchmarks but rarely transfers or generalises.
 
-*Limited Logical Expressivity*: Traditional MORL approaches cannot directly express the logical relationships ("safety AND performance", "efficiency OR speed") that naturally characterize robotics objectives.
++ *Reward shaping* tackles *optimisability* rather than preference expression.  When the true task reward is sparse (e.g. goal reached), potential-based shaping @Hu2020 introduces a dense auxiliary signal that guides exploration while provably preserving the optimal policy.  Shaping eases credit assignment but does not relieve designers from specifying their ultimate objectives.  In practice many robotics papers conflate shaping with engineering, mixing potentials and weighted preferences and thereby obscuring intent.
 
-*Computational Scalability*: Methods that maintain explicit Pareto frontiers face exponential growth in computational requirements as the number of objectives increases.
-
-
-=== Avoiding Reward Engineering
-There are multiple subfields of reinforcement learning that focus efforts on avoiding the need for designing reward functions.
-
-==== Large Language Model-Based Reward Engineering
-Recent work such as the work of @eureka demonstrates how large language models can automate reward design. Eureka generates reward functions from natural language descriptions, employing a vision model for evaluating the adherence of the final policy to the original intentions representing in the textual description. While promising, such approaches still rely on standard reward engineering methodology inheriting their fundamental limitations.
 
 ==== Imitation Learning
-Imitation learning provides an alternative to manual reward engineering by learning policies directly from expert demonstrations. Rather than designing reward functions, practitioners can leverage demonstrated expert behavior as the specification of desired behavior. This approach encompasses behavior cloning and inverse reinforcement learning, offering different strategies for avoiding manual reward specification.
+Methods that rely on behavioral demonstrations as specification act as an alternative to manual reward design and fall under the umbrella of imitation learning.
 
-==== Behavior Cloning
-Behavior cloning completely avoids reward engineering by treating policy learning as supervised learning, directly mapping observed states to expert actions without any reward signal. While this represents the most direct form of reward avoidance, it suffers from distribution shift problems when the learned policy encounters states not present in the demonstration data.
++ *Behavior Cloning* (BC) @pomerleau1989alvinn completely avoids reward engineering by framing policy learning as supervised learning, directly mapping observed states to expert actions with no reward signal.  This simplicity is attractive, but BC suffers from covariate-shift: once the learned policy visits states absent from the demonstrations, errors can compound.
 
-==== Inverse Reinforcement Learning
-Inverse reinforcement learning avoids manual reward engineering by automatically inferring reward functions from expert demonstrations rather than requiring explicit design. The work of @ng2000algorithms established the theoretical foundations, while @abbeel2004apprenticeship demonstrated practical applications. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
++ *Inverse Reinforcement Learning* (IRL) avoids manual reward engineering by automatically inferring reward functions from expert demonstrations @inverse_rl_survey rather than requiring explicit design. The work of @ng2000algorithms established the theoretical foundations, while @abbeel2004apprenticeship demonstrated practical applications. However, IRL approaches still typically result in scalar reward functions and face challenges in multi-objective scenarios where expert demonstrations may represent complex trade-offs between competing objectives.
 
+==== Automating Specification with Large Language Models
+Methods such as Eureka @eureka and other similar approaches @yu2023language make use of an LLM to emit reward code, using a vision model to evaluate the adherence of the final policy to the original intentions representing in the textual description. This reduces the *manual* burden of writing and iteratively checking reward code after every run, but it merely relocates the specification problem: now the *LLM* must itself carry out the reward-engineering step, inheriting the same structural difficulties. Because this translation is intrinsically hard, success is unpredictable—some tasks work zero-shot, others fail entirely—so the fundamental challenge remains.
 
-=== Robust Deployment and Transfer Learning
+==== Multi-Objective Reinforcement Learning
+Multi-objective reinforcement learning (MORL) aims to solve problems with multiple, often competing, objectives. The dominant paradigm, known as _a-posteriori_ MORL, focuses on learning a Pareto front of optimal trade-offs, from which a user can later select a policy.
 
-The deployment challenge in robot learning has driven extensive research in domain adaptation, transfer learning, and sim-to-real transfer. This work provides essential context for our multi-fulfillment adaptation approach.
+However, validation of these methods is often limited to simpler, discrete domains like Deep Sea Treasure, and they rarely address complex continuous control tasks. Common techniques include evolutionary algorithms (e.g., MO-EA @xu2020prediction), hypernetwork-based sampling @shu2024learning, and coverage-set methods like GPI-PD @alegre2023sample. Beyond their limited domain of application, these approaches often rely on linear scalarization, which fails to capture non-linear objective relationships @survey_seq_dec_morl, and can scale poorly with numerous objectives or large memory requirements.
+
+==== Logical Specifications
+Such work aims to replace numeric weights with *compositions of predicates*.
+- Signal Temporal Logic (STL) @kress2009temporal, BLTL @lahijanian2011temporal and SPECTRL @jothimurugan2019composable encode "eventually reach", "always avoid" and offer formal satisfaction guarantees, with extensions to learning-based control @aksaray2016q. Gradients come from robustness relaxations, but optimisation remains brittle and requires manually balancing soft penalties.
+-  Priority-based logics such as Weighted STL @priority_based_temporal_logics generalise min/max with *power-mean* operators; these continuously interpolate between logical AND/OR and weighted sums, yielding smooth gradients without extra weights.
+
+In summary, existing multi-objective tools either fall back to weight selection or sacrifice sample efficiency.
 
 === Simulation-to-Reality Transfer
+Policies optimised in simulation often oscillate or fail on hardware.
 
-The sim-to-real transfer problem has received particular attention due to the efficiency advantages of simulation-based training. Domain randomization methods @Sim2Real provide approaches for training robust policies by exposing them to diverse simulation conditions.
+==== Robust and Smooth Control
+A primary failure mode for controllers transferred from simulation is behavioral brittleness, especially high-frequency oscillations in the control signal that lead to inefficiency and hardware damage @Sim2multi. One line of defense is to make policies inherently robust to the "reality gap". *Domain randomization* achieves this by training across a wide range of simulated dynamics @Sim2Real, though this can degrade peak performance. Similarly, robust optimization algorithms like TRPO and PPO limit the magnitude of policy updates to prevent divergence but do not specifically target smoothness.
 
-However, domain randomization requires careful selection of randomization parameters and may struggle with systematic biases between simulation and reality. Meta-learning approaches @MetaSimToReal demonstrate potential for rapid adaptation to new environments but require substantial computational resources during training.
+A more direct approach is to explicitly regularize for smoothness, and these techniques have been applied at different levels of the learning process. Some approaches directly regularize the policy network to penalize sharp changes in actions with respect to state perturbations @shen2020deep. Others focus on the value function, enforcing Lipschitz continuity on the critic network to improve robustness to state noise @he2024elve. In model-based RL, similar constraints are applied to the learned dynamics model to improve multi-step prediction stability @asadi2018lipschitz. However, these methods often focus only on spatial smoothness (similar states lead to similar actions) and overlook temporal smoothness (similar subsequent actions over time), which is critical for dynamic control. This thesis introduces a regularization method that addresses both spatial and temporal smoothness directly at the policy level.
 
-=== Domain Randomization and Sim-to-Real Transfer
+=== Mitigating Catastrophic Forgetting
+Fine-tuning with limited real data can erase behaviours learned in simulation.
 
-These approaches attempt to bridge the deployment crisis by training policies that are robust to distribution shift. While they have achieved some success, they treat the symptoms rather than the cause, requiring extensive engineering effort for each new domain and often sacrificing performance for robustness.
+Replay-based rehearsal, elastic weight consolidation and regularisation methods slow forgetting @catastrophic-forgetting-wolczyk, but still require careful task sequencing.  Conservative Policy Optimisation (CPO) bounds performance drops via constraints.
 
-Domain randomization and sim-to-real transfer methods focus on making learned policies robust to the inevitable differences between training and deployment environments. However, these approaches face fundamental limitations:
+=== Sample Efficiency
+Modern model-free RL (e.g. @SAC) needs millions of transitions, prohibitive for on-hardware learning.
 
-*Symptom Treatment*: Rather than addressing the root cause of brittleness in reward specification, domain randomization attempts to make brittle policies more robust through exposure to variation.
+Ensemble critics (@REDQ, @TQC, @CrossQ) reduce variance, while model-based roll-outs (DreamerV3, MuZero) trade simulation for computation.
 
-*Engineering Overhead*: Each new domain requires careful selection of randomization parameters and extensive validation, making the approach difficult to scale.
-
-*Performance Trade-offs*: Robust policies often sacrifice peak performance for generalization, which may not be acceptable in performance-critical applications.
-
-*Systematic Bias Vulnerability*: Domain randomization struggles with systematic differences between simulation and reality that cannot be captured through parameter variation.
-
-=== Adaptation and Fine-tuning
-
-Online adaptation methods adjust policies during deployment based on observed performance. These approaches show significant improvements in tracking performance through real-time policy updates, though they raise safety concerns and require careful design to prevent catastrophic failures during the adaptation process.
-
-Recent work introduces conservative policy optimization methods that prevent catastrophic degradation during adaptation. This work provides important safety guarantees that inform our anchor critics approach.
-
-=== Multi-Task and Continual Learning
-
-The challenge of learning multiple tasks while avoiding catastrophic forgetting has driven research in continual learning methods @catastrophic-forgetting-binici @catastrophic-forgetting-wolczyk. In multi-objective contexts, catastrophic forgetting can be particularly severe when objectives conflict, motivating our multi-fulfillment adaptation approach that preserves objective-specific information during adaptation.
-
-== Research Gaps and Motivation
-
-The literature review reveals several important gaps that motivate our fulfillment-centric approach:
-
-=== Semantic Preservation Gap
-
-Existing multi-objective approaches, whether in optimization, RL, or control, typically focus on mathematical properties rather than semantic meaning. Practitioners struggle to specify their intentions in ways that preserve meaning throughout the optimization process.
-
-=== Integration Gap
-
-Current approaches treat specification and deployment as separate challenges, missing opportunities for unified solutions that address both problems through similar mechanisms.
-
-=== Interpretability Gap
-
-Even when multi-objective methods preserve individual objective information, they often lack mechanisms for practitioners to understand and debug complex objective relationships.
-
-=== Practical Deployment Gap
-
-Many theoretical advances in multi-objective learning have not translated to practical robotics deployments, partly due to computational complexity and partly due to difficulty in real-world specification.
-
-== The Need for a Paradigm Shift
-
-Our analysis reveals that incremental improvements to existing approaches cannot solve the intent-to-reality gap. The fundamental assumptions underlying current RL methods—scalar rewards, linear scalarization, and maximization-based optimization—are incompatible with the semantic richness and robustness requirements of real-world robotics applications.
-
-=== Fundamental Limitations of Current Approaches
-
-The comprehensive analysis of existing approaches reveals several fundamental limitations that cannot be addressed through incremental improvements:
-
-*Universal Semantic Loss*: Whether through traditional reward engineering, automated LLM-based generation, or inverse reinforcement learning, all existing approaches ultimately compress multi-objective information into scalar signals, losing semantic meaning.
-
-*Brittleness Across Methods*: From manually designed rewards to sophisticated MORL approaches, all existing methods suffer from brittleness under distribution shift and sensitivity to specification changes.
-
-*Specification Complexity Explosion*: As robotics applications become more sophisticated, the complexity of multi-objective specification grows exponentially, making current approaches increasingly intractable.
-
-*Deployment-Specification Disconnect*: Existing approaches treat specification and deployment as separate problems, missing opportunities for unified solutions and creating brittle handoffs between training and deployment.
-
-=== Requirements for Paradigm Shift
-
-What is needed is a paradigm shift that:
-
-1. *Preserves Semantic Meaning*: Maintains the individual meaning of objectives throughout the learning process
-2. *Enables Expressive Composition*: Allows complex relationships between objectives to be expressed naturally
-3. *Provides Robustness Guarantees*: Ensures that learned behaviors remain stable under distribution shift  
-4. *Scales to Complexity*: Handles the exponential growth in complexity as systems become more sophisticated
-5. *Unifies Specification and Deployment*: Addresses both expressivity and robustness through similar mechanisms
-
-Our fulfillment framework addresses these gaps by providing semantically meaningful ways to specify and compose objectives while maintaining computational tractability and enabling robust deployment. The following chapters develop these ideas systematically, building on the foundations established in this literature review. 
