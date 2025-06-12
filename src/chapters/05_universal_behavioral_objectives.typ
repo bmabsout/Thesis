@@ -1,4 +1,5 @@
 #import "../commands.typ": *
+#import "../style.typ": *
 
 = Universal Behavioral Objectives <chap:ubo>
 
@@ -255,26 +256,147 @@ Based on our experience with CAPS, we propose the following guidelines for ident
 3. *Preprocessing/Postprocessing*: Apply transformations to inputs or outputs
 4. *Hybrid Approaches*: Combine multiple integration strategies for complex objectives
 
-== Limitations and Future Directions
-
-While CAPS demonstrates significant benefits, several limitations and opportunities for future work remain.
-
 === Current Limitations
 
 *Parameter Sensitivity*: The regularization weights $lambda_T$ and $lambda_S$ require tuning for each domain, though this is generally easier than reward engineering.
 
 *Performance Trade-offs*: In some cases, CAPS may lead to slightly more conservative behavior, trading some performance for smoothness. This trade-off is usually acceptable but should be considered in performance-critical applications.
 
-*Limited Scope*: CAPS addresses only smoothness as a universal objective. Other universal objectives may require different architectural approaches.
 
-=== Future Research Directions
+== Smoothness as a Universal Behavioral Fulfillment
 
-*Automated Parameter Selection*: Developing methods to automatically select appropriate regularization weights based on task characteristics and hardware constraints.
+While CAPS identifies the correct quantities to regularize—temporal and spatial continuity—its formulation as a linear penalty ($J - lambda_T L_T - lambda_S L_S$) falls short of the principled composition offered by FPL. A linear combination forces an often unintuitive and brittle trade-off, where the weights $lambda$ lack clear semantic meaning. We can reformulate the core ideas of CAPS within the fulfillment framework to create a more robust and interpretable measure of smoothness.
 
-*Additional Universal Objectives*: Identifying and implementing other universal behavioral objectives such as energy efficiency, predictability, and robustness.
+This involves transforming the smoothness penalties from CAPS into *Universal Behavioral Fulfillments* (UBFs). Instead of subtracting a penalty, we define fulfillment functions that map the degree of smoothness to the $[0,1]$ range, where 1 represents perfect smoothness. An exponential decay function is a natural fit for this transformation:
 
-*Adaptive Regularization*: Developing methods that adjust regularization strength based on performance and deployment conditions.
+- *Temporal Smoothness Fulfillment*:
+  $ f_"temporal"(s_t, s_(t+1)) = exp(-alpha_T ||pi_theta(s_t) - pi_theta(s_(t+1))||_2^2) $
 
-*Integration with Model-Based Methods*: Exploring how universal behavioral objectives can be integrated with model-based RL and planning methods.
+- *Spatial Smoothness Fulfillment*:
+  $ f_"spatial"(s_t, bar(s)_t) = exp(-alpha_S ||pi_theta(s_t) - pi_theta(bar(s)_t)||_2^2) $
 
-== Learning Lyapunov Stability as Fulfillment
+Here, the parameters $alpha_T$ and $alpha_S$ act as sensitivity knobs. They are not arbitrary weights but have a clear semantic role: they define how quickly the fulfillment value decays as the policy's output becomes less smooth. This allows a designer to tune the functions to match their intuitive judgment, as described in the fulfillment guide (@chap:fulfillment_guide).
+
+These UBFs, provided directly by the policy architecture, can then be integrated into any FPL specification. We can define a single, composite smoothness fulfillment:
+$ f_"smoothness" = f_"temporal" and_0 f_"spatial" $
+
+This unified $f_"smoothness"$ term can then be treated as a standard objective within a larger FPL formula, allowing a designer to specify its relationship to other task-specific goals. For instance, a common pattern would be to require smooth operation *while* achieving a task:
+
+$ phi_"total" = f_"smoothness" and_p f_"task" $
+
+This approach elevates smoothness from a simple penalty term to a first-class citizen in the objective specification. By using FPL's conjunctive operators (like the geometric mean, $p=0$), the optimization naturally encourages satisfying *both* objectives, avoiding the pitfalls of linear scalarization where one objective can be sacrificed for another. This directly aligns with the methodology presented in @anchor_critics, where multiplicative composition was shown to reduce training variance and improve performance by transforming a set of linearly-weighted penalties into a single, well-formed FPL objective. This reframing of CAPS is a powerful example of how universal behavioral objectives can be integrated into a principled design framework.
+
+=== Empirical Validation: The Benefits of Compositional Smoothness
+
+The principled reframing of smoothness penalties as fulfillments is not merely a matter of theoretical elegance; it yields concrete, empirical benefits in training stability and performance. As demonstrated in @anchor_critics, moving from linear penalty combination to a multiplicative, FPL-based composition significantly improves the consistency of the learning process.
+
+To validate this, an ablation study was conducted comparing two methodologies for training a quadrotor flight controller:
+1.  *Linear Composition*: An agent trained using a standard DDPG approach where smoothness penalties were linearly subtracted from the task reward, akin to the original CAPS formulation.
+2.  *FPL Composition*: An agent trained using the *DDPG×* approach, where task and smoothness objectives were first transformed into fulfillments and then composed using the FPL geometric mean operator ($and_0$).
+
+The results of this comparison are striking. As shown in the figure below, the agents trained with linear composition exhibited high variance across multiple independent training runs. Some seeds produced viable controllers, while others failed entirely, demonstrating the brittleness of tuning via linear weights. In contrast, the agents trained with FPL-based multiplicative composition showed significantly reduced variance, leading to a much more reliable and repeatable training process. Every agent consistently learned a high-performance policy.
+
+#figure(
+  grid(
+    columns: (1fr, 1fr),
+    gutter: 1em,
+    image("/figures/linear_comp_tf2_ddpg_ca1e5053.svg", width: 100%),
+    image("/figures/multi_comp_tf2_ddpg_cff12c6b.svg", width: 100%),
+  ),
+  caption: [A comparison of learning curves for agents trained with linear vs. FPL-based composition. The linear approach (left) demonstrates high variance across multiple seeds. In contrast, the FPL-based approach using multiplicative composition (right) shows significantly lower variance, leading to more consistent and reliable training outcomes while achieving comparable or superior final performance.]
+) <fig:fpl_vs_linear_composition>
+
+This evidence strongly supports the case for treating universal behavioral objectives like smoothness as fulfillments within the FPL framework. The use of principled composition operators like the geometric mean is not just more expressive; it leads to a more stable optimization landscape, reducing the reliance on brittle hyperparameter tuning and increasing the probability of successfully training a well-behaved agent.
+
+== Learning Stability as a Universal Behavioral Fulfillment
+
+Just as smoothness is a near-universal requirement for successful robotic control, stability tends to also be a common requirement. In an effort to present tracking a trajectory represented in a more fundamental fashion that a reward for tracking error, we found that stability was an adequate goal. A controller that performs its task but is unstable is not only unreliable but dangerous. This makes stability a prime candidate for treatment as a Universal Behavioral Objective. The journey to formalizing stability within the fulfillment framework is not just an academic exercise; it was the original discovery path that led to the development of Fulfillment Priority Logic itself.
+
+This section details how our attempts to learn controllers with formal stability guarantees, using tools from classical Lyapunov theory, revealed the limitations of traditional penalty-based methods and directly motivated the creation of the fulfillment-centric paradigm. This allowed us to learn Lyapunov functions and controllers with orders of magnitude less time than traditional methods.
+
+#notice[
+these findings were never written up in a paper
+]
+
+=== From Lyapunov Conditions to Optimization Objectives
+
+Classical control theory uses Lyapunov functions to provide a mathematical certificate of a system's stability. A function $V(x)$ is a valid Lyapunov function if it is positive definite ($V(x)>0$ for $x!=0$, $V(0)=0$) and its time derivative along the system's trajectories is negative definite ($dot(V)(x) < 0$).
+
+Initially, these conditions were used for binary verification: proving if a hand-designed controller was stable or not. However, a crucial evolution in control theory was to reframe this as an optimization problem: instead of just verifying stability, the goal became to design controllers that maximized the *region of attraction*—the set of initial states from which the system is guaranteed to return to its equilibrium point. This shift transformed Lyapunov conditions from a simple proof tool into a quantitative objective, paving the way for treating stability not as a hard constraint, but as a fulfillment that can be measured, optimized, and composed.
+
+=== The Problem: Opaque Penalties vs. Semantic Robustness
+
+Our initial approach to learning stable controllers followed this optimization path, but using the conventional RL tools of penalty-based loss functions. We sought to simultaneously learn a controller $u$ and a corresponding Control Lyapunov Function (CLF) $V$ that certified its stability. This was formulated as a loss function to be minimized:
+
+$ cal(L)_"CLF" = V(p)^2 + a_1 1/N sum_(x in cal(X)) [epsilon + V(f(x,u)) - V(x)]_+ + a_2 1/N sum_(x in cal(X)) [epsilon - V(x)]_+ $
+
+where $p$ is the desired setpoint, $f(x,u)$ represents the system dynamics under control, and $[dot]_+ = max(dot, 0)$ is the ReLU function. This loss function attempts to enforce that $V(p)$ is zero, $V(x)$ is positive elsewhere, and $V(x)$ is decreasing along system trajectories.
+
+However, this formulation suffers from a critical semantic gap. The raw value of $cal(L)_"CLF"$ is largely uninterpretable; a loss of 1000 is worse than a loss of 3, but neither value tells the designer *how close* the system is to being stable. The formulation creates a hard, binary cliff: only when the arguments to the ReLU functions are negative (i.e., the system is "under epsilon") are the Lyapunov conditions actually met. The loss function acts as a penalty for being on the wrong side of this cliff, but it fails to provide a meaningful, continuous measure of "how far" away from safety the system is.
+
+This can be viewed as a crude and ineffective form of *robustification*. As discussed in our comparison to Signal Temporal Logic (@chap:encoding_intentionality:related_work), a good robustness measure should provide a continuous, interpretable "distance" to satisfying a specification. The penalty-based loss fails this test. It does not create a smooth landscape that guides the optimizer towards stability; it simply penalizes violation.
+
+This fundamental issue leads to secondary problems:
+1.  *Brittle Weighting*: Because the loss values lack a shared semantic basis, the weights $a_1, a_2$ become arbitrary tuning parameters to balance incomparable penalties, rather than expressing genuine design priorities.
+2.  *Compositional Breakdown*: Attempting to add performance objectives (e.g., tracking error) to this loss function forces the designer to weigh a stability penalty against a performance reward, which is a semantically incoherent and brittle trade-off. It becomes impossible to enforce that stability is a non-negotiable prerequisite for performance.
+
+=== The Solution: Stability as a Robust, Composable Fulfillment
+
+The solution was to develop a completely new formulation grounded in the principles of FPL. This approach replaces the opaque, penalty-based loss with a set of semantically meaningful and composable fulfillment functions, allowing us to directly optimize for stability in a way that provides formal guarantees.
+
+==== Step 1: Architecting a Bounded Lyapunov Function
+
+The foundation of this method is an architectural choice: we constrain the Lyapunov network, $V$, to be bounded, mapping any input state $x$ to a value in the range $[0, 1]$. This is a crucial step, as it normalizes the state space into a consistent "potential energy" landscape, where the setpoint $p$ represents the global minimum (`V(p) = 0`) and all other states have higher "energy."
+
+==== Step 2: Designing Robust Fulfillment Functions
+
+With a bounded Lyapunov function, we can now design a set of robust fulfillment functions that measure the degree to which the core stability conditions are met. A key design pattern here is establishing a "satisfaction threshold" at a fulfillment value of `0.1`. For each condition, a fulfillment above `0.1` will signify that the constraint is met, while a value below it signifies a violation.
+
+- *Decreasing Fulfillment ($f_"decreasing"$)*: The core stability requirement is that the Lyapunov value decreases along system trajectories. Since the change in the bounded Lyapunov function, let's call it $d = V(f(x,u)) - V(x)$, is itself bounded within `[-1, 1]`, we do not need a complex sigmoid. We can construct a simple, smooth quadratic function that precisely maps this range to our desired fulfillment values. The function is designed to pass through three key points: maximum decrease (`d=-1`) should yield high fulfillment (`0.9`), no change (`d=0`) should be the satisfaction boundary (`0.1`), and maximum increase (`d=1`) should yield zero fulfillment (`0.0`). This results in the following quadratic polynomial:
+  $ f_"decreasing" = 0.35 d^2 - 0.45 d + 0.1 $
+  This function provides a smooth, continuous gradient that strongly rewards the system for decreasing the Lyapunov value while strictly penalizing any increase.
+
+- *Positivity Fulfillment ($f_"positive"$)*: We require the Lyapunov function to be "large" for any state that is not the setpoint. Since $V(x)$ is bounded in `[0,1]`, we can define "large enough" as being greater than a small constant, e.g., `0.1`. The fulfillment can be defined as:
+  $ f_"positive" = min(1.0, V(x) / 0.1) $
+  This function yields a fulfillment greater than `1.0` (which is capped) if $V(x) > 0.1$, satisfying our condition, and provides a smooth gradient for values below that threshold.
+
+- *Setpoint-Zero Fulfillment ($f_"zero"$)*: Conversely, we require the Lyapunov function to be zero at the setpoint $p$. We can define high fulfillment when $V(p)$ is very small (e.g., less than `0.1`). An inverse mapping works well here:
+  $ f_"zero" = 1.0 - min(1.0, V(p) / 0.1) $
+  This provides a fulfillment near `1.0` when $V(p)$ is near zero, and a value below `0.1` if $V(p)$ is greater than `0.09`.
+
+==== Step 3: Composition and the Minimum Fulfillment Guarantee
+
+Herein lies the "magic" of the FPL approach. We can now combine these individual fulfillments using a single, conjunctive FPL operator:
+
+$ f_"lyapunov" = f_"decreasing" and_p f_"positive" and_p f_"zero" $
+
+By using a pessimistic, AND-like operator (e.g., the geometric mean, $p=0$, or harmonic mean, $p=-1$), we can leverage the *Minimum Fulfillment Bound* theorem from Chapter 3. This theorem provides a strict, computable lower bound on the worst-performing individual fulfillment, based on the overall composed value.
+
+This allows us to set a clear optimization target: if we can train the agent to achieve a composed $f_"lyapunov"$ value high enough to guarantee that the minimum fulfillment of any component is greater than `0.1`, we have a formal proof that *all three stability conditions are being met simultaneously*. Constraint satisfaction emerges directly from optimizing the composed preference, eliminating the need for brittle penalty weights entirely.
+
+==== Step 4: Efficient Learning via Batch Composition
+
+The final piece of the puzzle is how this formulation leads to dramatic gains in learning speed. Instead of learning from single data points, we can apply this composition across an entire batch of experiences from the replay buffer. For a batch of $N$ transitions, the final training objective for the actor becomes:
+
+$ J = pmean(p)(f_"lyapunov"^(1), f_"lyapunov"^(2), ..., f_"lyapunov"^(N)) $
+
+This objective is incredibly powerful. It represents the aggregate stability fulfillment across a wide distribution of states. A single gradient update contains rich information about how to improve the controller to be more stable *everywhere* in the batch, not just at one point. This stable, highly informative learning signal is the source of the observed speed-up.
+
+=== Experimental Validation
+
+Our approach builds upon foundational research in neural Lyapunov control, which demonstrated the feasibility of learning-based methods for stability analysis, though often in simpler contexts like tuning the gains of an LQR controller. #todo[CITE: Neural Lyapunov Control] Our work extends this to the significantly more complex problem of training a full neural network controller from scratch.
+
+In doing so, we encountered a key practical challenge: the optimization landscape for a full neural network controller is fraught with local minima. We observed that an agent optimizing solely for the composed Lyapunov fulfillment ($f_"lyapunov"$) would often converge to sub-optimal but stable solutions—for example, learning to let the pendulum hang straight down without ever attempting to swing it up. While technically stable, this behavior fails to achieve the actual goal of the task.
+
+To overcome this, we introduced an additional "steering" objective, $f_"steering"$, designed to guide the controller out of these trivial local minima. This fulfillment function could, for instance, provide a small reward for being near the upward position or for having positive angular velocity when the pendulum is below the horizontal. This steering fulfillment was then composed with the others:
+
+$ J = pmean(p)(f_"lyapunov"^(1), ..., f_"lyapunov"^(N)) and_p f_"steering" $
+
+This ability to seamlessly add another semantic objective to guide the learning process, without destabilizing the core stability guarantees, highlights the power and flexibility of the FPL framework.
+
+With this complete formulation, we validated the approach on the classic `Pendulum-v1` environment. The results were remarkable. The FPL-based agent was able to learn a stable controller that successfully balanced the pendulum from a random starting position in approximately *one minute* of training time. This represents an order-of-magnitude improvement over traditional RL methods and demonstrates the power of combining principled objective composition with formal stability guarantees.
+
+// #figure(
+//   image("/figures/pendulum_lyapunov.svg", width: 60%),
+//   caption: [A snapshot from the `Pendulum-v1` environment. Using the FPL-based Lyapunov formulation, the agent learns to robustly swing up and stabilize the pendulum in roughly one minute of training.]
+// ) <fig:pendulum_lyapunov>

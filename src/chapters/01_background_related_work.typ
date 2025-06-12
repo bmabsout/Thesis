@@ -13,7 +13,7 @@
 ==== Discrete-Time Markov Decision Processes <def-mdp>
 The standard formalization in Reinforcement Learning of sequential decision making @SuttonBarto @barto2017some, defined by a tuple $(#S, #A, TT, #R, gamma)$, where:
 
-#note(gradient: primary_gradient)[
+#note(gradient: primary_gradient, title: [*Markov Decision Process*])[
   #table(
     columns: (auto, auto, auto),
     row-gutter: 2em,
@@ -169,11 +169,11 @@ Multi-objective reinforcement learning (MORL) aims to solve problems with multip
 However, validation of these methods is often limited to simpler, discrete domains like Deep Sea Treasure, and they rarely address complex continuous control tasks. Common techniques include evolutionary algorithms (e.g., MO-EA @xu2020prediction), hypernetwork-based sampling @shu2024learning, and coverage-set methods like GPI-PD @alegre2023sample. Beyond their limited domain of application, these approaches often rely on linear scalarization, which fails to capture non-linear objective relationships @survey_seq_dec_morl, and can scale poorly with numerous objectives or large memory requirements.
 
 ==== Logical Specifications
-Such work aims to replace numeric weights with *compositions of predicates*.
-- Signal Temporal Logic (STL) @kress2009temporal, BLTL @lahijanian2011temporal and SPECTRL @jothimurugan2019composable encode "eventually reach", "always avoid" and offer formal satisfaction guarantees, with extensions to learning-based control @aksaray2016q. Gradients come from robustness relaxations, but optimisation remains brittle and requires manually balancing soft penalties.
--  Priority-based logics such as Weighted STL @priority_based_temporal_logics generalise min/max with *power-mean* operators; these continuously interpolate between logical AND/OR and weighted sums, yielding smooth gradients without extra weights.
+A more structured approach replaces numeric weights with *compositions of predicates*, drawing from formal methods.
+- Signal Temporal Logic (STL) @kress2009temporal and its variants like BLTL @lahijanian2011temporal and SPECTRL @jothimurugan2019composable allow for specifying complex temporal behaviors like "eventually reach" or "always avoid." For use in learning-based control, their boolean semantics are relaxed into a continuous "robustness" metric, which creates a signed distance field around the satisfaction boundary @aksaray2016q. However, this formulation has a key limitation: the "robustness" value has a clear semantic meaning only near the zero-crossing. Far from this boundary, the logic is fundamentally discontinuous, making optimization challenging.
+-  Priority-based logics, such as Weighted STL @priority_based_temporal_logics, improve on this by generalizing the underlying `min/max` operators with *power means*. This creates a smoother optimization landscape. However, these approaches still operate in the service of the signed-distance semantic, inheriting its core limitation of having a discontinuous satisfaction boundary.
 
-In summary, existing multi-objective tools either fall back to weight selection or sacrifice sample efficiency.
+In summary, existing multi-objective tools either force practitioners into the brittle and unsemantic process of weight selection or, in the case of formal logics, are built on a semantic foundation that is not fully compatible with continuous, gradient-based optimization.
 
 === Simulation-to-Reality Transfer
 Policies optimised in simulation often oscillate or fail on hardware.
@@ -184,9 +184,9 @@ A primary failure mode for controllers transferred from simulation is behavioral
 A more direct approach is to explicitly regularize for smoothness, and these techniques have been applied at different levels of the learning process. Some approaches directly regularize the policy network to penalize sharp changes in actions with respect to state perturbations @shen2020deep. Others focus on the value function, enforcing Lipschitz continuity on the critic network to improve robustness to state noise @he2024elve. In model-based RL, similar constraints are applied to the learned dynamics model to improve multi-step prediction stability @asadi2018lipschitz. However, these methods often focus only on spatial smoothness (similar states lead to similar actions) and overlook temporal smoothness (similar subsequent actions over time), which is critical for dynamic control. This thesis introduces a regularization method that addresses both spatial and temporal smoothness directly at the policy level.
 
 === Mitigating Catastrophic Forgetting
-Fine-tuning with limited real data can erase behaviours learned in simulation.
+Fine-tuning with limited real data can erase behaviors learned in simulation.
 
-Replay-based rehearsal, elastic weight consolidation and regularisation methods slow forgetting @catastrophic-forgetting-wolczyk, but still require careful task sequencing.  Conservative Policy Optimisation (CPO) bounds performance drops via constraints.
+Replay-based rehearsal, elastic weight consolidation and regularisation methods slow forgetting @catastrophic-forgetting-wolczyk, but still require careful task sequencing.  Conservative Policy Optimization (CPO) bounds performance drops via constraints.
 
 === Sample Efficiency
 Modern model-free RL (e.g. @SAC) needs millions of transitions, prohibitive for on-hardware learning.

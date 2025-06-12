@@ -19,7 +19,8 @@
 #let rt = reward($r_t$)
 #let Q = reward($Q$)
 #let V = reward($V$)
-#let pmean= math.op($overline(mu)$)
+#let pmean(p) = $mu_#p$
+#let vecand = math.and.big
 #let loss = math.op($cal(L)$)
 #let expect = math.op($EE$, limits: true)
 #let todo(message) = {

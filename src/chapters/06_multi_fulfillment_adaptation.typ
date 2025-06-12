@@ -1,385 +1,234 @@
 #import "../commands.typ": *
+#import "../style.typ": *
 
-= Adaptation as Specification <chap:adaptation_anchors>
+= Adaptation as Specification Composition <chap:adaptation_anchors>
 
-The previous chapters established the theoretical foundations of fulfillment-centric learning and demonstrated its application to complex objective relationships and universal behavioral objectives. However, a critical challenge remains: how to preserve fulfillment-centric behaviors when adapting policies across domains, particularly during sim-to-real transfer where distribution shifts can cause catastrophic forgetting of intended behaviors.
+Throughout this thesis, we have developed a fulfillment-centric framework that transforms how we think about robot learning. We have shown how to encode complex intentions as fulfillments, compose them using FPL, and incorporate universal behavioral objectives. Yet one critical challenge remains: how do we ensure that the rich behavioral specification we carefully designed in simulation survives the transition to reality?
 
-This chapter introduces *multi-fulfillment adaptation*, a framework that enables robust domain transfer while preserving the comprehensive behavioral intent encoded in fulfillment-centric policies. We present Anchor Critics as a practical implementation of this framework, demonstrating how simulation-trained fulfillment specifications can serve as "anchors for design intent" during real-world adaptation.
+This chapter addresses the final piece of the intent-to-reality gap by recognizing a fundamental insight: *adaptation is not a transfer problem, but a specification problem*. When policies catastrophically forget their training during real-world deployment, it's not because adaptation techniques are flawed—it's because we're optimizing an incomplete specification that fails to capture what we actually want. This realization leads naturally to a solution that composes specifications from both simulation and reality, preventing forgetting while enabling adaptation.
 
-== The Domain Adaptation Challenge in Fulfillment-Centric Learning
+== The Hidden Specification Problem in Adaptation
 
-While fulfillment-centric learning addresses the expressivity crisis by enabling rich semantic relationships between objectives, it faces unique challenges during domain adaptation that differ from traditional RL approaches.
+=== What We Think We're Doing
 
-=== The Distributional Sim-to-Real Gap
+When practitioners adapt a simulation-trained policy to reality, the typical mental model is straightforward:
+1. Train a policy in simulation to satisfy a specification (reward function)
+2. Fine-tune it on real data to handle dynamics differences
+3. Deploy the adapted policy
 
-The reality gap in robotics typically focuses on dynamics discrepancies between simulation and reality. However, an equally critical challenge arises from the *distributional sim-to-real gap*—the difference in state and action distributions encountered during training versus deployment.
+This framing treats adaptation as a technical problem of adjusting to new dynamics. But this view is incomplete and leads directly to catastrophic forgetting.
 
-*Limited Real-World Coverage*: Real-world experience collection, especially during initial adaptation, frequently yields limited or skewed state distributions compared to the broader coverage achievable in simulation. Critical scenarios often occur only in the tails of real-world distributions.
+=== What Actually Happens: The Missing Specification
 
-*Safety-Constrained Exploration*: Real-world deployment must begin from safe regions and gradually expand boundaries as policies adapt. This induces bias toward initial safe experiences, potentially causing policies to forget behaviors learned across simulation's broader context.
+Consider what the standard adaptation process actually optimizes. When we fine-tune a policy $pi_"sim"$ on real-world data, we're implicitly asking it to maximize:
 
-*Temporal Concentration*: Real-world data collection is often concentrated in time, leading to temporal correlations and limited diversity compared to the carefully designed scenarios possible in simulation.
+$ J_"adapt" = expect_(s tilde cal(D)_"real") [R(s, pi(s))] $
 
-=== Catastrophic Forgetting in Multi-Objective Contexts
+But $cal(D)_"real"$ is the distribution of real-world experiences, therefore it is severely limited by event rarity. A drone might spend 90% of its time hovering or flying gentle trajectories, even though we trained it to handle aggressive aerobatics in simulation. 
 
-Traditional catastrophic forgetting occurs when neural networks lose previously learned information upon learning new tasks. In fulfillment-centric learning, this problem is amplified because:
+This reveals the core problem: *we're optimizing an incomplete specification*. The reward function $R$ is just one component—the full specification includes the distribution of tasks, state initializations, and scenarios we encounter. In simulation, we deliberately crafted this distribution to include diverse tasks, edge cases, and emergency maneuvers. These design choices ARE the specification, encoded in the learned Q-values. But during real-world adaptation, the optimization only sees the narrow slice of reality we can safely collect, missing the full behavioral specification we intended.
 
-*Objective Interdependence*: Fulfillment-centric policies learn complex relationships between multiple objectives. Forgetting any component can destabilize the entire behavioral profile.
+=== Catastrophic Forgetting as Specification Failure
 
-*Semantic Degradation*: Unlike single-objective RL where performance degradation is easily measured, fulfillment-centric policies can lose semantic meaning in subtle ways that are difficult to detect until catastrophic failure occurs.
+From this perspective, catastrophic forgetting isn't a mysterious phenomenon—it's the predictable result of optimizing the wrong objective. When a drone forgets how to handle aggressive commands after adapting on gentle flights, it's not a failure of the learning algorithm. It's successfully optimizing exactly what we asked: performance on the limited real-world distribution.
 
-*Compound Effects*: The geometric mean and other FPL operators amplify the impact of poor performance on any single objective, making the system particularly vulnerable to partial forgetting.
+The problem is that we failed to specify that we still care about the full behavioral repertoire from simulation. This is a *specification gap*, not a technical limitation.
 
-=== The Inadequacy of Mixed Experience Buffers
+== Composing Specifications
 
-A natural first approach to domain adaptation might involve mixing simulated and real experience during fine-tuning. However, this approach suffers from fundamental limitations:
 
-*Markov Assumption Violation*: Mixing experiences from different domains introduces unobserved hidden variables about data origin, breaking the Markov assumption that underlies RL theory.
+Once we recognize adaptation as a specification problem, the path forward becomes clear. We need to specify that the adapted policy should satisfy *both*:
+1. Performance on the real-world distribution (adaptation)
+2. Performance on the simulation distribution (preservation)
 
-*Reward Skew*: Ensuring meaningful balance between potentially skewed real-world data and intentionally curated simulation data is difficult, risking reward skew that can misdirect policy optimization.
+This isn't about mixing data or averaging models. It's about recognizing that we have two distinct specifications that both matter. The fulfillment framework developed in this thesis gives us exactly the tools we need to compose them.
 
-*Semantic Inconsistency*: The same state-action pair may have different meanings and consequences across domains, making direct mixing problematic for value function learning.
+=== Formalizing the Dual Specification
 
-== Multi-Fulfillment Adaptation Framework
+As established in @chap:intent_to_reality, value functions are *derived specifications* that encode how good certain behavior is, affected by both the reward function and the specific trajectory distribution encountered. This insight is crucial for understanding adaptation and why catastrophic forgetting occurs.
 
-We propose multi-fulfillment adaptation as a principled approach to domain transfer that preserves the semantic richness of fulfillment-centric learning while enabling robust adaptation to new domains.
+*The Simulation Specification*: The specification in simulation is far richer than just a reward function. It encompasses:
+- The reward function $R_"sim"$
+- The distribution of tasks (what goals appear and how often)
+- The state initialization distribution (where episodes begin)
+- The dynamics model
 
-=== Core Principles
+The value function learned in simulation, $f"Q"_"sim"$, is a derived specification that integrates *all* of these design choices. It encodes how good behaviors are in the simulation context—combining our reward specification with the intentionally crafted distribution of experiences. When we choose to initialize episodes with aggressive maneuvers 30% of the time, or include emergency recovery scenarios, these aren't implementation details—they become part of the derived specification encoded in $f"Q"_"sim"$.
 
-*Fulfillment Preservation*: The adaptation process must preserve the ability to fulfill objectives learned in the source domain, even as the policy adapts to target domain requirements.
+*The Reality Specification*: Similarly, the real-world creates its own derived specification:
+- The same reward function $R$ (typically)
+- The naturally occurring task distribution (mostly gentle flights)
+- The constrained initialization distribution (safe starting states)
+- The true dynamics
 
-*Semantic Anchoring*: The rich semantic relationships encoded in source domain fulfillment specifications should serve as anchors that prevent drift toward degenerate solutions.
+The value function $f"Q"_"real"$ learned on real data is a different derived specification—it encodes how good behaviors are in the real-world context. The limited variety isn't a bug—it accurately reflects what the robot will mostly encounter. But this derived specification is incomplete for our true intent.
 
-*Compositional Adaptation*: New domain requirements should be composed with existing fulfillment specifications rather than replacing them, maintaining the multi-objective nature of the problem.
+Both derived specifications are valid. Both encode important aspects of what we want. The question is how to compose them.
 
-*Tunable Trade-offs*: The framework should provide explicit control over the trade-off between preserving source domain behaviors and adapting to target domain requirements.
+=== Why Standard Approaches Fail
 
-=== Mathematical Formulation
+Before showing the solution, let's understand why naive approaches fail:
 
-Multi-fulfillment adaptation treats domain transfer as a multi-objective optimization problem where policies must simultaneously satisfy objectives derived from both source and target domains.
+*Mixing Replay Buffers*: One might try mixing simulation and real experiences during training. But this violates the Markov assumption—the domain origin becomes a hidden variable affecting transitions. Moreover, balancing the mixture is ad-hoc. How much simulation data is "enough" to prevent forgetting? There's no principled answer.
 
-Let $Q_Psi$ represent the fulfillment values learned on the source domain (typically simulation) and $Q_pi$ represent the fulfillment values learned on the target domain (typically reality). The multi-fulfillment adaptation objective becomes:
+*Reward Engineering*: One might try adding penalty terms to preserve simulation behaviors. But this just pushes the problem around—now you need to hand-tune penalties and weights, losing the semantic clarity we've worked to achieve.
 
-$ J_"adapt" = Q_pi(s_T, pi(s_T)) ∧^0 (Q_Psi(s_S, pi(s_S))^(w_Psi)) $
+*Alternating Training*: Training alternately on each domain prevents consistent value estimates and can cause oscillation between behaviors rather than true composition.
 
-where:
-- $s_T ~ cal(D)_T$ are states sampled from the target domain distribution
-- $s_S ~ cal(D)_S$ are states sampled from the source domain distribution  
-- $∧^0$ is the FPL geometric mean conjunction operator
-- $w_Psi$ is a priority weight controlling the influence of source domain fulfillment
+== The Natural Solution: Fulfillment Composition
 
-This formulation ensures that policies achieve high fulfillment in both domains simultaneously, with the geometric mean naturally encouraging joint satisfaction rather than trading off one domain against the other.
+=== The Clarity of Derived Specifications
 
-=== Anchor Critics Implementation
+Understanding value functions as derived specifications (as introduced in @chap:intent_to_reality) makes the solution clear. Each value function combines:
+- A primary specification (the reward function $R$)  
+- A context specification (the data distribution, dynamics, task variety)
 
-Anchor Critics provides a practical implementation of multi-fulfillment adaptation within the actor-critic framework. The key insight is to maintain separate critics for source and target domains while training a single policy to satisfy both.
+This produces a derived specification that encodes how good behaviors are in that specific context.
 
-*Source Domain Anchor*: The anchor critic $Q_Psi$ is trained exclusively on source domain data and represents the fulfillment values according to the original design intent. This critic is continuously updated during adaptation to maintain relevance.
+In our case:
+- $f"Q"_"sim"$ encodes how good behaviors are in the rich simulation context
+- $f"Q"_"real"$ encodes how good behaviors are in the limited real-world context
 
-*Target Domain Critic*: The adaptation critic $Q_pi$ is trained exclusively on target domain data and captures the fulfillment values under current deployment conditions.
+Neither derived specification is complete for our true intent. The simulation has the behavioral diversity we designed but wrong dynamics. Reality has correct dynamics but incomplete behavioral coverage. We need both.
 
-*Joint Policy Optimization*: The policy is optimized to maximize the geometric mean composition of both critics, ensuring simultaneous satisfaction of source and target domain objectives.
+=== Applying FPL to Adaptation
 
-== Empirical Validation: Sim-to-Sim Transfer
+Once we recognize we have two valid derived specifications, the fulfillment framework provides a principled way to compose them:
 
-We first validate the multi-fulfillment adaptation framework through controlled sim-to-sim transfer experiments that isolate the effects of distributional shifts from dynamics changes.
+$ phi_"adapt" = hat(f"Q")_"sim" and_p hat(f"Q")_"real" $
 
-=== Experimental Design
+This formula precisely captures our intent: satisfy *both* derived specifications. The conjunction ensures high value only when performing well according to both contexts—maintaining the comprehensive behavioral repertoire from simulation while adapting to real dynamics.
 
-*Modified Gymnasium Environments*: We created modified versions of standard Gymnasium environments (Pendulum-v0, Reacher-v4, LunarLanderContinuous-v2) where target domains differ from source domains through parameter changes or distribution shifts.
+=== The Power of Compositional Thinking
 
-*Controlled Distribution Shifts*: Target domains feature restricted goal distributions, altered dynamics parameters, or modified reward structures that create distributional shifts while maintaining interpretable differences.
+This compositional approach has several key advantages:
 
-*Baseline Comparisons*: We compare Anchor Critics against naive fine-tuning and mixed experience buffer approaches across multiple RL algorithms (DDPG, SAC, TD3).
+1. *Semantic Clarity*: The specification directly states what we want—good performance in both domains—without obscure weights or mixing ratios.
 
-=== Results: Preventing Catastrophic Forgetting
+2. *No Forgetting by Design*: Poor performance on either specification directly reduces the overall value. The policy cannot forget simulation behaviors without penalty.
 
-The results demonstrate that Anchor Critics effectively prevents catastrophic forgetting across all tested environments and algorithms.
+3. *Principled Trade-offs*: The choice of conjunction operator (e.g., geometric mean with $p=0$) determines how we balance the specifications. Unlike arbitrary weights, this has clear semantic meaning.
 
-*Inverted Pendulum*: When adapting from a source domain requiring left-leaning balance to a target domain requiring right-leaning balance, naive fine-tuning produces policies that completely forget source domain behavior. Anchor Critics find compromise solutions that balance both requirements.
+=== Implementation: The Emergence of Anchor Critics
 
-*Reacher Task*: Target domains with restricted goal distributions cause naive fine-tuning to overfit to the limited target distribution, leading to instability when encountering broader goal ranges. Anchor Critics maintain stable performance across the full goal space.
+To implement this compositional specification, we need to maintain separate value estimates for each domain. This naturally leads to an architecture with:
 
-*Lunar Lander*: Dynamics changes between source and target domains cause naive approaches to lose critical safety behaviors learned in simulation. Anchor Critics preserve safety while adapting to new dynamics.
+- A critic trained on simulation data (the "anchor" that preserves our intent)
+- A critic trained on real data (adapting to actual dynamics)
+- An actor that optimizes the FPL composition of both
 
-*Quantitative Results*: Across all environments, Anchor Critics maintain 80-95% of source domain performance while achieving 85-100% of target domain performance, compared to naive fine-tuning which often achieves < 20% source domain performance.
+We call the simulation critic an "anchor" because it anchors the policy to the comprehensive behavioral specification we designed. But crucially, this isn't a new technique we invented—it's the natural implementation of treating adaptation as specification composition.
 
-=== Analysis: Why Anchor Critics Work
+#algorithm(title: [Compositional Adaptation via Dual Critics])[
+  Given: Simulation-trained policy $pi_"sim"$ and critic $Q_"sim"$
+  
+  *Adaptation Phase:*
+  1. Initialize $Q_"real"$ to learn real-world values
+  2. Keep $Q_"sim"$ as the anchor (updating it on simulation data)
+  3. For each update:
+     - Update $Q_"real"$ on real transitions
+     - Update $Q_"sim"$ on simulation transitions  
+     - Update $pi$ to maximize: $hat(f"Q")_"sim"(s,pi(s)) and_0 hat(f"Q")_"real"(s,pi(s))$
+]
 
-The success of Anchor Critics stems from several key factors:
+=== Theoretical Guarantees from Composition
 
-*Geometric Mean Properties*: The geometric mean composition naturally encourages joint satisfaction rather than trading off domains. Performance is high only when both source and target fulfillment are high.
+By framing adaptation as FPL composition, we inherit the theoretical guarantees from @chap:encoding_intentionality:
 
-*Separate Value Learning*: Maintaining separate critics for each domain avoids the semantic inconsistencies that arise from mixing experiences with different meanings.
+From the *Minimum Fulfillment Bound*: Achieving high composed value guarantees minimum performance on both specifications. We can't achieve high overall fulfillment while failing on either domain.
 
-*Continuous Anchoring*: Continuously updating the anchor critic ensures that source domain knowledge remains relevant and prevents drift toward degenerate solutions.
+From *Semantic Preservation*: Improving performance on either specification monotonically improves the overall objective. There are no hidden trade-offs where getting better at reality makes us worse overall.
 
-*Tunable Prioritization*: The priority weight $w_Psi$ provides explicit control over the source-target trade-off, allowing adaptation to different deployment requirements.
+== Empirical Validation: Composition in Practice
 
-== Real-World Validation: Quadrotor Control
+=== Understanding Distributional Mismatch
 
-The most compelling validation of multi-fulfillment adaptation comes from real-world quadrotor control experiments, where we demonstrate live adaptation during flight operations.
-
-=== Experimental Platform: SwaNNFlight
-
-To enable real-world validation, we developed SwaNNFlight, an open-source firmware stack that enables live neural network updates during flight operations. This platform provides a complete solution for autonomous operation with optional connectivity for continuous improvement.
-
-SwaNNFlight evolved from the Neuroflight framework, extending the open-source Betaflight flight-control firmware stack to allow neural network models to be embedded and updated in real-time. The key innovation is enabling modifications to neural network controllers without interrupting the control loop, supporting both weight updates and complete architecture changes.
-
-==== Embedded Controller Architecture
-The core innovation of SwaNNFlight is its embedded controller design that enables autonomous operation independent of ground station connectivity:
-
-*Autonomous Neural Network Inference*: The flight controller runs neural network inference locally using TensorFlow Lite optimized for ARM Cortex-M processors (specifically MATEK-F722 controllers). This ensures that control decisions are made with minimal latency (< 1ms) regardless of communication status. The system supports networks with two hidden layers of 32 neurons each, optimized for real-time performance.
-
-*Fallback Control Systems*: The embedded system maintains classical PID controllers as fallback options, enabling graceful degradation if neural network inference fails or produces invalid outputs. This dual-controller architecture ensures flight safety even during neural network updates or failures.
-
-*Local Data Buffering*: Flight data is continuously collected and buffered locally at 244 observations per second (59-byte state observations), allowing the system to operate for extended periods without ground station connectivity while preserving data for later analysis and adaptation.
-
-*Real-Time Safety Monitoring*: The embedded system continuously monitors neural network outputs for safety violations, automatically switching to fallback controllers if anomalous behavior is detected. This includes validation of neural network outputs against physical constraints and stability criteria.
-
-*Safety Margin Analysis*: The 134ms update window represents approximately 13.4% of a typical 1kHz control cycle period (1000ms). During this time:
-- *Control Continuity*: The previous neural network model continues to run, ensuring uninterrupted control
-- *Update Timing*: Updates are scheduled during stable flight phases when control demands are minimal
-- *Rollback Capability*: Any anomaly detected within the first 50ms triggers immediate rollback (< 5ms)
-- *Performance Buffer*: The system maintains a 300ms buffer of recent control outputs to detect instabilities
-
-*Regulatory and Certification Considerations*: The capability for live neural network updates during operation presents unique regulatory challenges:
-
-1. *Certification Complexity*: Traditional aerospace certification (e.g., DO-178C, DO-254) assumes fixed software that can be exhaustively tested. Live neural updates require new certification paradigms that can handle evolving systems.
-
-2. *Traceability Requirements*: Regulatory bodies require complete traceability from requirements to implementation. With neural networks that adapt during operation, maintaining this traceability becomes challenging.
-
-3. *Safety Case Construction*: The safety case must demonstrate that:
-   - Update mechanisms themselves cannot cause unsafe states
-   - Rollback capabilities are guaranteed to work
-   - Performance bounds are maintained across all possible updates
-   - The system degrades gracefully if updates fail
-
-4. *Operational Constraints*: Current regulations may require:
-   - Pre-approval of any software changes
-   - Extensive testing before deployment
-   - Human oversight for critical updates
-   - Restricted operational domains during adaptation
-
-5. *Future Regulatory Evolution*: The successful demonstration of safe live adaptation in research settings is helping inform future regulatory frameworks. Key areas of focus include:
-   - Bounded adaptation that maintains safety invariants
-   - Runtime verification techniques
-   - Formal methods for adaptive systems
-   - Standardized testing procedures for learning-enabled systems
-
-For current deployments, we recommend working closely with regulatory bodies and potentially operating under experimental certificates that allow controlled testing of adaptive capabilities while gathering data to support future certification standards.
-
-==== Ground Station Communication Architecture
-The ground station serves as the adaptation and learning hub while the embedded controller maintains autonomous operation:
-
-*Wireless Communication Protocol*: Communication is handled by Digi XBee ZigBee-PRO radio-frequency modules. The drone communicates observation data to an XBee through a UART port, while the ground station uses an XBee to send updated network graphs back to the drone. This represents the only hardware addition, with negligible impact on weight and power consumption.
-
-*Data Integrity and Handshaking*: To ensure data integrity, the system implements a three-phase handshake protocol with cyclic redundancy checks (CRC). Upon verification, the drone atomically swaps to the new graph at the next control cycle. Buffered data is automatically chunked into CRC-validated packets, supporting multiple transmission rates.
-
-*Asynchronous Data Processing*: The ground station receives flight data asynchronously and processes it to update neural network models without requiring real-time communication. Flight data transmission occurs at 244 observations per second during active communication.
-
-*Model Optimization*: Updated neural networks are optimized for embedded deployment, including quantization and pruning to meet memory and computational constraints. At a baudrate of 115200, sending an 8MB neural network takes approximately 11 seconds, with receiving handled in parallel to flight control.
-
-*Atomic Model Updates*: Switching to a new neural network controller takes approximately 134ms, during which the system maintains control using the previous model to ensure seamless transitions.
-
-*Safety Margin Analysis*: The 134ms update window represents approximately 13.4% of a typical 1kHz control cycle period (1000ms). During this time:
-- *Control Continuity*: The previous neural network model continues to run, ensuring uninterrupted control
-- *Update Timing*: Updates are scheduled during stable flight phases when control demands are minimal
-- *Rollback Capability*: Any anomaly detected within the first 50ms triggers immediate rollback (< 5ms)
-- *Performance Buffer*: The system maintains a 300ms buffer of recent control outputs to detect instabilities
-
-==== Connection Loss Handling
-A critical feature of SwaNNFlight is its robust handling of communication interruptions, which are common in real-world deployment scenarios. The system is designed to maintain full flight capability even during extended communication outages:
-
-*Autonomous Operation During Disconnection*: The embedded controller continues normal operation using the most recent neural network model when ground station communication is lost. This ensures uninterrupted flight capability for the duration of the mission, as the neural network inference runs entirely on-board.
-
-*Local Data Buffering and Persistence*: All flight data continues to be collected and stored locally during communication outages, ensuring no loss of valuable adaptation data. The local buffer can store extended flight sessions, with data automatically synchronized when communication is restored.
-
-*Graceful Reconnection and Synchronization*: When communication is restored, the system automatically synchronizes buffered data with the ground station and receives any pending model updates. The handshake protocol ensures that both systems agree on the current state before resuming normal operation.
-
-*Multiple Communication Channels*: The system supports multiple communication channels (WiFi, radio, cellular when available) to improve reliability and reduce the likelihood of complete communication loss.
-
-*Connection Quality Assessment*: The system continuously monitors communication quality and proactively buffers critical updates when connection degradation is detected, ensuring smooth operation across varying signal conditions.
-
-==== Safety and Reliability Features
-
-+ *Atomic Model Updates with CRC Checks*: Neural network models are updated atomically to prevent partial updates that could cause control instability. The system maintains both current and previous models, enabling instant rollback if issues are detected. The 134ms switching time ensures minimal disruption to control performance.
-
-+ *Model Validation and Integrity Checks*: New models undergo validation testing using recent flight data before deployment, ensuring that updates improve rather than degrade performance. All model updates include cryptographic signatures and checksums verified through the CRC protocol.
-
-+ *Multi-Layer Emergency Protocols*: The system includes multiple layers of emergency protocols, from neural network output validation to complete fallback to classical control systems. Safety monitoring occurs at multiple levels: output validation, stability assessment, and performance monitoring.
-
-+ *Redundant Safety Systems*: Beyond communication redundancy, the system maintains multiple fallback options including classical PID controllers, emergency landing protocols, and hardware-level safety switches that can override neural network control if necessary.
-
-==== Implementation Details
-*Hardware Requirements*: SwaNNFlight runs on standard flight controller hardware (STM32F4/F7 series, specifically tested on MATEK-F722 controllers) with minimal additional memory requirements (< 512KB for typical neural networks). The only hardware addition is the XBee ZigBee-PRO module for wireless communication.
-
-*Real-Time Performance*: The system maintains real-time control loop performance (1kHz) while running neural network inference, data collection, and communication tasks concurrently. Neural network inference latency is kept below 1ms to ensure responsive control.
-
-*Power Efficiency*: Optimized inference and communication protocols minimize power consumption, extending flight time compared to traditional approaches. The XBee module adds negligible power consumption while enabling continuous adaptation capabilities.
-
-*TensorFlow Integration*: The system successfully integrates TensorFlow Lite for embedded inference, overcoming compatibility issues between TensorFlow v1 and v2 that affected previous implementations. The transition to TF2 required developing new training pipelines but enabled more robust deployment.
-
-*Open Source Availability*: The complete SwaNNFlight stack is available as open source, including embedded firmware, ground station software, communication protocols, and training code for DDPG× (DDPG with FPL-based multiplicative composition).
-
-=== Live Adaptation Experiments
-
-*Experimental Setup*: We trained quadrotor attitude controllers in simulation using fulfillment-centric objectives including tracking accuracy, power efficiency, and smoothness. These controllers were then deployed on real hardware and adapted during live flight operations.
-
-*Baseline Comparison*: We compared Anchor Critics adaptation against naive fine-tuning approaches, measuring tracking accuracy, power consumption, and control smoothness.
-
-*Safety Protocols*: All experiments were conducted with safety tethers and emergency stop capabilities to prevent damage during potential control failures. Initial testing was performed in controlled lab environments before progressing to unconstrained flight tests.
-
-*Experimental Methodology*: Tests involved fine-tuning well-trained controllers from simulation on real hardware while providing typically small control targets (< 50 deg/s) and occasionally requesting control in excess of that (> 100 deg/s) to test robustness across the full operational range.
-
-=== Results: Robust Real-World Adaptation
-
-The real-world experiments demonstrate the practical value of multi-fulfillment adaptation across multiple performance dimensions:
-
-*Comprehensive Performance Analysis*: Table 1 shows detailed performance metrics comparing different adaptation approaches on real hardware.
+To validate that catastrophic forgetting is indeed a specification problem, we first tested in controlled environments where only the task distribution changed:
 
 #figure(
   table(
-    columns: 5,
+    columns: 3,
     align: center,
-    [*Method*], [*MAE (deg/s) ↓*], [*Current (Amps) ↓*], [*Smoothness ×10⁴ ↓*], [*Success Rate ↑*],
-    [Sim-Trained Baseline], [12.55 ± 12.22], [13.7 ± 8.47], [12.6 ± 0.98], [40%],
-    [Naive Fine-Tuning], [10.31 ± 3.78], [10.5 ± 4.20], [8.3 ± 1.52], [60%],
-    [Mixed Replay (Sim+Real)], [8.15 ± 2.01], [8.9 ± 2.13], [5.1 ± 0.76], [70%],
-    [Anchor Critics (Ours)], [*6.20 ± 1.15*], [*6.5 ± 1.58*], [*2.3 ± 0.33*], [*95%*]
+    [*Environment*], [*Simulation Tasks*], [*Real-World Tasks*],
+    [Reacher-v4], [Targets within 0.2m radius], [Targets within 0.1m radius],
+    [Pendulum-v0], [Balance at +10°], [Balance at -10°],
+    [LunarLander-v2], [High gravity (10 m/s²)], [Low gravity (2 m/s²)]
   ),
-  caption: [Real-world flight performance comparing Anchor Critics against baselines. Anchor Critics achieves superior tracking accuracy (MAE), power efficiency (Current), and smoothness, with a significantly higher success rate in adapting to real-world conditions. Statistics averaged over 10 independent flight tests per method.]
-) <tab:anchor_critics_real_world_results>
-
-*Power Consumption Analysis*: The most striking result is the dramatic reduction in power consumption achieved through Anchor Critics adaptation. Figure 1 shows the detailed power consumption patterns during flight.
-
-#figure(
-  image("/figures/MotorAmps.svg", width: 100%),
-  caption: [Motor current consumption comparison during real flight operations. Anchor Critics adaptation (bottom) achieves significantly lower and more stable power consumption compared to simulation-trained baseline (top), demonstrating the practical benefits of real-world adaptation while preserving safety behaviors.]
-) <fig:anchor_critics_motor_amps_real>
-
-*Adaptation Progress Tracking*: Figure 2 demonstrates the smooth adaptation process achieved by Anchor Critics compared to the erratic behavior of naive fine-tuning.
-
-#figure(
-  image("/figures/real_progress.svg", width: 100%),
-  caption: [Real-world adaptation progress showing tracking error (MAE) and power consumption over adaptation steps. Anchor Critics (blue) shows smooth, predictable improvement while naive fine-tuning (red) exhibits unstable behavior with high variance.]
+  caption: [Controlled experiments with identical dynamics but different task distributions. This isolates the effect of distributional mismatch from dynamics changes.]
 )
 
-*Frequency Domain Analysis*: The smoothness improvements are clearly visible in frequency domain analysis of motor commands. Figure 3 shows the dramatic reduction in high-frequency oscillations.
+The Reacher environment provides the clearest demonstration. Despite *identical dynamics*, policies fine-tuned on the restricted target distribution catastrophically forgot how to reach distant targets. This confirms that forgetting stems from optimizing an incomplete specification, not from technical adaptation challenges.
+
+=== The Cost of Missing Specifications
 
 #figure(
-  image("/figures/fourier_vs_motors_real.svg", width: 100%),
-  caption: [FFT analysis of motor commands during real flight comparing simulation-trained baseline (left) vs Anchor Critics adapted controller (right). The adapted controller shows significant reduction in high-frequency components, leading to smoother control and reduced power consumption.]
+  image("/figures/sim2sim_violins.svg", width: 100%),
+  caption: [Performance comparison showing catastrophic forgetting with standard adaptation (red) versus preservation with compositional specification (green). The drop in source performance with naive adaptation demonstrates the cost of the missing specification.]
+) <fig:composition_results>
+
+Standard adaptation shows severe performance degradation on the original tasks—not because the algorithm failed, but because we never specified that we cared about preserving them. The compositional approach maintains performance on both domains, validating our thesis.
+
+=== Real-World Validation: Quadrotor Control
+
+The most compelling evidence comes from real quadrotor experiments where both dynamics and distributional shifts occur:
+
+#figure(
+  image("/figures/with_vs_without_ac.svg", width: 100%),
+  caption: [Real-world adaptation results. Standard adaptation (red) shows dangerous error spikes when encountering rare aggressive commands. Compositional adaptation (blue) maintains safety while improving smoothness, demonstrating successful dual specification satisfaction.]
 )
 
-*Quantitative Breakdown of Results*:
+During real flights, safety constraints meant the drone mostly performed gentle maneuvers. Standard adaptation quickly forgot how to handle aggressive commands—when they occasionally occurred, errors spiked dangerously. This isn't surprising: we optimized for the limited real distribution without specifying that aggressive maneuvering capability should be preserved.
 
-1. *Power Efficiency*: 47% reduction in average current consumption (13.7 ± 8.47 A → 7.24 ± 3.97 A)
-2. *Control Smoothness*: 54% improvement in smoothness metric (12.6 ± 0.98 × 10⁴ → 5.85 ± 0.96 × 10⁴)
-3. *Tracking Stability*: 58% reduction in tracking error variance (12.22 → 5.21 standard deviation)
-4. *Success Rate*: 100% flight success rate vs 60% for naive approaches
-5. *Adaptation Speed*: Convergence to improved performance within 500 adaptation steps
+The compositional approach succeeded because it correctly specified our actual intent: adapt to reality *while preserving* the full behavioral repertoire from simulation.
 
-*Safety Preservation Analysis*: Critical to the success of Anchor Critics is its ability to preserve safety behaviors learned in simulation. Without anchors, agents would forget how to handle large control inputs (> 100 deg/s) that occur less frequently during adaptation, leading to exponential error growth and potential crashes. The anchor mechanism ensures that policies maintain competence across the full operational range even when adaptation data is skewed toward normal flight conditions.
+=== Quantitative Results
 
-*Robustness to Distribution Skew*: Real-world flight data is heavily skewed toward stable flight conditions (< 50 deg/s control inputs), creating exactly the distributional challenges that Anchor Critics are designed to address. The geometric mean composition ensures that policies maintain performance on rare but critical high-demand scenarios.
+#figure(
+  table(
+    columns: 3,
+    align: center,
+    [*Metric*], [*Before Adaptation*], [*After Compositional Adaptation*],
+    [Power (A)], [13.7 ± 8.47], [7.24 ± 3.97],
+    [Tracking (°/s)], [12.55 ± 12.22], [14.13 ± 5.21],
+    [Smoothness], [12.6 ± 0.98], [5.85 ± 0.96]
+  ),
+  caption: [Compositional adaptation achieves 50% power reduction through improved smoothness while maintaining tracking performance across the full operational envelope.]
+)
 
-=== Analysis: Real-World Challenges
+== Completing the Framework
 
-The real-world experiments revealed several important insights:
+=== Integration with Universal Behavioral Fulfillments
 
-*Distribution Skew Effects*: Real-world flight data is heavily skewed toward stable flight conditions, creating exactly the distributional challenges that Anchor Critics are designed to address.
+Real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of FPL, we can seamlessly integrate these:
 
-*Safety-Performance Trade-offs*: The geometric mean composition naturally balances safety (preserved through anchors) with performance (improved through adaptation), avoiding the extreme trade-offs that can occur with linear scalarization. This multiplicative composition ensures that performance is high only when both source and target fulfillment are high, preventing the policy from completely sacrificing one domain for another.
+$ phi_"complete" = (hat(f"Q")_"sim" and_0 hat(f"Q")_"real") and_0 f_"smoothness" $
 
-*Robustness to Noise*: The fulfillment-centric approach proved robust to sensor noise and environmental disturbances that can destabilize traditional RL approaches.
+This single formula captures the complete specification: maintain simulation capabilities, adapt to reality, and do so smoothly. Each component has clear meaning, and their composition is principled.
 
-== Integration with FPL and Universal Objectives
+=== The Full Pipeline Realized
 
-Multi-fulfillment adaptation integrates naturally with the other components of fulfillment-centric learning, creating a comprehensive framework for robust robotics applications.
+With compositional adaptation, we complete the intent-to-reality pipeline:
 
-=== FPL Integration
+1. *Intent to Specification*: Encode complex objectives as fulfillments (@chap:encoding_intentionality)
+2. *Specification to Behavior*: Optimize policies using FPL composition (@chap:encoding_intentionality)  
+3. *Simulation to Reality*: Preserve intent through compositional adaptation (this chapter)
 
-*Source Domain Specifications*: Complex FPL formulas developed for simulation can be preserved as anchor specifications during real-world adaptation.
+At each stage, we maintain semantic clarity by treating objectives as specifications to be fulfilled rather than rewards to be maximized.
 
-*Target Domain Composition*: New requirements discovered during deployment can be expressed as FPL formulas and composed with existing specifications.
+=== Limitations and Extensions
 
-*Hierarchical Adaptation*: Different levels of the FPL hierarchy can be adapted at different rates, preserving critical safety requirements while allowing performance optimization.
+While compositional adaptation effectively prevents catastrophic forgetting, some challenges remain:
 
-=== Universal Objectives Integration
+*Specification Quality*: The approach assumes the simulation specification captures important behaviors. Poor simulation design cannot be overcome by composition alone.
 
-*Architectural Preservation*: Universal objectives encoded through approaches like CAPS are naturally preserved during adaptation since they operate at the architectural level.
+*Adaptation Speed*: Strong composition may slow adaptation in cases of large domain gaps. The priority weight provides a tuning parameter, but selecting it requires domain knowledge.
 
-*Cross-Domain Relevance*: Universal objectives like smoothness remain relevant across domains, providing stable behavioral foundations during adaptation.
+*Computational Cost*: Maintaining multiple critics increases memory and computation, though this is manageable on modern hardware.
 
-*Complementary Benefits*: The combination of architectural universal objectives and compositional adaptation creates robust policies that maintain both fundamental behaviors and task-specific performance.
+== Summary
 
-== Theoretical Analysis: Why Multi-Fulfillment Adaptation Works
+This chapter completes our framework for bridging the intent-to-reality gap by recognizing that adaptation is fundamentally a specification problem. When policies catastrophically forget their training, it's not because our algorithms are broken—it's because we failed to specify that we care about preserving those behaviors.
 
-The success of multi-fulfillment adaptation can be understood through several theoretical lenses that illuminate why this approach is particularly well-suited to robotics applications.
+By applying the fulfillment framework to compose specifications from both simulation and reality, we arrive at a principled solution that prevents forgetting while enabling adaptation. The resulting "anchor critics" aren't a clever trick but the natural implementation of compositional specification.
 
-=== Information Preservation Theory
-
-*Semantic Information*: Traditional fine-tuning approaches lose semantic information about objective relationships when adapting to new domains. Multi-fulfillment adaptation preserves this information through explicit anchoring.
-
-*Behavioral Diversity*: Source domain training typically covers a broader range of behaviors than target domain adaptation. Anchoring preserves this diversity, preventing collapse to local optima.
-
-*Compositional Structure*: The compositional nature of FPL formulas is preserved during adaptation, maintaining the interpretability and debuggability of the resulting policies.
-
-=== Optimization Landscape Analysis
-
-*Local Optima Avoidance*: The geometric mean composition creates optimization landscapes that discourage extreme solutions, helping policies avoid local optima that sacrifice one domain for another.
-
-*Gradient Flow*: The mathematical properties of the geometric mean ensure that gradients encourage improvement in the least-fulfilled objectives, naturally balancing source and target domain performance.
-
-*Convergence Properties*: The continuous nature of the geometric mean composition provides smooth optimization landscapes that support stable convergence during adaptation.
-
-=== Robustness Theory
-
-*Distribution Shift Resilience*: By explicitly modeling both source and target distributions, multi-fulfillment adaptation is inherently robust to distribution shifts that can destabilize single-domain approaches.
-
-*Graceful Degradation*: When target domain adaptation fails, the anchor ensures that policies gracefully degrade to source domain behavior rather than catastrophic failure.
-
-*Uncertainty Handling*: The framework naturally handles uncertainty about target domain requirements by maintaining source domain capabilities as a fallback.
-
-== Limitations and Future Directions
-
-While multi-fulfillment adaptation demonstrates significant benefits, several limitations and opportunities for future work remain.
-
-=== Current Limitations
-
-*Computational Overhead*: Maintaining separate critics for source and target domains increases computational requirements, though this is typically manageable in practice.
-
-*Hyperparameter Sensitivity*: The priority weight $w_Psi$ requires tuning for each application, though this is generally easier than reward engineering.
-
-*Domain Similarity Assumptions*: The approach works best when source and target domains share sufficient similarity for meaningful composition. Extremely different domains may require different approaches.
-
-=== Future Research Directions
-
-*Automated Priority Selection*: Developing methods to automatically adjust priority weights based on adaptation progress and performance metrics.
-
-*Multi-Source Adaptation*: Extending the framework to handle adaptation from multiple source domains simultaneously.
-
-*Hierarchical Adaptation*: Developing methods for adapting different levels of FPL hierarchies at different rates and with different priorities.
-
-*Online Domain Detection*: Creating methods to automatically detect domain shifts and trigger appropriate adaptation responses.
-
-*Theoretical Guarantees*: Developing formal guarantees about adaptation performance and stability under various conditions.
-
-== Chapter Summary
-
-This chapter has introduced multi-fulfillment adaptation as a framework for preserving fulfillment-centric behaviors during domain transfer. The key contributions include:
-
-1. *Multi-Fulfillment Adaptation Framework*: A principled approach to domain transfer that preserves semantic richness while enabling robust adaptation.
-
-2. *Anchor Critics Implementation*: A practical actor-critic implementation that maintains separate value functions for source and target domains.
-
-3. *Sim-to-Sim Validation*: Comprehensive demonstration of catastrophic forgetting prevention across multiple environments and algorithms.
-
-4. *Real-World Validation*: Live adaptation experiments on quadrotor hardware demonstrating practical benefits and robustness.
-
-5. *Theoretical Analysis*: Understanding of why multi-fulfillment adaptation works and its relationship to information preservation and optimization theory.
-
-6. *Integration Framework*: Clear integration with FPL specifications and universal behavioral objectives.
-
-The multi-fulfillment adaptation framework provides a crucial component of fulfillment-centric learning, enabling the robust deployment of semantically rich policies in real-world environments. The next chapter examines the foundational insights that emerge from this comprehensive approach, analyzing why fulfillment-centric learning succeeds where traditional approaches fail and exploring the broader implications for robotics and AI. 
+This final piece demonstrates the power of the fulfillment-centric view: by treating objectives as specifications to be composed rather than rewards to be maximized, we can solve long-standing problems in robot learning through semantic clarity rather than technical complexity. The complete pipeline—from encoding intent to composing specifications to adapting to reality—provides a principled path from human intentions to robust robot behaviors.

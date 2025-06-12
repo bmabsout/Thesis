@@ -20,7 +20,7 @@
 #let template = make_template(style: custom_style)
 
 #let thesis_title_val = [
-  Minimizing the _#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality]_ Gap in Robot Learning:\
+  Minimizing the #text(style: "italic")[#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality] Gap] in Robot Learning:\
   A Fulfillment-Centric Perspective
 ]
 
@@ -61,7 +61,10 @@
 #let approval_page = (template.make_bu_approval_page)(approval_readers_val)
 
 #let abstract = (template.make_bu_abstract_section)(
-  thesis_title_val,
+  {
+    show text: it => text(style: "normal", fill: black, it)
+    thesis_title_val
+  },
   author_name_val,
   BU_NAME, // School name for abstract
   GRS_NAME, // GRS name for abstract
@@ -83,17 +86,16 @@
   #include "src/chapters/02_intent_to_reality.typ"
   
   // Part II: Theoretical Framework
-  #include "src/chapters/03_encoding_intentionality.typ"
-  #include "src/chapters/04_fpl.typ"
+  #include "src/chapters/03_encoding_intentionality_new.typ"
   
   // Part III: Implementation and Applications
   #include "src/chapters/05_universal_behavioral_objectives.typ"
   #include "src/chapters/06_multi_fulfillment_adaptation.typ"
   
   // Part IV: Validation and Synthesis
-  #include "src/chapters/07_fulfillment_lyapunov_control.typ"
+  // #include "src/chapters/07_fulfillment_lyapunov_control.typ"
   #include "src/chapters/07_architecture.typ"
-  #include "src/chapters/08_synthesis_future.typ"
+  // #include "src/chapters/08_synthesis_future.typ"
 
   // Include the Claims.typ document
   // #include "src/Claims.typ"

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100pt" height="180pt" viewBox="0 0 100 180">
+<defs>
+<filter id="filter-remove-color" x="0%" y="0%" width="100%" height="100%">
+<feColorMatrix color-interpolation-filters="sRGB" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0" />
+</filter>
+<filter id="filter-color-to-alpha" x="0%" y="0%" width="100%" height="100%">
+<feColorMatrix color-interpolation-filters="sRGB" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.2126 0.7152 0.0722 0 0"/>
+</filter>
+<image id="source-7" x="0" y="0" width="155" height="215" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJsAAADXCAAAAAAokHxHAAAAAmJLR0QA/4ePzL8AAADdSURBVHic7c6xEQAQAAAx7D+zs4HiG4pkgsw9vrVeBy7cGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat8atcWvcGrfGrXFr3Bq3xq1xa9wat+bn2wGWagKski+GLgAAAABJRU5ErkJggg=="/>
+<mask id="mask-0">
+<g filter="url(#filter-remove-color)">
+<use xlink:href="#source-7" filter="url(#filter-color-to-alpha)" transform="matrix(1, 0, 0, 1, -26.083496, -10.416016)"/>
+</g>
+</mask>
+<image id="source-6" x="0" y="0" width="155" height="215" xlink:href="data:image/png;base64,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"/>
+</defs>
+<g mask="url(#mask-0)">
+<use xlink:href="#source-6" transform="matrix(1, 0, 0, 1, -26.083496, -10.416016)"/>
+</g>
+<path fill="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(13.725281%, 12.156677%, 12.548828%)" stroke-opacity="1" stroke-miterlimit="10" d="M -0.001 0.001675 L 214.514625 0.001675 " transform="matrix(1, 0, 0, -1, -52.874, 130.9548)"/>
+<path fill="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke="rgb(13.725281%, 12.156677%, 12.548828%)" stroke-opacity="1" stroke-miterlimit="10" d="M 0 -0.00089375 L 0 306.049888 " transform="matrix(1, 0, 0, -1, 50, 267.2452)"/>
+</svg>

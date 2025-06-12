@@ -1,4 +1,4 @@
-#import "style.typ": default_style, heading_style, long_line, local_outline
+#import "style.typ": default_style, heading_style, long_line, local_outline, note
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -76,7 +76,7 @@
         if it.numbering != none [Chapter #counter(heading).display()\ ]
         it.body
         place(long_line, dy: -style.heading.levels.at(0).spacing.below/2)
-        if local_outlines {
+        if local_outlines and it.numbering != none {
           local_outline(style: style)
           v(-0.2em)
           long_line
@@ -270,13 +270,13 @@
     align(center)[
       #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
       #v(1em)
-      #rect(width: 100%, inset: (top: 1em, bottom: 1em), radius: 12pt)[
+      #note(engine: block.with(width: 100%))[
+        #set align(center)
         #text(size: 1.2em)[#upper(author_name)]\
         #school_name_for_abstract, #grs_name_for_abstract, #submission_year
         #major_professors
       ]
     ]
-    v(1em)
     align(center)[
       #heading(numbering: none, level: 2, outlined: false)[ABSTRACT]
     ]

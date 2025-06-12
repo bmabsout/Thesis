@@ -74,10 +74,10 @@
 //   oklch(0%, 55%, 137deg),
 //   oklch(100%, 55%, 137deg)
 // )
-// #let accent4_gradient = gradient.linear(
-//   oklch(0%, 73%, 43deg),
-//   oklch(100%, 73%, 43deg)
-// )
+#let accent5_gradient = gradient.linear(
+  oklch(0%, 73%, 43deg),
+  oklch(100%, 73%, 43deg)
+)
 // #let accent5_gradient = gradient.linear(
 //   oklch(0%, 74.44695113486235%, 317deg),
 //   oklch(100%, 74.44695113486235%, 317deg)
@@ -231,20 +231,128 @@
 }
 
 
+#let seamless-block(
+    title: none,
+    content,
+    stroke: 1pt,
+    fill: blue.lighten(80%),
+    radius: 6pt,
+    inset: 1em
+) = {
+  let special_stroke = (..stroke, paint: gradient.linear(stroke.paint.transparentize(100%), stroke.paint.transparentize(0%), stroke.paint.transparentize(0%), angle: 90deg).sharp(3))
+  let special_fill = gradient.linear(fill.transparentize(100%), fill.transparentize(0%), fill.transparentize(0%), angle: 90deg).sharp(3)
+    let vertical-adjust = stroke.thickness / 2
+      v(1.5em, weak: true)
+      block(
+        spacing: -2pt,
+          sticky: true,  // Critical for keeping top with content
+          radius: (top-left: radius, top-right: radius),
+          stroke: (top: stroke, left: stroke, right: stroke),
+          fill: fill,
+          height: radius*2+1em,  // Collapse to border thickness
+          width: 100%,
+          inset: inset,
+          v(0.5em)+title
+      )
+      block(
+        spacing: -2pt,
+        // sticky: true,
+          stroke: (left: stroke, right: stroke),
+          fill: fill,
+          inset: inset,
+          width: 100%,
+          outset: (top: -vertical-adjust, bottom: -vertical-adjust),
+          // sticky: true,
+          breakable: true,
+          content
+      )
+      v(-1em)
+      block(
+        spacing: -2pt,
+          radius: (bottom-left: radius, bottom-right: radius),
+          stroke: (bottom: special_stroke, left: special_stroke, right: special_stroke),
+          outset: (top: 0em),
+          fill: special_fill,
+          width: 100%,
+          height: radius*2,
+      )
+      v(1.5em, weak: true)
+}
 
-#let note(content, gradient: primary_gradient) = align(center, box(
-  stroke: (paint: gradient.sample(90%),
-    thickness: 3pt,
-    dash: ("dot", 6pt),
-    cap: "round",),
-  radius: 12pt,
-  fill: gradient.sample(99.5%),
-  inset: 1em,
-  align(left, [
-    #set text(fill: gradient.sample(10%))
-    #content
-  ])
-))
+
+// #show figure.where(kind: "theorem"): it => {
+//   theorem(title: it.title, body: it.content, gradient: it.gradient)
+// }
+
+// #figure(kind: "theorem", caption: "Theorem", gradient: accent2_gradient)[pompe]
+
+#let note(content, gradient: primary_gradient, title: none, engine: seamless-block) = align(center, {
+  if title != none {
+    engine = engine.with( 
+      title: if title != none {
+        show text: it => text(size: default_style().heading.text.size*1.2, weight: "bold", style: "italic", fill: gradient.sample(35%), it)
+        title
+      }
+    )
+  }
+  [
+    #engine(
+      stroke: (paint: gradient.sample(80%).desaturate(50%).lighten(50%),
+        thickness: 3pt,
+        dash: ("dot", 6pt),
+        cap: "round",),
+      radius: 12pt,
+      fill: gradient.sample(80%).desaturate(85%).lighten(85%),
+      inset: 1em,
+      align(left, [
+        #set text(fill: gradient.sample(15%))
+        #content
+      ])
+    )
+    
+  ]
+})
+
+#let theorem_counter = counter("theorem")
+
+#let theorem(title: none, body, gradient: accent2_gradient) = {
+  theorem_counter.step()
+  context {
+    let theorem_num = theorem_counter.get().first()
+    let title = if title != none {
+      [*Theorem #theorem_num: #title*]
+    } else {
+      [*Theorem #theorem_num*]
+    }
+    note(gradient: gradient, title: title)[
+      
+      #body
+    ]
+  }
+}
+
+#let algorithm_counter = counter("algorithm")
+
+#let algorithm(title: none, body, gradient: accent1_gradient) = {
+  algorithm_counter.step()
+  context {
+    let algorithm_num = algorithm_counter.get().first()
+    let title = if title != none {
+      [*Algorithm #algorithm_num: #title*]
+    } else {
+      [*Algorithm #algorithm_num*]
+    }
+    note(gradient: gradient, title: title)[
+      
+      #body
+    ]
+  }
+}
+
+#let notice(content, gradient: accent5_gradient) = {
+  note([#text(fill: gradient.sample(50%))[_*Notice:*_] #content], gradient: gradient, engine: block)
+}
+
 
 #let manual_sampler(fill: none, width: 10em, height: 2em, samples: 100) = {
   let filler(i) = {
@@ -258,12 +366,6 @@
 }
 
 
-// #let todo(message) = {
-//   locate(loc => ())
-//   text(red, [TODO: #message])
-// }
-// 
-// 
 #let local_outline(style: default_style()) = context {
   outline(target: selector(heading.where(level: 2).or(heading.where(level: 3))).after(here()).before(heading.where(level: 1).after(here())), title: none)
 }

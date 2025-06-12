@@ -14,9 +14,19 @@ Structure in mind:
 - Introduction: what you just read
 - Background and Related Work
 - The Intent-to-Reality Gap, I intend to introduce my definitions in this chapter (I have a precise definition for things like behavior and such)
-- Encoding Intentionality (this is the chapter about fulfillments and fpl)
+- Encoding Intent with Fulfillments
 - Universal Behavioral Objectives (where caps belongs), basically I define things like smoothness as a universal behavioral objective and then a universal behavioral fulfillment
 - Adaptation as Specification, this is the anchor stuff
 - Architectural Considerations, this is where things like Optimizing nn architecture and swannflight come in
 - Synthesis and Future Directions
 
+don't forget the hypervolume
+
+=== Connection to Multi-Objective Optimization
+
+The geometric mean has a special relationship to multi-objective optimization theory. When maximizing multiple objectives, the hypervolume indicator—one of the most important metrics in multi-objective optimization—reduces to the product of the objectives being maximized when considering a single solution.
+
+This means that maximizing the geometric mean of fulfillment values is equivalent to maximizing the hypervolume indicator, connecting our approach to established multi-objective optimization principles.
+
+
+the typsafety stuff in the old intent chapter actually makes sense
