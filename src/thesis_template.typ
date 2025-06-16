@@ -97,6 +97,7 @@
     set math.equation(numbering: "(1)")
     show math.equation: it => box(it) 
     set figure(gap: 1.5em)
+    show figure: set block(breakable: true)
 
     set ref(supplement: it => {
       if it.func() == heading and it.level == 1 {
@@ -107,6 +108,8 @@
         } else {
           [Section]
         }
+      } else if it.func() == figure {
+        it.supplement
       }
     })
 

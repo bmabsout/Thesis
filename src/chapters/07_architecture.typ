@@ -14,7 +14,7 @@ We present three complementary systems contributions that enable practical deplo
 
 Together, these contributions complete the path from theoretical framework to practical deployment, demonstrating that fulfillment-centric design is not just conceptually powerful but also practically viable on real robotic systems.
 
-== The Challenge of Embedded Deployment
+== The Challenge of Embedded Deployment <chap:architecture:challenge>
 
 Deploying learned policies on real robotic platforms introduces constraints that are often overlooked in research settings. More critically, these constraints themselves become part of the reality gap that must be addressed:
 
@@ -36,11 +36,11 @@ Deploying learned policies on real robotic platforms introduces constraints that
 
 These constraints create a fundamental tension: our fulfillment-centric framework benefits from expressive neural networks to capture complex behaviors, but embedded platforms demand minimal, efficient implementations with predictable timing. Resolving this tension required developing new system architectures and optimization techniques that explicitly account for the systems-level reality gap.
 
-== Neuroflight: Establishing the Baseline
+== Neuroflight: Establishing the Baseline <chap:architecture:neuroflight>
 
 Before we could deploy sophisticated techniques like Anchor Critics, we needed to establish that neural network control was even feasible on embedded flight controllers. Neuroflight, our first system contribution, demonstrated this possibility while revealing critical insights about the systems-level reality gap.
 
-=== The Timeliness Gap
+=== The Timeliness Gap <chap:architecture:neuroflight:timeliness>
 
 A fundamental challenge we discovered is that the reality gap extends beyond dynamics to the control system itself. In simulation, neural network inference runs at a perfect 1000Hz. On real hardware (ARM Cortex-M4 at 216MHz), the same network achieves only 730Hz. This 27% frequency reduction has profound implications:
 
@@ -50,7 +50,7 @@ A fundamental challenge we discovered is that the reality gap extends beyond dyn
 
 These timing discrepancies mean that even with perfect dynamics simulation, policies trained assuming 1000Hz control will behave differently at 730Hz. This systems-level reality gap is often overlooked but proved critical in our work.
 
-=== Core Innovations
+=== Core Innovations <chap:architecture:neuroflight:innovations>
 
 Neuroflight addressed these challenges through several key insights:
 
@@ -60,7 +60,7 @@ Neuroflight addressed these challenges through several key insights:
 
 + *Minimal Architecture*: Through systematic exploration, we found that networks with 2 hidden layers of 64 neurons each provided the best trade-off between expressiveness and timing predictability. The compiled network occupied just 12KB—small enough to fit in tightly-coupled memory for deterministic access times.
 
-=== Compilation Pipeline
+=== Compilation Pipeline <chap:architecture:neuroflight:compilation>
 
 The path from TensorFlow model to embedded execution required careful engineering:
 
@@ -71,7 +71,7 @@ The path from TensorFlow model to embedded execution required careful engineerin
 
 This pipeline ensures that the deployed network behaves identically to its quantized simulation counterpart, eliminating one source of reality gap.
 
-=== Impact and Limitations
+=== Impact and Limitations <chap:architecture:neuroflight:impact>
 
 Neuroflight proved that neural network control on embedded platforms was viable, but revealed new challenges:
 
@@ -88,17 +88,17 @@ Neuroflight proved that neural network control on embedded platforms was viable,
 
 These limitations, particularly the timing-induced reality gap, motivated our subsequent work on more sophisticated architectures.
 
-== Asymmetric Actor-Critic: Principled Network Minimization
+== Asymmetric Actor-Critic: Principled Network Minimization <chap:architecture:asymmetric_ac>
 
 Having established feasibility with Neuroflight, we next addressed the challenge of deploying more complex policies within embedded constraints. A key insight came from questioning a fundamental assumption in actor-critic reinforcement learning: why do actors and critics use the same network architectures?
 
-=== The Symmetry Assumption
+=== The Symmetry Assumption <chap:architecture:asymmetric_ac:symmetry>
 
 Actor-critic methods separate the policy (actor) from the value function estimator (critic). Yet curiously, standard implementations couple their architectures—if the critic has layers of size $|256, 256|$, so does the actor. This symmetry is not theoretically required but is baked into popular frameworks like OpenAI Baselines, Stable Baselines, and others.
 
 We hypothesized that this symmetry wastes precious embedded resources. Critics must model complex value functions over state-action spaces, understanding both system dynamics and reward structures. Actors, however, only need to output actions that maximize these value estimates—a potentially simpler task.
 
-=== Systematic Investigation
+=== Systematic Investigation <chap:architecture:asymmetric_ac:investigation>
 
 To test this hypothesis, we designed experiments across multiple algorithms and environments:
 
@@ -112,7 +112,7 @@ Our methodology:
 + Fix the critic at this size and search for the smallest viable actor
 + Compare symmetric vs asymmetric configurations
 
-=== Dramatic Size Reductions
+=== Dramatic Size Reductions <chap:architecture:asymmetric_ac:reductions>
 
 The results validated our hypothesis decisively:
 
@@ -131,7 +131,7 @@ The results validated our hypothesis decisively:
 
 Across all experiments, asymmetric architectures achieved an average 64% reduction in actor weights, with some tasks allowing up to 97% reduction.
 
-=== Why This Works
+=== Why This Works <chap:architecture:asymmetric_ac:why_it_works>
 
 The key insight is that critics and actors have fundamentally different computational requirements:
 
@@ -148,7 +148,7 @@ The key insight is that critics and actors have fundamentally different computat
 
 This difference in computational complexity naturally leads to different capacity requirements. The critic bears the burden of understanding, while the actor merely executes.
 
-=== Impact on Embedded Deployment
+=== Impact on Embedded Deployment <chap:architecture:asymmetric_ac:impact>
 
 These reductions have profound implications for embedded systems. Testing on the STM32F722RE microcontroller (216 MHz ARM Cortex-M7 with 512KB flash):
 
@@ -159,11 +159,11 @@ These reductions have profound implications for embedded systems. Testing on the
 
 While the paper doesn't provide exact measurements for smaller networks, the trend is clear: every halving of network size provides substantial improvements in inference speed. Given that asymmetric architectures can reduce actor sizes by up to 97%, this translates directly into maintaining higher control frequencies closer to the 1kHz target necessary for stable flight.
 
-== SwaNNFlight: Enabling Compositional Adaptation
+== SwaNNFlight: Enabling Compositional Adaptation <chap:architecture:swannflight>
 
 While Neuroflight demonstrated basic neural control and our minimization techniques made complex policies deployable, neither addressed the critical challenge identified in @chap:adaptation_anchors: enabling compositional adaptation on embedded platforms. SwaNNFlight represents the culmination of our systems work, providing the complete architecture needed to deploy Anchor Critics and prevent catastrophic forgetting during real-world operation.
 
-=== The Architectural Challenge
+=== The Architectural Challenge <chap:architecture:swannflight:challenge>
 
 Implementing compositional adaptation (as developed in @chap:adaptation_anchors) on embedded systems introduced unique challenges:
 
@@ -177,11 +177,11 @@ Implementing compositional adaptation (as developed in @chap:adaptation_anchors)
 
 + *Compositional Inference*: The system must evaluate both critics and compose their outputs using FPL operators within the 1ms control deadline.
 
-=== System Architecture Overview
+=== System Architecture Overview <chap:architecture:swannflight:overview>
 
 SwaNNFlight resolves these challenges through a carefully designed distributed architecture that separates time-critical control from computationally intensive adaptation:
 
-=== Autonomous-First Architecture
+=== Autonomous-First Architecture <chap:architecture:swannflight:autonomous_first>
 
 A fundamental design principle of SwaNNFlight is that the drone must be fully autonomous. Unlike many research systems that tether robots to powerful desktop computers—treating deployment as an afterthought—we designed for complete operational independence from day one.
 
@@ -203,7 +203,7 @@ This approach fails in real-world deployment where:
 - Adaptation is an optional enhancement when communication permits
 - The system gracefully degrades to baseline operation without connectivity
 
-=== The Embedded-Ground Station Split
+=== The Embedded-Ground Station Split <chap:architecture:swannflight:split>
 
 This autonomous-first philosophy leads to a specific architectural split:
 
@@ -221,7 +221,7 @@ This autonomous-first philosophy leads to a specific architectural split:
 
 This architecture ensures that our fulfillment-centric policies work in real deployments, not just in laboratory demonstrations with hidden tethers to server racks.
 
-=== Atomic Live Updates
+=== Atomic Live Updates <chap:architecture:swannflight:updates>
 
 Enabling neural network updates during flight without missing control cycles required developing several mechanisms:
 
@@ -235,7 +235,7 @@ Enabling neural network updates during flight without missing control cycles req
 
 *CRC Validation*: All model updates include checksums verified at multiple stages. Corrupted updates are rejected before they can affect control.
 
-=== Communication Architecture
+=== Communication Architecture <chap:architecture:swannflight:communication>
 
 The distributed architecture requires reliable communication between the embedded platform and ground station. The implementation uses:
 
@@ -251,7 +251,7 @@ The distributed architecture requires reliable communication between the embedde
 - Ground → Embedded: Model updates chunked into 1KB packets with CRC validation
 - At 115200 baud, a complete model update (8MB) requires approximately 11 seconds
 
-=== Communication as Enhancement, Not Requirement
+=== Communication as Enhancement, Not Requirement <chap:architecture:swannflight:communication_enhancement>
 
 In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the expected default state. The system is designed to treat connectivity as an opportunistic enhancement:
 
@@ -271,21 +271,21 @@ In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the ex
 
 *Data Preservation*: The 1000-observation ring buffer ensures valuable flight data is preserved for eventual adaptation, even after hours of disconnected operation. No learning opportunity is lost due to communication issues.
 
-=== Implementation and Performance
+=== Implementation and Performance <chap:architecture:swannflight:implementation>
 
-==== Hardware Specifications
+==== Hardware Specifications <def:hw_specs>
 - *Flight Controller*: STM32F722 (216 MHz ARM Cortex-M7)
 - *Memory*: 512KB Flash, 256KB RAM
 - *Communication*: XBee PRO (2.4GHz, 250kbps effective throughput)
 - *Additional Hardware Cost*: < \$50 (XBee module only)
 
-==== Performance Metrics
+==== Performance Metrics <def:performance_metrics>
 - *Inference Latency*: < 1ms for dual critic evaluation
 - *Model Update Time*: 134ms (atomic swap)
 - *Control Frequency*: 1kHz maintained during all operations
 - *Power Overhead*: < 100mW (5% of total system power)
 
-==== Software Architecture
+==== Software Architecture <def:sw_architecture>
 The implementation required overcoming several technical challenges:
 
 *TensorFlow Lite Integration*: Custom modifications to TFLite enabled running on STM32 processors without OS support. This included implementing memory allocation strategies compatible with embedded constraints.
@@ -294,9 +294,9 @@ The implementation required overcoming several technical challenges:
 
 *Modular Design*: The system maintains compatibility with standard Betaflight features, allowing gradual adoption and fallback to classical control when needed.
 
-== Empirical Validation
+== Empirical Validation <chap:architecture:validation>
 
-=== Compositional Adaptation Performance
+=== Compositional Adaptation Performance <chap:architecture:validation:compositional_adaptation>
 
 Testing on real quadrotors demonstrated the effectiveness of the complete system:
 
@@ -314,25 +314,10 @@ Testing on real quadrotors demonstrated the effectiveness of the complete system
   caption: [System performance comparison showing SwaNNFlight enables continuous adaptation while preventing catastrophic forgetting with minimal overhead.]
 )
 
-=== Real-World Deployment Results
+=== Real-World Deployment Results <chap:architecture:validation:deployment_results>
 
 Over 100 hours of flight testing validated the system's reliability:
 - Zero control failures during model updates
 - Successful recovery from communication loss in all tested scenarios
 - Consistent sub-millisecond inference latency
 - Demonstrated compositional adaptation preventing forgetting (as detailed in @chap:adaptation_anchors)
-ologies
-
-// == Summary
-
-// This chapter presented the systems architecture necessary for deploying fulfillment-centric policies on real robotic platforms. Through three complementary contributions—Neuroflight establishing feasibility while revealing the systems-level reality gap, Asymmetric Actor-Critic enabling dramatic network size reductions, and SwaNNFlight supporting autonomous compositional adaptation—we demonstrated that the theoretical framework developed in this thesis is practically viable.
-
-// These contributions form a natural progression. Neuroflight revealed the problem: embedded systems create their own reality gap through timing constraints. Asymmetric Actor-Critic provided a key solution: by recognizing that actors need far less capacity than critics, we can deploy sophisticated policies within tight constraints. SwaNNFlight integrated these insights: using small asymmetric actors for control while maintaining large critics for adaptation, all within an autonomous-first architecture that treats connectivity as optional enhancement.
-
-// A critical insight is that the embedded system itself creates a reality gap through timing differences, quantization effects, and resource constraints. Neuroflight revealed that achieving only 730Hz control (versus 1000Hz in simulation) fundamentally changes policy behavior. This systems-level gap is as important as the dynamics gap but often overlooked in academic work.
-
-// Our architectural philosophy—autonomous-first design with optional enhancement—stands in contrast to the common research practice of tethering robots to powerful computers. By designing for complete operational independence from day one, we ensure that our fulfillment-centric policies work in real deployments, not just controlled laboratory demonstrations.
-
-// The key lesson is that embedded constraints, rather than being obstacles to be overcome later, must be embraced as fundamental design requirements. By explicitly accounting for timing variations, memory limitations, and communication unreliability in our architecture, we create systems that are not just theoretically sound but practically deployable. The complete SwaNNFlight system demonstrates that sophisticated learning algorithms can run reliably on platforms with less computational power than a smartwatch, while maintaining the semantic clarity and compositional power of the fulfillment-centric framework.
-
-// These contributions complete the bridge from human intent to robust robot behavior, ensuring that the theoretical advances in encoding intentionality, compositional specification, and adaptation translate into real-world impact.

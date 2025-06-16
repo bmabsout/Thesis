@@ -6,11 +6,11 @@ This thesis has presented composable fulfillment as a unified framework for mult
 
 The journey from crisis to solution has revealed fundamental insights about the nature of multi-objective optimization, the importance of semantic preservation in learning systems, and the power of principled mathematical frameworks for bridging human intent and machine behavior. These insights extend beyond robotics to influence broader questions in artificial intelligence, control theory, and human-machine interaction.
 
-== Synthesis of Contributions
+== Synthesis of Contributions <chap:synthesis:contributions>
 
 The thesis has made contributions across multiple dimensions, from theoretical foundations to practical implementation. These contributions work together to create a comprehensive framework that addresses both the expressivity and deployment components of the intent-to-reality gap.
 
-=== Theoretical Contributions
+=== Theoretical Contributions <chap:synthesis:contributions:theoretical>
 
 *Mathematical Foundations*: The generalized mean framework provides a rigorous mathematical foundation for continuous logic operations in multi-objective optimization. By extending logical operators to continuous spaces while preserving their semantic meaning, this framework enables gradient-based optimization of logically structured objectives.
 
@@ -20,7 +20,7 @@ The thesis has made contributions across multiple dimensions, from theoretical f
 
 *Convergence Guarantees*: The framework provides theoretical guarantees about convergence, semantic preservation, and minimum fulfillment levels that are absent in traditional multi-objective RL approaches.
 
-=== Algorithmic Contributions
+=== Algorithmic Contributions <chap:synthesis:contributions:algorithmic>
 
 *Balanced Policy Gradient*: The BPG algorithm extends actor-critic methods to handle FPL specifications while maintaining theoretical guarantees and computational efficiency.
 
@@ -30,7 +30,7 @@ The thesis has made contributions across multiple dimensions, from theoretical f
 
 *Compositional Optimization*: The development of optimization methods that encourage joint satisfaction rather than trade-offs represents a fundamental shift in multi-objective optimization thinking.
 
-=== Empirical Contributions
+=== Empirical Contributions <chap:synthesis:contributions:empirical>
 
 *Cross-Domain Validation*: Comprehensive empirical validation across quadrotor control, manipulation tasks, and mobile robot navigation demonstrates the generality and effectiveness of the approach.
 
@@ -40,7 +40,7 @@ The thesis has made contributions across multiple dimensions, from theoretical f
 
 *Comparative Analysis*: Systematic comparison with existing approaches demonstrates clear advantages in terms of specification efficiency, training robustness, and deployment reliability.
 
-=== Practical Contributions
+=== Practical Contributions <chap:synthesis:contributions:practical>
 
 *Implementation Framework*: Complete implementation of the composable fulfillment framework with open-source tools and libraries.
 
@@ -50,11 +50,11 @@ The thesis has made contributions across multiple dimensions, from theoretical f
 
 *Tool Development*: Development of specification interfaces, debugging tools, and performance analysis capabilities that make the framework accessible to practitioners.
 
-== Broader Implications
+== Broader Implications <chap:synthesis:implications>
 
 The contributions of this thesis extend beyond robotics to influence several broader areas of research and practice.
 
-=== Implications for Multi-Objective Reinforcement Learning
+=== Implications for Multi-Objective Reinforcement Learning <chap:synthesis:implications:morl>
 
 *Paradigm Shift in MORL*: This thesis represents a fundamental paradigm shift in multi-objective reinforcement learning, moving from trade-off-based optimization to joint satisfaction through continuous logic. This addresses the core limitations that have prevented MORL from achieving widespread adoption in real-world applications.
 
@@ -64,7 +64,7 @@ The contributions of this thesis extend beyond robotics to influence several bro
 
 *MORL Research Directions*: The success of fulfillment-centric learning opens new research directions in MORL, including automated specification discovery, dynamic objective adaptation, and hierarchical multi-objective decomposition.
 
-=== Implications for Artificial Intelligence
+=== Implications for Artificial Intelligence <chap:synthesis:implications:ai>
 
 *Multi-Objective AI*: The composable fulfillment approach provides new methods for multi-objective optimization in AI systems that go beyond traditional trade-off thinking. This has implications for AI safety, where multiple objectives must be satisfied simultaneously.
 
@@ -74,7 +74,7 @@ The contributions of this thesis extend beyond robotics to influence several bro
 
 *Continual Learning*: The multi-fulfillment adaptation framework contributes to continual learning research by providing principled methods for preserving previously learned behaviors while adapting to new requirements.
 
-=== Implications for Control Theory
+=== Implications for Control Theory <chap:synthesis:implications:control>
 
 *Multi-Objective Control*: The framework provides new tools for multi-objective control that avoid the limitations of traditional Pareto-based approaches. The emphasis on joint satisfaction rather than trade-offs aligns with control theory's emphasis on meeting all requirements simultaneously.
 
@@ -84,7 +84,7 @@ The contributions of this thesis extend beyond robotics to influence several bro
 
 *Hierarchical Control*: The behavioral decomposition principle provides insights into hierarchical control design that separate universal and task-specific requirements.
 
-=== Implications for Human-Machine Interaction
+=== Implications for Human-Machine Interaction <chap:synthesis:implications:hmi>
 
 *Intent Specification*: The FPL language provides a more natural way for humans to specify their intentions to machines, bridging the gap between logical human reasoning and mathematical optimization.
 
@@ -94,7 +94,7 @@ The contributions of this thesis extend beyond robotics to influence several bro
 
 *Shared Autonomy*: The framework provides tools for shared autonomy systems where humans and machines must coordinate to achieve complex objectives.
 
-=== Implications for Software Engineering
+=== Implications for Software Engineering <chap:synthesis:implications:software>
 
 *Requirements Engineering*: The FPL approach provides new tools for requirements engineering in complex systems where multiple objectives must be balanced and maintained.
 
@@ -104,11 +104,11 @@ The contributions of this thesis extend beyond robotics to influence several bro
 
 *Maintenance and Evolution*: The framework provides tools for system maintenance and evolution that preserve critical behaviors while adapting to new requirements.
 
-== Limitations and Challenges
+== Limitations and Challenges <chap:synthesis:limitations>
 
 While the thesis has demonstrated significant advances, several limitations and challenges remain that point toward future research directions.
 
-=== Theoretical Limitations
+=== Theoretical Limitations <chap:synthesis:limitations:theoretical>
 
 *Expressivity Boundaries*: While FPL is more expressive than linear scalarization, it cannot express all possible objective relationships. Temporal logic, stochastic relationships, and dynamic objectives remain challenging.
 
@@ -118,7 +118,7 @@ While the thesis has demonstrated significant advances, several limitations and 
 
 *Convergence Conditions*: While the framework provides convergence guarantees under certain conditions, these conditions may not hold in all practical scenarios.
 
-=== Practical Limitations
+=== Practical Limitations <chap:synthesis:limitations:practical>
 
 *Specification Complexity*: Very complex objective relationships may be difficult to specify correctly using FPL, requiring significant domain expertise and careful validation.
 
@@ -128,7 +128,7 @@ While the thesis has demonstrated significant advances, several limitations and 
 
 *Integration Challenges*: Integrating composable fulfillment with existing systems and workflows may require significant engineering effort.
 
-=== Empirical Limitations
+=== Empirical Limitations <chap:synthesis:limitations:empirical>
 
 *Domain Coverage*: While the thesis has validated the approach across multiple domains, broader validation across more diverse applications is needed.
 
@@ -138,11 +138,11 @@ While the thesis has demonstrated significant advances, several limitations and 
 
 *Failure Modes*: While the framework provides robustness properties, systematic study of failure modes and their mitigation is needed.
 
-== Future Research Directions
+== Future Research Directions <chap:synthesis:future>
 
 The limitations and broader implications point toward several promising directions for future research.
 
-=== Theoretical Extensions
+=== Theoretical Extensions <chap:synthesis:future:theoretical>
 
 *Temporal Logic Integration*: Developing extensions that support temporal logic specifications while maintaining the benefits of the current framework. This could enable expression of complex temporal relationships and safety properties. Signal Temporal Logic (STL) represents a particularly promising direction, as there is existing work on automatically discovering STL specifications from demonstrations for robotics applications. Combining STL's temporal expressivity with FPL's semantic preservation could enable specification of complex spatio-temporal behaviors while maintaining interpretability.
 
@@ -152,7 +152,7 @@ The limitations and broader implications point toward several promising directio
 
 *Formal Verification*: Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
 
-=== Algorithmic Improvements
+=== Algorithmic Improvements <chap:synthesis:future:algorithmic>
 
 *Scalability Enhancements*: Developing more scalable algorithms that can handle larger numbers of objectives and more complex formulas through approximation methods, hierarchical decomposition, or distributed optimization.
 
@@ -164,7 +164,7 @@ The limitations and broader implications point toward several promising directio
 
 *Parallel and Distributed Optimization*: Developing parallel and distributed versions of the algorithms that can scale to very large problems.
 
-=== Application Domains
+=== Application Domains <chap:synthesis:future:applications>
 
 *Safety-Critical Systems*: Applying the framework to safety-critical domains such as autonomous vehicles, medical devices, and aerospace systems where the robustness and interpretability properties are particularly valuable.
 
@@ -176,7 +176,7 @@ The limitations and broader implications point toward several promising directio
 
 *Autonomous Systems*: Developing applications for fully autonomous systems that must operate independently while maintaining multiple objectives and adapting to changing conditions.
 
-=== Tool and Interface Development
+=== Tool and Interface Development <chap:synthesis:future:tools>
 
 *Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.\
 
@@ -188,7 +188,7 @@ The limitations and broader implications point toward several promising directio
 
 *Performance Analysis Tools*: Creating tools for analyzing the performance and trade-offs of different FPL specifications and optimization parameters.
 
-=== Empirical Studies
+=== Empirical Studies <chap:synthesis:future:empirical>
 
 *Long-Term Deployment Studies*: Conducting long-term studies of composable fulfillment systems in real-world deployments to understand their behavior over extended periods.
 
@@ -200,11 +200,11 @@ The limitations and broader implications point toward several promising directio
 
 *User Studies*: Conducting user studies to understand how practitioners learn to use the framework and what tools and training are most effective.
 
-== Broader Impact and Societal Implications
+== Broader Impact and Societal Implications <chap:synthesis:impact>
 
 The development of composable fulfillment has broader implications for society and the future of human-machine interaction.
 
-=== Economic Impact
+=== Economic Impact <chap:synthesis:impact:economic>
 
 *Reduced Development Costs*: By making robot learning more predictable and efficient, composable fulfillment could significantly reduce the cost of developing and deploying robotic systems.
 
@@ -214,7 +214,7 @@ The development of composable fulfillment has broader implications for society a
 
 *Skill Requirements*: The framework may change the skill requirements for robotics practitioners, emphasizing logical reasoning and system design over trial-and-error tuning.
 
-=== Safety and Security
+=== Safety and Security <chap:synthesis:impact:safety>
 
 *Improved Safety*: The semantic preservation and robustness properties could lead to safer robotic systems that maintain critical safety requirements even during adaptation and deployment.
 
@@ -224,7 +224,7 @@ The development of composable fulfillment has broader implications for society a
 
 *Security Implications*: The interpretability properties could help detect and mitigate security threats by making it easier to understand when systems are behaving unexpectedly.
 
-=== Ethical Considerations
+=== Ethical Considerations <chap:synthesis:impact:ethics>
 
 *Value Alignment*: The framework's ability to preserve human intent through semantic preservation could contribute to better value alignment in AI systems.
 
@@ -234,7 +234,7 @@ The development of composable fulfillment has broader implications for society a
 
 *Human Agency*: The framework could help preserve human agency by providing better tools for humans to specify and control robotic behavior.
 
-=== Environmental Impact
+=== Environmental Impact <chap:synthesis:impact:environment>
 
 *Energy Efficiency*: The ability to explicitly optimize for energy efficiency could lead to more environmentally friendly robotic systems.
 
@@ -244,10 +244,10 @@ The development of composable fulfillment has broader implications for society a
 
 *Lifecycle Considerations*: The adaptability properties could extend the useful life of robotic systems by enabling them to adapt to changing requirements rather than requiring replacement.
 
-== Vision for the Future
+== Vision for the Future <chap:synthesis:vision>
 Looking forward, composable fulfillment represents a step toward a future where human intent and machine behavior are more closely aligned, where complex systems can be designed and deployed with confidence, and where the benefits of artificial intelligence and robotics can be realized more broadly and safely.
 
-=== Short-Term Vision (2-5 years)
+=== Short-Term Vision (2-5 years) <chap:synthesis:vision:short>
 
 *Tool Maturation*: Development of mature tools and interfaces that make composable fulfillment accessible to practitioners without deep mathematical expertise.
 

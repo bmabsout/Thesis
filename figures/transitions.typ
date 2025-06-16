@@ -42,8 +42,9 @@
     content("state.east", $,#h(0.1em)$, name: "comma1", anchor: "west")
     content("comma1.east", action_name, name: "action", anchor: "west")
     content("action.east", $)$, name: "t_close", anchor: "west")
-    content("t_close.east", $#h(0.2em)~#h(0.2em)$, name: "tilde", anchor: "west")
-    content("tilde.east", next_state_name, name: "next_state", anchor: "west")
+    content((rel: (0.75, 0), to: "t_close.east"), next_state_name, name: "next_state", anchor: "west")
+    line("t_close.east", "next_state.west", mark: (end: "triangle"),
+         stroke: (thickness: style.stroke, dash: "dashed"))
   })
   
   // Source → Transition connection

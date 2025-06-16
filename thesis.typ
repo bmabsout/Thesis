@@ -101,6 +101,8 @@
   // #include "src/Claims.typ"
 ]
 
+// #show "fulfillment": [*$f$*ulfillment]
+
 // Optional: Generate Appendices content if you have them
 // #let appendices_body = [
 //   #include "src/appendices/appendix_a.typ"

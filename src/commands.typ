@@ -23,8 +23,16 @@
 #let vecand = math.and.big
 #let loss = math.op($cal(L)$)
 #let expect = math.op($EE$, limits: true)
+#let policy = math.op($pi$, limits: true)
 #let todo(message) = {
   text(red, [TODO: #message])
 }
 
 #let sigmoid(x) = $phi(x)$
+
+#let sp = state($s'$)
+
+#let stack_math(..mathes) = {
+  set text(size: 9pt)
+  stack(dir: ttb, spacing: 1em, ..mathes)
+}

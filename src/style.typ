@@ -280,13 +280,10 @@
 }
 
 
-// #show figure.where(kind: "theorem"): it => {
-//   theorem(title: it.title, body: it.content, gradient: it.gradient)
-// }
+// #let changed(content) = highlight(content, fill: accent1_gradient.sample(80%))
+#let changed(content) = content
 
-// #figure(kind: "theorem", caption: "Theorem", gradient: accent2_gradient)[pompe]
-
-#let note(content, gradient: primary_gradient, title: none, engine: seamless-block) = align(center, {
+#let note(content, gradient: primary_gradient, title: none, engine: seamless-block, kind: "note", supplement: [Note]) = figure(align(center, {
   if title != none {
     engine = engine.with( 
       title: if title != none {
@@ -311,42 +308,30 @@
     )
     
   ]
-})
+}), kind: kind, supplement: text(fill: gradient.sample(40%), supplement))
 
-#let theorem_counter = counter("theorem")
 
+#let theorem-counter = counter("theorem")
 #let theorem(title: none, body, gradient: accent2_gradient) = {
-  theorem_counter.step()
-  context {
-    let theorem_num = theorem_counter.get().first()
-    let title = if title != none {
-      [*Theorem #theorem_num: #title*]
-    } else {
-      [*Theorem #theorem_num*]
-    }
-    note(gradient: gradient, title: title)[
-      
-      #body
-    ]
-  }
+  let title = [Theorem #context {
+    theorem-counter.step()
+    [#(theorem-counter.get().first()+1)]
+  }: #title]
+  note(gradient: gradient, title: title, kind: "theorem", supplement: [Theorem])[
+    #body
+  ]
 }
 
-#let algorithm_counter = counter("algorithm")
+#let algorithm-counter = counter("algorithm")
 
 #let algorithm(title: none, body, gradient: accent1_gradient) = {
-  algorithm_counter.step()
-  context {
-    let algorithm_num = algorithm_counter.get().first()
-    let title = if title != none {
-      [*Algorithm #algorithm_num: #title*]
-    } else {
-      [*Algorithm #algorithm_num*]
-    }
-    note(gradient: gradient, title: title)[
-      
-      #body
-    ]
-  }
+  let title = [ Algorithm #context {
+    algorithm-counter.step()
+    [#(algorithm-counter.get().first()+1)]
+  }: #title]
+  note(gradient: gradient, title: title, kind: "algorithm", supplement: [Algorithm])[
+    #body
+  ]
 }
 
 #let notice(content, gradient: accent5_gradient) = {

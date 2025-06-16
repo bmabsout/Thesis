@@ -164,6 +164,8 @@
 *   `REDQ`: An algorithm that addresses overestimation bias with ensembles of critics. The paper's approach is contrasted with this.
 *   `power_mean_properties`: A general reference for the mathematical properties of power means, which are the foundation of the FPL logic.
 
+* `sample_efficient_rl`:  outlines why sample efficiency is a critical bottleneck for RL and surveys several directions for improvement
+
 ### Citations from `CertiflightProgress`
 
 *   `NEURIPS2019_2647c1db`: This is cited in the context of synthesizing certifiable Neural Network based controllers. The document mentions that this work shows it's possible to create such controllers, which could be applied to a "Safe-visor" architecture, where the certified controller takes over when a high-performance (but uncertified) controller is deemed likely to be unsafe. It notes that these techniques are computationally expensive.

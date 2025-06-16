@@ -30,3 +30,7 @@ This means that maximizing the geometric mean of fulfillment values is equivalen
 
 
 the typsafety stuff in the old intent chapter actually makes sense
+
+don't forget! "To account for this, many use sum of squares, but as we will see this can be seen as an instance of a more general operator to maximize."
+
+color of links for the number to figs is off
