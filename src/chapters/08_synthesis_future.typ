@@ -146,9 +146,29 @@ The limitations and broader implications point toward several promising directio
 
 *Temporal Logic Integration*: Developing extensions that support temporal logic specifications while maintaining the benefits of the current framework. This could enable expression of complex temporal relationships and safety properties. Signal Temporal Logic (STL) represents a particularly promising direction, as there is existing work on automatically discovering STL specifications from demonstrations for robotics applications. Combining STL's temporal expressivity with FPL's semantic preservation could enable specification of complex spatio-temporal behaviors while maintaining interpretability.
 
-*Stochastic Fulfillment*: Extending the framework to handle stochastic and uncertain objective relationships. This could enable application to domains with significant uncertainty and partial observability.
+*Robust Fulfillments*: Having a range of fulfillment values for each objective allows the generalization of fulfillment logic to cases where uncertainty needs to be represented or robustness is needed over fulfillment values. We can extend fulfillment logic to include ranges of values, for instance take the following equation:
+$ [0.5, 0.7] and_(-infinity) [0.3, 0.8] = [0.3, 0.7] $
+It describes the range of the outputs given a range of input fulfillments.
 
-*Dynamic Composition*: Developing methods for adapting FPL formulas dynamically based on context, performance, or changing requirements. This could enable more adaptive and responsive systems.
+*Probabilistic Fulfillments*: We can extend fulfillment logic to include probabilistic fulfillments, logical formula can then manipulate probability distributions over fulfillment values.
+Taking the following formula as an example:
+Take lognormal distributions $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$, we can form $f_a and_0 f_b$ to get a distribution $f_c$ represented by $sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
+One powerful property of the power mean is that it admits a central-limit-like theorem for each p, known as the generalized central limit theorem. Meaning that the distribution of the output of the power mean will converge to a generalization of normal distributions as the number of inputs increases. This family of distribution is known as the generalized normal distribution or exponential power distribution. Upon this we can form a probabilistic fulfillment logic that can be used to reason about the probability of fulfilling logical formula.
+#let fbox(p) = box(
+  polygon(
+    (10pt, 0pt),
+    (20pt, 7pt),
+    (10pt, 14pt),
+    (0pt,  7pt),
+    stroke: black
+  )+
+  place(horizon+center,dy: -1pt, text(size: 0.6em,p))
+)
+
+// #let fbox(p) = box[#place(dy:0.27em, center, text(size: 0.5em,p))#rotate(square(size:1em), 45deg)]
+// #let fbox(p) = [#place(dy:0.25em, center, text(size: 0.5em,p))#scale(x:1.5em, sym.diamond)]
+*Predicate Fulfillment Logic*:
+We can extend fulfillment logic to more general (and natural!) settings by considering the power mean as an aggregation operator rather than the base for our conjunction operator. Notice how in continuous logic and how in predicate fuzzy logic, the #raw("infimum") operator acts as a $forall$ operator, and the #raw("supremum") operator acts as a $exists$ operator. By replacing these with a more general power mean-based operation #fbox($p$), statements like $forall_x, exists_y, x and y$ can be built like so: $ fbox(-infinity)_x fbox(infinity)_y, x and y)$
 
 *Formal Verification*: Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
 

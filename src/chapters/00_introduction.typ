@@ -68,12 +68,17 @@ Beyond specification, we also show that intentionality extends to architectural 
 
 Our approach achieves significant quantitative improvements across multiple domains:
 
-- *Sample Efficiency*: Up to 6.4$times$ faster learning than DDPG on LunarLanderContinuous-v2 and 5.6$times$ faster on Hopper-v4 using our Balanced Policy Gradient algorithm
-- *Training Stability*: Across Gymnasium benchmarks the standard deviation of learning curves is reduced by 40–50\%, indicating more repeatable training runs
-- *Energy Consumption*: Almost 80% power reductions in quadrotor control demonstrated through CAPS regularization
-- *Deployment Success*: 100% flight-worthy controllers in real-world quadrotor deployment through our RE+AL framework
-- *Training Consistency*: 100% successful sim-to-real transfers with reproducible training runs, and 40–50\% lower reward variance across Gymnasium benchmarks
-- *Transfer Robustness*: Up to 50% power consumption reduction during sim-to-real adaptation using Anchor Critics
+*Sample Efficiency*: Up to 6.4$times$ faster learning than DDPG on LunarLanderContinuous-v2 and 5.6$times$ faster on Hopper-v4 using our Balanced Policy Gradient algorithm
+
+*Training Stability*: Across Gymnasium benchmarks the standard deviation of learning curves is reduced by 40–50\%, indicating more repeatable training runs
+
+*Energy Consumption*: Almost 80% power reductions in quadrotor control demonstrated through CAPS regularization
+
+*Deployment Success*: 100% flight-worthy controllers in real-world quadrotor deployment through our RE+AL framework
+
+*Training Consistency*: 100% successful sim-to-real transfers with reproducible training runs, and 40–50\% lower reward variance across Gymnasium benchmarks
+
+*Transfer Robustness*: Up to 50% power consumption reduction during sim-to-real adaptation using Anchor Critics
 
 == Scope and Limitations <chap:intro:scope>
 
