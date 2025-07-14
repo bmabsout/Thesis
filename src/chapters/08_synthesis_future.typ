@@ -142,48 +142,45 @@ While the thesis has demonstrated significant advances, several limitations and 
 
 The limitations and broader implications point toward several promising directions for future research.
 
-=== Theoretical Extensions <chap:synthesis:future:theoretical>
+=== Logical Extensions <chap:synthesis:future:logical>
 
-==== Predicate Fulfillment Logic <chap:synthesis:future:theoretical:predicate>
-
+==== Predicate Fulfillment Logic <chap:synthesis:future:logical:predicate>
 We can extend fulfillment logic to more general settings that offer more expressive power by considering the power mean as an aggregation operator rather than the base for our conjunction operator. Notice how in continuous logic and how in predicate fuzzy logic, the #raw("infimum") operator acts as an aggregator for the $forall$ quantifier, and the #raw("supremum") operator acts as the base for the $exists$ quantifier. By replacing these with a more general $pmean(p)$-based quantifier $fbox(p)$, statements like $forall_(x in X), exists_(y in Y), x and y$ can be built like so: $ fbox(-infinity)_(x in X), fbox(infinity)_(y in Y), x and y$. If we quanitfy over a continuous domain for example this new quantifier evaluates to:
 $ fbox(p)_(x in [0, 1]), x  colon.eq root(p, integral_0^1 x^p d x) $
 Using the power mean as an aggregation operator is a more natural fit as the power mean is not generally associative and neither are the classical quantifiers in full generality, i.e. $forall exists eq.triple.not exists forall$. The ability to associate the quantifiers, i.e. $forall_x forall_y eq.triple forall_(x,y)$, gets lost under the fulfillment quantifier unless $|p| = infinity$, i.e. $fbox(0)_x, fbox(0)_y, eq.triple.not fbox(0)_(x,y)$.
 
 
-==== Robust Fulfillments <chap:synthesis:future:theoretical:robust>
-
+==== Robust Fulfillments <chap:synthesis:future:logical:robust>
 Having a range of fulfillment values for each objective allows the generalization of fulfillment logic to cases where robustness or uncertainty needs to be represented over fulfillment values. We can extend fulfillment values to include ranges, for instance take the following equation:
 $ [0.5, 0.7] and_(-infinity) [0.3, 0.8] = [0.3, 0.7] $
 It describes the range of the outputs given a range of input fulfillments.
 Take noisy sensor readings as an example, if we are unsure how well we are fulfilling the objective, we can represent this as a range of values, then worry about the worst case or the average case.
 
-==== Probabilistic Fulfillments <chap:synthesis:future:theoretical:probabilistic>
-
+==== Probabilistic Fulfillments <chap:synthesis:future:logical:probabilistic>
 We can also decorate fulfillments with probability distributions, probabilistic fulfillment formula can then represent notions such as the probability of fulfilling certain formulas.
 Take the following example where $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$ form uniform distributions, $f_c = f_a and_0 f_b$ builds a distribution $f_c$ represented by $f_c = sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
 
 What makes this construction especially powerful is that the power mean admits a central-limit-like theorem for each $p$, known as the generalized central limit theorem. Meaning that the distribution of the output of the power mean will converge to a generalization of normal distributions as the number of inputs increases. This family of distribution is known as the generalized normal distribution or exponential power distribution.
 
-==== Temporal Logic Integration <chap:synthesis:future:theoretical:temporal>
+==== Temporal Logic Integration <chap:synthesis:future:logical:temporal>
+We can also extend fulfillment logic to the temporal domain by converting classical signal temporal logic operators to their fulfillment logic counterparts. For example, the `always` operator in STL can be converted to the $and^p$ operator, and the `eventually` operator can be converted to the $or^p$ quantifier. This allows us to express temporal relationships such as "the system will always fulfill the objective of avoiding a collision" or "the system will eventually fulfill the objective of reaching a target".
 
-We can extend fulfillment logic to the temporal domain by converting classical signal temporal logic operators to their fulfillment logic counterparts. For example, the `always` operator in STL can be converted to the $pmean(p)$ operator, and the `eventually` operator can be converted to the $exists$ quantifier. This allows us to express temporal relationships such as "the system will always fulfill the objective" or "the system will eventually fulfill the objective".
+==== Next steps in Formal Verification <chap:synthesis:future:logical:formal_verification>
+We showed in @def:min_fulfillment_bounds a bound on the worst-case fulfillment of a composed formula. However we made no attempt to inductively apply this bound to composed formula (though it can be seen that a $not$ would flip the bound for example). Such a function would tie the inputs to  fulfillment functions with their outputs, allowing us to reason about the composition of fulfillment values. A worthwhile avenue for future research is to develop more of these bounds and achieve guarantees about the behavior of controllers that are using FPL.
 
-==== Next steps in Formal Verification <chap:synthesis:future:theoretical:formal_verification>
+=== Machine Learning Extensions <chap:synthesis:future:ml>
 
-Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
+==== Inverse Fulfillment Learning (IFL) <chap:synthesis:future:ml:inverse_fulfillment>
+Inverse Reinforcement Learning (IRL) aims to recover reward functions from observed _behavior_ $beta$, typically by learning a mapping $m: beta -> R$ such that $#`opt`_("RL")(m(beta)) tilde.eq beta$. Analogously, we can construct fulfillment formulas from expert demonstrations by learning a mapping $m: beta -> "FPL"$. Unlike traditional IRL, which often struggles with interpretability, inverse fulfillment learning can preserve semantic structure by learning individual fulfillment functions and their logical composition. This enables automatic discovery of interpretable multi-objective specifications from demonstrations—especially useful for complex behaviors like "human-like" walking, where manual specification is difficult. The resulting FPL specifications retain the semantic relationships present in expert behavior, while maintaining interpretability and robustness.
 
-=== Algorithmic Improvements <chap:synthesis:future:algorithmic>
+==== Loss functions as FPL <chap:synthesis:future:ml:loss_functions>
+Due to the usage of the power mean, various existing loss functions used in ML can be expressed as FPL formulas. Notice that minimizing the $L_p$ norm is equivalent to minimizing $pmean(p)$ as $L_p/n^p = pmean(p)$ where n is the number of samples (a constant). As this behavior only differs when we take $p -> 0$, these losses can then be thought of in terms of logical formula, especially when the inputs are values in $[0, 1]$.
 
-*Scalability Enhancements*: Developing more scalable algorithms that can handle larger numbers of objectives and more complex formulas through approximation methods, hierarchical decomposition, or distributed optimization.
+Another relation is the cross-entropy loss as it can be expressed as $sum f_a log(f_b)$. This allows us to use the power mean to aggregate the loss functions of multiple objectives, and to use the FPL formulas to reason about the behavior of the system.
 
-*Automated Discovery*: Developing methods for automatically discovering effective FPL formulas from data, demonstrations, or natural language specifications.
+==== Game Theoretical Extensions
 
-*Inverse Fulfillment Learning*: Developing methods to learn fulfillment functions and FPL specifications from expert demonstrations, addressing the complementary relationship between composable fulfillment and inverse reinforcement learning. While traditional IRL suffers from semantic loss when recovering scalar reward functions, inverse fulfillment learning could maintain semantic structure by learning individual fulfillment functions and their logical composition. This approach could enable automatic discovery of interpretable multi-objective specifications from demonstrations, particularly valuable for complex behaviors like "human-like" walking where manual specification of fulfillment functions remains challenging. The learned FPL specifications would preserve the semantic relationships observed in expert behavior while maintaining the interpretability and robustness properties of the composable fulfillment framework.
-
-*Meta-Learning*: Applying meta-learning techniques to automatically adapt FPL formulas and optimization parameters based on task characteristics and performance.
-
-*Parallel and Distributed Optimization*: Developing parallel and distributed versions of the algorithms that can scale to very large problems.
+==== Complexity theory
 
 === Application Domains <chap:synthesis:future:applications>
 
