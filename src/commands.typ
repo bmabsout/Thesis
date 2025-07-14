@@ -19,7 +19,10 @@
 #let rt = reward($r_t$)
 #let Q = reward($Q$)
 #let V = reward($V$)
-#let pmean(p) = $mu_#p$
+#let pmean(p) = $overline(mu)_#p$
+
+#let fbox(p) = math.op(limits: true, box(inset: 0em, grid(line(length: 0.2em, stroke: 0.5pt), text(box(inset: 0.2em, $#p$), size: 0.75em, top-edge: "bounds", bottom-edge: "bounds"), line(length: 0.2em, stroke: 0.5pt), align: horizon+center, columns: 3), stroke: 0.5pt))
+
 #let vecand = math.and.big
 #let loss = math.op($cal(L)$)
 #let expect = math.op($EE$, limits: true)

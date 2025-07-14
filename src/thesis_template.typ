@@ -199,10 +199,11 @@
       #v(0.3fr)
       #upper(author_name)
       #v(0.6fr)
-      #set text(size: 0.8em)
-      Submitted in Partial Fulfillment of the\
-      Requirements for the Degree of\
-      #degree_type
+      #text(size: 0.8em, style: "italic")[
+        Submitted in Partial Fulfillment of the\
+        Requirements for the Degree of\
+        #degree_type
+      ]
       #v(0.6fr)
       #submission_year
     ]

@@ -144,33 +144,34 @@ The limitations and broader implications point toward several promising directio
 
 === Theoretical Extensions <chap:synthesis:future:theoretical>
 
-*Temporal Logic Integration*: Developing extensions that support temporal logic specifications while maintaining the benefits of the current framework. This could enable expression of complex temporal relationships and safety properties. Signal Temporal Logic (STL) represents a particularly promising direction, as there is existing work on automatically discovering STL specifications from demonstrations for robotics applications. Combining STL's temporal expressivity with FPL's semantic preservation could enable specification of complex spatio-temporal behaviors while maintaining interpretability.
+==== Predicate Fulfillment Logic <chap:synthesis:future:theoretical:predicate>
 
-*Robust Fulfillments*: Having a range of fulfillment values for each objective allows the generalization of fulfillment logic to cases where uncertainty needs to be represented or robustness is needed over fulfillment values. We can extend fulfillment logic to include ranges of values, for instance take the following equation:
+We can extend fulfillment logic to more general settings that offer more expressive power by considering the power mean as an aggregation operator rather than the base for our conjunction operator. Notice how in continuous logic and how in predicate fuzzy logic, the #raw("infimum") operator acts as an aggregator for the $forall$ quantifier, and the #raw("supremum") operator acts as the base for the $exists$ quantifier. By replacing these with a more general $pmean(p)$-based quantifier $fbox(p)$, statements like $forall_(x in X), exists_(y in Y), x and y$ can be built like so: $ fbox(-infinity)_(x in X), fbox(infinity)_(y in Y), x and y$. If we quanitfy over a continuous domain for example this new quantifier evaluates to:
+$ fbox(p)_(x in [0, 1]), x  colon.eq root(p, integral_0^1 x^p d x) $
+Using the power mean as an aggregation operator is a more natural fit as the power mean is not generally associative and neither are the classical quantifiers in full generality, i.e. $forall exists eq.triple.not exists forall$. The ability to associate the quantifiers, i.e. $forall_x forall_y eq.triple forall_(x,y)$, gets lost under the fulfillment quantifier unless $|p| = infinity$, i.e. $fbox(0)_x, fbox(0)_y, eq.triple.not fbox(0)_(x,y)$.
+
+
+==== Robust Fulfillments <chap:synthesis:future:theoretical:robust>
+
+Having a range of fulfillment values for each objective allows the generalization of fulfillment logic to cases where robustness or uncertainty needs to be represented over fulfillment values. We can extend fulfillment values to include ranges, for instance take the following equation:
 $ [0.5, 0.7] and_(-infinity) [0.3, 0.8] = [0.3, 0.7] $
 It describes the range of the outputs given a range of input fulfillments.
+Take noisy sensor readings as an example, if we are unsure how well we are fulfilling the objective, we can represent this as a range of values, then worry about the worst case or the average case.
 
-*Probabilistic Fulfillments*: We can extend fulfillment logic to include probabilistic fulfillments, logical formula can then manipulate probability distributions over fulfillment values.
-Taking the following formula as an example:
-Take lognormal distributions $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$, we can form $f_a and_0 f_b$ to get a distribution $f_c$ represented by $sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
-One powerful property of the power mean is that it admits a central-limit-like theorem for each p, known as the generalized central limit theorem. Meaning that the distribution of the output of the power mean will converge to a generalization of normal distributions as the number of inputs increases. This family of distribution is known as the generalized normal distribution or exponential power distribution. Upon this we can form a probabilistic fulfillment logic that can be used to reason about the probability of fulfilling logical formula.
-#let fbox(p) = box(
-  polygon(
-    (10pt, 0pt),
-    (20pt, 7pt),
-    (10pt, 14pt),
-    (0pt,  7pt),
-    stroke: black
-  )+
-  place(horizon+center,dy: -1pt, text(size: 0.6em,p))
-)
+==== Probabilistic Fulfillments <chap:synthesis:future:theoretical:probabilistic>
 
-// #let fbox(p) = box[#place(dy:0.27em, center, text(size: 0.5em,p))#rotate(square(size:1em), 45deg)]
-// #let fbox(p) = [#place(dy:0.25em, center, text(size: 0.5em,p))#scale(x:1.5em, sym.diamond)]
-*Predicate Fulfillment Logic*:
-We can extend fulfillment logic to more general (and natural!) settings by considering the power mean as an aggregation operator rather than the base for our conjunction operator. Notice how in continuous logic and how in predicate fuzzy logic, the #raw("infimum") operator acts as a $forall$ operator, and the #raw("supremum") operator acts as a $exists$ operator. By replacing these with a more general power mean-based operation #fbox($p$), statements like $forall_x, exists_y, x and y$ can be built like so: $ fbox(-infinity)_x fbox(infinity)_y, x and y)$
+We can also decorate fulfillments with probability distributions, probabilistic fulfillment formula can then represent notions such as the probability of fulfilling certain formulas.
+Take the following example where $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$ form uniform distributions, $f_c = f_a and_0 f_b$ builds a distribution $f_c$ represented by $f_c = sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
 
-*Formal Verification*: Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
+What makes this construction especially powerful is that the power mean admits a central-limit-like theorem for each $p$, known as the generalized central limit theorem. Meaning that the distribution of the output of the power mean will converge to a generalization of normal distributions as the number of inputs increases. This family of distribution is known as the generalized normal distribution or exponential power distribution.
+
+==== Temporal Logic Integration <chap:synthesis:future:theoretical:temporal>
+
+We can extend fulfillment logic to the temporal domain by converting classical signal temporal logic operators to their fulfillment logic counterparts. For example, the `always` operator in STL can be converted to the $pmean(p)$ operator, and the `eventually` operator can be converted to the $exists$ quantifier. This allows us to express temporal relationships such as "the system will always fulfill the objective" or "the system will eventually fulfill the objective".
+
+==== Next steps in Formal Verification <chap:synthesis:future:theoretical:formal_verification>
+
+Developing formal verification methods for composable fulfillment systems that can provide guarantees about behavior and safety properties.
 
 === Algorithmic Improvements <chap:synthesis:future:algorithmic>
 
