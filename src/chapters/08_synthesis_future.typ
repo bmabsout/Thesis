@@ -176,11 +176,13 @@ Inverse Reinforcement Learning (IRL) aims to recover reward functions from obser
 ==== Loss functions as FPL <chap:synthesis:future:ml:loss_functions>
 Due to the usage of the power mean, various existing loss functions used in ML can be expressed as FPL formulas. Notice that minimizing the $L_p$ norm is equivalent to minimizing $pmean(p)$ as $L_p/n^p = pmean(p)$ where n is the number of samples (a constant). As this behavior only differs when we take $p -> 0$, these losses can then be thought of in terms of logical formula, especially when the inputs are values in $[0, 1]$.
 
-Another relation is the cross-entropy loss as it can be expressed as $sum f_a log(f_b)$. This allows us to use the power mean to aggregate the loss functions of multiple objectives, and to use the FPL formulas to reason about the behavior of the system.
+Another relation is the cross-entropy loss as it can be expressed as $- sum f_a log(f_b)$. Exponentiated it becomes $product f_b ^f_a$, this is equivalent to the FPL formula $vecand^0 f_b^f_a$. Unlike taking the log which is often used for its monotinicity property to allow for better numerical stability, we can instead use the geometric mean which will produce a value that is representative of performance allowing the composition with other losses while retaining the meaning of the range of values.
 
-==== Game Theoretical Extensions
+==== Game Theoretical Studies
+The games that characterize the competition between multiple objectives can be made precise within game theoretical notions. This would allow one to study the games where the power mean is the optimal utility function to use, allowing us to reason about how the selection of the $p$ parameter affects the behavior of the optimization.
 
 ==== Complexity theory
+One can also study the complexity class of finding formula that specify a given behavior. A conjecture put forth here is that the hardness of solving for linear scalarization is greater than the hardness of solving for FPL formulas in a general class of problems. The intuition is that competitive dynamics cause chaotic behavior in optimizing linear scalarization, while FPL formulas can be seperately optimized then composed.
 
 === Application Domains <chap:synthesis:future:applications>
 
@@ -196,7 +198,7 @@ Another relation is the cross-entropy loss as it can be expressed as $sum f_a lo
 
 === Tool and Interface Development <chap:synthesis:future:tools>
 
-*Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.\
+*Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.
 
 *Natural Language Processing*: Developing methods for translating natural language specifications into FPL formulas, making the framework accessible to non-technical users.
 
