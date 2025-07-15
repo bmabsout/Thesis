@@ -55,8 +55,8 @@ This appendix provides a comprehensive reference for the mathematical notation a
   columns: (auto, auto, auto),
   align: (left, left, left),
   [*Symbol*], [*Name*], [*Description*],
-  [$and_p$], [Conjunction], [AND operator with parameter $p <= 0$ (typically)],
-  [$or_p$], [Disjunction], [OR operator, derived from $and_p$ via De Morgan's laws ($not(not phi_1 and_p not phi_2)$), thus uses the same $p$ (typically $p <= 0$) as the $and_p$ in its definition. Note: Generalized mean $M_q$ with $q >= 1$ can also directly produce OR-like semantics but is distinct from FPL's $or_p$ definition.],
+  [$and^p$], [Conjunction], [AND operator with parameter $p <= 0$ (typically)],
+  [$or_p$], [Disjunction], [OR operator, derived from $and^p$ via De Morgan's laws ($not(not phi_1 and^p not phi_2)$), thus uses the same $p$ (typically $p <= 0$) as the $and^p$ in its definition. Note: Generalized mean $M_q$ with $q >= 1$ can also directly produce OR-like semantics but is distinct from FPL's $or_p$ definition.],
   [$not$], [Negation], [Logical NOT: $not phi = 1 - u(phi)$],
   [$[phi]_delta$], [Priority offset], [Offset operator with $delta in [-1,1]$],
   [$tack$], [Turnstile], [Type judgment: $Gamma tack phi : tau$],
@@ -187,7 +187,7 @@ This appendix provides a comprehensive reference for the mathematical notation a
 $ f_"total" = M_0(f_"safety", f_"performance", f_"efficiency") $
 
 *FPL Formula*:
-$ phi = "safety" and_(-infinity) ("tracking" and_0 "smoothness") $
+$ phi = "safety" and^(-infinity) ("tracking" and^0 "smoothness") $
 
 *FQ-Value Update*:
 $ "FQ"_i(s,a) arrow.l r_i + gamma "FQ"_i(s', pi(s')) $

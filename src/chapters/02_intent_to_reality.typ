@@ -21,7 +21,7 @@ $ beta = { tau | tau = ((state(s_0), action(a_0)), (state(s_1), action(a_1)), (s
 
 This definition allows us to treat behavior as a formal mathematical object. The power of this approach comes from *enriching* this set with different functions, which allows us to recover many fundamental concepts in robot learning as specific instances of a more general idea:
 
-+ *Behavioral Metrics:* By attaching a *metric* $d(beta_1, beta_2)$ to pairs of behaviors, we can quantify the difference between them. This is crucial for measuring the simulation-to-reality gap, where we compare the behavior in simulation $beta_"sim"$ to the behavior in reality $beta_"real"$. Many imitation learning approaches can be understood as minimizing different kinds of metrics between the learned policy's behavior and an expert's. Instead of simple per-action losses, modern methods minimize sophisticated trajectory-level metrics (e.g., Chamfer distance) or distributional divergences (e.g., f-divergences) to better capture behavioral similarity. #todo[Citations for trajectory-level IL metrics, e.g., Chen 2023, Ke 2020]
++ *Behavioral Metrics:* By attaching a *metric* $d(beta_1, beta_2)$ to pairs of behaviors, we can quantify the difference between them. This is crucial for measuring the simulation-to-reality gap, where we compare the behavior in simulation $beta_"sim"$ to the behavior in reality $beta_"real"$. Many imitation learning approaches can be understood as minimizing different kinds of metrics between the learned policy's behavior and an expert's. Instead of simple per-action losses, modern methods minimize sophisticated trajectory-level metrics such as Chamfer distance @chamfer_distance or distributional divergences like f-divergences @fdivergence to better capture behavioral similarity
 
 + *Probabilistic Views:* By enriching a behavior with a *probability distribution* $P(tau | pi)$, we can model the likelihood of different trajectories occurring under a given policy $pi$. This perspective is the foundation of methods like Behavioral Cloning (BC), which seeks to learn a policy that reproduces the trajectory distribution from a set of expert demonstrations.
 
@@ -79,23 +79,20 @@ Notice that the `opt` operator does not just have to be RL optimization. It can 
 
 If we instantiate `Spec` to be an expert behavior $beta_"expert"$, we can see how this frames the problem for imitation learning. Given that the behavior of any policy $pi$ is $beta_pi = #`exec`_("sim")(pi)$, various imitation learning algorithms can be seen as operators that minimize some behavioral divergence $d(beta_pi, beta_"expert")$ to find the optimal policy: $pi^* = #`IL`\(beta_"expert")$.
 
-#todo[Add a diagram of the pipeline]
+// #todo[Add a diagram of the pipeline]
 
-This functional decomposition provides the formal foundation for our analysis.
+// This functional decomposition provides the formal foundation for our analysis.
 
-#figure(
-  todo[Add diagram visualizing the compounding errors across the three gaps.],
-  caption: [The Intent-to-Reality Gap, decomposed into its three primary components. Errors introduced at each stage cascade and compound, leading to a significant divergence between the original intent and the final deployed behavior.]
-)
+// #figure(
+//   todo[Add diagram visualizing the compounding errors across the three gaps.],
+//   caption: [The Intent-to-Reality Gap, decomposed into its three primary components. Errors introduced at each stage cascade and compound, leading to a significant divergence between the original intent and the final deployed behavior.]
+// )
 
-This decomposition into three critical, interconnected gaps provides the structure for our analysis.
+// This decomposition into three critical, interconnected gaps provides the structure for our analysis.
 
 === The Intent-to-Specification Gap <chap:intent_to_reality:gaps:intent_to_spec>
 
-The *Intent-to-Specification Gap* is the semantic error from the `enc` operator. It represents the loss of fidelity when translating human intent $I$ into the formal specification `spec` and is not typically easily quantifiable. This discrepancy is arguably the most significant and least addressed challenge in robot learning. It is fundamentally an *encoding error* that arises from a mismatch between the human's mental model and the resulting mathematical representation. This error typically stems from two sources:
-
-+ *Limited Expressivity*: The specification language itself may be too restrictive to capture the rich, nuanced, and often qualitative nature of human intent.
-+ *Flawed Translation*: The practitioner may struggle to correctly or completely translate their mental model into the formal language, a difficulty that is exacerbated by languages that are not intuitive or easy to use.
+The *Intent-to-Specification Gap* is the semantic error from the `enc` operator. It represents the loss of fidelity when translating human intent $I$ into the formal specification `spec` and is not typically easily quantifiable. This discrepancy is arguably the most significant and least addressed challenge in robot learning. It is fundamentally an *encoding error* that arises from a mismatch between the human's mental model and the resulting mathematical representation. This error stems from a dual challenge: on one hand, the specification language itself may have *limited expressivity*, making it too restrictive to capture the rich, nuanced, and often qualitative nature of human intent. On the other hand, even with an expressive language, a *flawed translation* can occur if the practitioner struggles to correctly or completely map their mental model into the formal language, a difficulty that is exacerbated by unintuitive or complex systems.
 
 *Mathematical Characterization*: This gap quantifies the loss of fidelity when encoding intent $I$ into a specification `spec`. It occurs when `spec` fails to capture the semantic relationships, priorities, and logical structure inherent in $I$. For example, a utility function $U("spec")$ derived from the specification might not be a faithful representation of the practitioner's true utility $U(I)$.
 
@@ -108,13 +105,7 @@ The *Intent-to-Specification Gap* is the semantic error from the `enc` operator.
 
 === The Specification-to-Behavior Gap <chap:intent_to_reality:gaps:spec_to_behavior>
 
-The *Specification-to-Behavior Gap* is the optimization error from the `opt` operator. Given a policy optimized in simulation, $pi_"sim" = #`opt`_("sim")(#`spec`)$, this gap measures how well its resulting behavior, $#`exec`_("sim")(pi_"sim")$, adheres to the original specification. This discrepancy arises when a learning algorithm fails to produce a policy that behaves according to the intended specification, *even within the controlled confines of the idealized model*. Its sources include:
-
-*Sources of the Gap*:
-+ *Optimization Pathologies*: The optimization landscape may be fraught with poor local minima, causing optimization algorithms to fail to find policies that can remain quite far from optimality with respect to the specification `spec`. For example, deep learning-based value iteration methods are notoriously difficult to stabilize, often converging to policies that are far from what the specification describes.
-+ *Reward Hacking*: Policies are notorious for finding loopholes in specifications. A delivery drone in simulation might learn to minimize flight time by flying through simulated walls if collision penalties are imperfectly specified, thus achieving a high reward for a behavior that violates unstated assumptions.
-+ *Exploration Limitations*: Insufficient exploration during training may prevent the discovery of the globally optimal policy. The learned policy may perform well in visited states but fail in unexplored regions of the simulation.
-+ *Function Approximation Errors*: Neural networks, as universal function approximators, still introduce inherent errors and biases. The learned policy $pi_"sim"$ is an approximation of the true optimal policy $pi^ast_text("spec")$, and this approximation error contributes to the gap.
+The *Specification-to-Behavior Gap* is the optimization error from the `opt` operator. Given a policy optimized in simulation, $pi_"sim" = #`opt`_("sim")(#`spec`)$, this gap measures how well its resulting behavior, $#`exec`_("sim")(pi_"sim")$, adheres to the original specification. This discrepancy arises when a learning algorithm fails to produce a policy that behaves according to the intended specification, *even within the controlled confines of the idealized model*. This gap stems from several interconnected sources. The optimization landscape itself may be fraught with poor local minima, causing algorithms to converge to policies that are far from what the specification describes. This is compounded by *reward hacking*, where policies are notorious for finding loopholes—for instance, a delivery drone in simulation might learn to minimize flight time by flying through walls if collision penalties are imperfectly specified, thus achieving a high reward for a behavior that violates unstated assumptions. Such failures are often exacerbated by insufficient exploration, which can prevent the discovery of the globally optimal policy, and the inherent approximation errors and biases introduced by using neural networks as function approximators.
 
 === The Simulation-to-Reality Gap <chap:intent_to_reality:gaps:sim_to_real>
 
@@ -146,11 +137,4 @@ These gaps manifest as failures arising from policy execution in novel environme
 By providing a structured decomposition, our framework helps to categorize these disparate failure modes, underscoring that the challenge of building reliable robotic systems extends far beyond just sim-to-real transfer.
 
 === Relation to Prior Work and Its Limitations <chap:intent_to_reality:validation-related:related>
-Existing taxonomies, while valuable, offer a fragmented view of the problem.
-+ *Sim-to-Real Taxonomies*: Frameworks like those from @valassakis2020crossing and @jiang2024transic provide a granular breakdown of the sources of the *Simulation-to-Reality Gap*. However, they do not address the preceding intent-to-specification and specification-to-behavior gaps, which our analysis shows are the largest source of failures.
-+ *MORL Taxonomies*: Taxonomies in Multi-Objective Reinforcement Learning focus on algorithmic approaches (e.g., scalarization-based vs. Pareto-based) but treat the objective specification as a given. They optimize the formula they are handed, without questioning if the formula correctly captures the original intent.
-
-Our unified framework addresses these limitations by:
-1.  *Capturing the Full Pipeline*: It provides an end-to-end view from intent to deployment.
-2.  *Prioritizing the Intent-to-Specification Gap*: It is the first to formally identify and name the intent-to-specification gap as the primary source of failures.
-3.  *Connecting the Components*: It explicitly models how the gaps are interconnected and how failures cascade through the system.
+Existing taxonomies, while valuable, offer a fragmented view of the problem. Frameworks for sim-to-real transfer, for instance, provide a granular breakdown of the sources of the *Simulation-to-Reality Gap* but do not address the preceding intent-to-specification and specification-to-behavior gaps, which our analysis shows are often the largest source of failures. Likewise, taxonomies in Multi-Objective Reinforcement Learning tend to focus on algorithmic approaches (e.g., scalarization-based vs. Pareto-based) but treat the objective specification as a given, optimizing the formula they are handed without questioning if it correctly captures the original intent. Our unified framework addresses these limitations by providing an end-to-end view that captures the full pipeline from intent to deployment. It is the first to formally identify and prioritize the *Intent-to-Specification Gap* as a primary source of failure, and it explicitly models how the three gaps are interconnected, showing how errors cascade through the system.

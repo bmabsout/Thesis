@@ -96,7 +96,7 @@ This joint continuity is essential for stable, gradient-based optimization, ensu
 ==== Syntax <def:fpl_syntax>
 The syntax of FPL formulas is defined by the following grammar:
 
-$ phi ::= f | phi and_p phi | phi or_p phi | not phi | [phi]_delta $
+$ phi ::= f | phi and^p phi | phi or_p phi | not phi | [phi]_delta $
 
 where:
 - $f$ is a base fulfillment value in $[0,1]$.
@@ -117,8 +117,8 @@ The semantics of FPL define how each operator transforms fulfillment values. We 
     stroke: none,
     column-gutter: (0.5em),
 
-    $and_p$,
-    [$u(phi_1 and_p phi_2) := pmean(p)(u(phi_1), u(phi_2))$\
+    $and^p$,
+    [$u(phi_1 and^p phi_2) := pmean(p)(u(phi_1), u(phi_2))$\
       A *Conjunction* that combines two fulfillment values with AND-like semantics. The parameter $p$ tunes the pessimism of the operator, with lower values corresponding to a stricter AND.
     ],
 
@@ -179,22 +179,22 @@ A common requirement is to enforce a strict safety constraint while optimizing f
 
 This translates directly into an FPL formula:
 
-$ phi = "safety" and_(-infinity) ["tracking" and_0 "smoothness"]_0.5 $
+$ phi = "safety" and^(-infinity) ["tracking" and^0 "smoothness"]_0.5 $
 
 Here's the breakdown:
-- The inner term, `["tracking" and_0 "smoothness"]_0.5`, composes the two performance objectives and then applies a priority offset.
+- The inner term, `["tracking" and^0 "smoothness"]_0.5`, composes the two performance objectives and then applies a priority offset.
 - According to the semantics, this offset term will always evaluate to a value in the range $[1/3, 1]$, since its minimum value is $(0 + 0.5) / 1.5 = 1/3$.
-- The outer $and_(-infinity)$ is the minimum operator. This means that if the `safety` fulfillment drops below $1/3$, it becomes the sole bottleneck for the entire expression, effectively creating a critical safety threshold.
+- The outer $and^(-infinity)$ is the minimum operator. This means that if the `safety` fulfillment drops below $1/3$, it becomes the sole bottleneck for the entire expression, effectively creating a critical safety threshold.
 
 ==== Lexicographical-Style Priorities <def:lexicographical_priorities>
 The priority offset operator, $[phi]_delta$, allows for specifying "soft" priorities. It boosts the baseline fulfillment of an objective, ensuring it is prioritized. For instance: "Prioritize tracking performance, but also try to be efficient."
 
 We can express this using a priority offset on the tracking objective:
-$ phi = ["tracking"]_(0.2) and_(-1) "efficiency" $
+$ phi = ["tracking"]_(0.2) and^(-1) "efficiency" $
 
 The breakdown:
 - The $["tracking"]_(0.2)$ term gives the tracking objective a baseline fulfillment of $0.2 / (1+0.2) approx 0.167$. This means even if the raw tracking fulfillment is 0, it contributes a small positive value to the composition.
-- The $and_(-1)$ (harmonic mean) creates a conservative trade-off. Because of the priority offset, the `efficiency` objective only becomes influential once the `tracking` objective is already well-fulfilled.
+- The $and^(-1)$ (harmonic mean) creates a conservative trade-off. Because of the priority offset, the `efficiency` objective only becomes influential once the `tracking` objective is already well-fulfilled.
 
 ==== Optimistic Signals <def:optimistic_signals>
 Sometimes, an agent has multiple ways to achieve a goal, and success in any one of them is sufficient. This is common in systems with redundant components or multiple valid solutions. The FPL $or$ operator is designed for these scenarios.
@@ -208,7 +208,7 @@ Here's the breakdown:
 - This allows the agent to opportunistically rely on whichever system is performing better at any given moment, without being penalized for the poor performance of the other.
 
 This sub-formula can then be part of a larger objective, such as navigating to a goal:
-$ phi_"total" = phi_"localization" and_0 "navigate_to_goal" $
+$ phi_"total" = phi_"localization" and^0 "navigate_to_goal" $
 
 === Semantic Calibration vs. Compositional Priority <chap:encoding_intentionality:calibration>
 
@@ -235,7 +235,7 @@ This range violation is what enables soft lexicographic ordering. When two objec
 
 These mechanisms serve distinct purposes and are often combined:
 
-$ phi = [f_"tracking"^2]_(0.2) and_(-1) f_"efficiency"^(0.5) $
+$ phi = [f_"tracking"^2]_(0.2) and^(-1) f_"efficiency"^(0.5) $
 
 Here:
 - The exponents (2 and 0.5) are calibrations that preserve range while adjusting strictness
@@ -308,12 +308,16 @@ Our results show that BPG achieves significant improvements in sample efficiency
 - *Pendulum-v1* & *Reacher-v4*: BPG demonstrates similar or superior performance, including a 2x speedup over CrossQ in Pendulum.
 
 #figure(
-  image("/figures/violin_plots_timesteps.svg", width: 100%),
-  caption: [Sample efficiency comparison across benchmark environments. Violin plots show the distribution of timesteps required to reach performance thresholds across 10 random seeds. The red horizontal line separates seeds failing to reach the threshold. BPG consistently requires fewer samples with lower variance.]
+  stack(dir: ttb,
+  image("/figures/violin_plots_timesteps_1.svg", width: 100%),
+  image("/figures/violin_plots_timesteps_2.svg", width: 100%)),
+  caption: [Sample efficiency comparison across benchmark environments. The figure uses violin plots to show the distribution of timesteps required to reach performance thresholds across 10 random seeds. Each "violin" is a mirrored density plot; its width at any vertical point indicates the frequency of runs that took that many timesteps. Wider sections represent more common outcomes. The red horizontal line separates seeds failing to reach the threshold. BPG consistently requires fewer samples (violins are positioned lower) and exhibits lower variance (violins are shorter and more concentrated).]
 ) <fig:fpl_violin_plots>
 
 #figure(
-  image("/figures/progress_plots.svg", width: 100%),
+  stack(dir: ttb,
+  image("/figures/progress_plots_1.svg", width: 100%),
+  image("/figures/progress_plots_2.svg", width: 100%)),
   caption: [Learning curves showing smoothed training progress of rewards versus environment steps for each algorithm. Shaded regions represent standard deviation across seeds, and dashed lines indicate reward thresholds for each environment. BPG demonstrates steeper learning curves and more consistent improvement.]
 ) <fig:fpl_progress_plots>
 
@@ -342,75 +346,89 @@ The table above shows the performance of BPG with and without an FPL specificati
 A core tenet of FPL is that it simplifies the process of reward engineering. By focusing on the semantics of each objective rather than their relative weights, a practitioner can create more robust and interpretable specifications. Below, we compare the original, hand-tuned reward functions from several benchmark environments to their FPL counterparts.
 
 ==== Pendulum-v1 <def:pendulum_example>
+#align(center, image("/figures/pendulum.png", height: 6cm))
 
 #table(
   columns: 2,
-  align: center,
+  align: center+horizon,
   inset: 1em,
   [*Original Reward*], [*FPL Specification*],
   [
     $ -theta^2 - 0.1 dot(theta)^2 - 0.001 "torque"^2 $
   ],
   [
-    $ F_"angle"^2 and_p F_"actuation" $
+    $ F_"angle"^2 and^p F_"actuation" $
   ],
 )
 
-The original reward is a finely-tuned weighted sum. In contrast, the FPL specification clearly states the two objectives: stay upright ($F_"angle"$, squared for emphasis) and minimize effort ($F_"actuation"$). The conjunctive operator $and_p$ (with $p=0$ or $p=-1$) creates a direct trade-off without brittle weighting factors.
+The original reward is a finely-tuned weighted sum. In contrast, the FPL specification clearly states the two objectives: stay upright ($F_"angle"$, squared for emphasis) and minimize effort ($F_"actuation"$). The conjunctive operator $and^p$ (with $p=0$ or $p=-1$) creates a direct trade-off without brittle weighting factors.
 
 ==== Reacher-v4 <def:reacher_example>
-
+#align(center, image("/figures/reacher.png", height: 6cm))
 #table(
   columns: 2,
-  align: center,
+  align: center+horizon,
   inset: 1em,
   [*Original Reward*], [*FPL Specification*],
   [
     $ -"distance" - 0.1||"torque"||^2 $
   ],
   [
-    $ F_"distance"^2 and_p (vecand_(p)bold(arrow(F))_"torque") $
+    $ F_"distance"^2 and^p (vecand^(p)bold(arrow(F))_"torque") $
   ],
 )
 
 Here again, the FPL specification is clearer. The primary objective is to minimize the distance to the target ($F_"distance"$, squared for emphasis). The secondary objective is to minimize the torque on all joints, which is expressed by applying a nested conjunctive operator to the vector of torque fulfillments, $bold(arrow(F))_"torque"$.
 
 ==== Hopper-v4 <def:hopper_example>
+#align(center, image("/figures/hopper.png", height: 6cm))
 
 #table(
   columns: 2,
-  align: center,
+  align: center+horizon,
   inset: 1em,
   [*Original Reward*], [*FPL Specification*],
   [
     $ 1 + (d x)/(d t) - 0.001 ||"action"||_2^2 $
   ],
   [
-    $ (vecand_(p) bold(arrow(F))_"speed") and_p (vecand_(p)bold(arrow(F))_"action") $
+    $ (vecand^p bold(arrow(F))_"speed") and^p (vecand^p bold(arrow(F))_"action") $
   ],
 )
 
-For Hopper, the intent is to move forward quickly while minimizing actuation effort. The FPL spec captures this by composing two vector-level fulfillments. The first, $vecand_p(bold(arrow(F))_"speed")$, ensures all limbs are contributing to forward velocity. The second, $vecand_p(bold(arrow(F))_"action")$, ensures the actuation of all joints is minimized. This is what prevents the reward hacking behavior of standing still.
+For Hopper, the intent is to move forward quickly while minimizing actuation effort. The FPL spec captures this by composing two vector-level fulfillments. The first, $vecand^p (bold(arrow(F))_"speed")$, ensures all limbs are contributing to forward velocity. The second, $vecand^p (bold(arrow(F))_"action")$, ensures the actuation of all joints is minimized. This is what prevents the reward hacking behavior of standing still.
 
 ==== LunarLanderContinuous-v2 <def:lunarlander_example>
 
+#align(center,
+image("/figures/lander.png", height: 6cm)
+)
 #table(
   columns: 2,
-  align: center,
+  align: center+horizon,
   inset: 1em,
   [*Original Reward*], [*FPL Specification*],
   [
-    A complex, hand-tuned sum of distance, velocity, angle, leg contact, engine penalties, and terminal rewards.
+    A non-Markovian reward function:
+    $r_t = Delta "shaping"_t - 0.3 dot m_t - 0.03 dot s_t + "terminal"_t$
+    where $"shaping"_t = -100||p_t|| - 100||v_t|| - 100|theta_t| + 10(c_1 + c_2)$, 
+    $Delta "shaping"_t = "shaping"_t - "shaping"_{t-1}$, and $"terminal"_t in {-100, +100, 0}$ for crash/land/continue.
   ],
   [
     #set text(size: 0.8em)
-    $vecand_(p)(F_"near", [F_"very_near"]_0.1,[F_"legs"]_0.1, [F_"landed"]_0.1, [F_"fuel"]_0.5 )$
+    $vecand^(p)(F_"near", [F_"very_near"]_0.1,[F_"legs"]_0.1, [F_"landed"]_0.1, [F_"fuel"]_0.5 )$
   ],
 )
 
 The original LunarLander reward is notoriously complex and difficult to interpret. The FPL specification, however, lays out a clear, hierarchical set of priorities. The priority offsets create a natural curriculum: the agent first learns to get close ($F_"near"$), then focuses on the more precise actions of getting very close, touching down, and landing successfully. Finally, once the primary landing objectives are being met, it learns to optimize for fuel. The top-level conjunction ensures all objectives must ultimately be satisfied.
 
 ==== General Locomotion Tasks <def:general_locomotion>
+
+#stack(dir: ltr,
+image("/figures/half-cheetah.png", width: 33%),
+image("/figures/walker.png", width: 33%),
+image("/figures/ant.png", width: 33%),
+)
 
 The pattern seen in Hopper-v4 generalizes across most MuJoCo locomotion tasks, such as `HalfCheetah-v4`, `Walker2d-v4`, and `Ant-v4`. The core intent is always to move forward while maintaining efficiency and stability.
 
@@ -419,11 +437,11 @@ The pattern seen in Hopper-v4 generalizes across most MuJoCo locomotion tasks, s
   align: center,
   inset: 1em,
   [
-    $ F_"forward" and_p vecand_(p)(bold(arrow(F))_"ctrl_cost") $
+    $ F_"forward" and^p vecand^(p)(bold(arrow(F))_"ctrl_cost") $
   ],
 )
 
-The standard approach is to subtract a control cost from a forward reward, requiring careful tuning of the control cost coefficient. The FPL specification is more direct: it defines a conjunctive relationship between moving forward ($F_"forward"$) and minimizing the control cost of each actuator ($vecand_(p)bold(arrow(F))_"ctrl_cost"$). This structure consistently produces forward progression across various agent morphologies without the need for environment-specific weight tuning.
+The standard approach is to subtract a control cost from a forward reward, requiring careful tuning of the control cost coefficient. The FPL specification is more direct: it defines a conjunctive relationship between moving forward ($F_"forward"$) and minimizing the control cost of each actuator ($vecand^(p)bold(arrow(F))_"ctrl_cost"$). This structure consistently produces forward progression across various agent morphologies without the need for environment-specific weight tuning.
 
 == A Hitchhiker's Guide to Fulfillment <chap:encoding_intentionality:fulfillment_guide>
 
@@ -467,10 +485,10 @@ Once you have a set of validated fulfillment functions that you trust, you can p
 
 ==== Step 1: Define the Semantic Relationships <def:guide_phase2_step1_relationships>
 Consider how your objectives relate to one another.
-- Is one a hard constraint? (e.g., "safety must always be satisfied") -> This implies a strict AND, $and_(-infinity)$.
-- Do they represent a balanced trade-off? (e.g., "balance speed and efficiency") -> This implies a balanced AND, $and_0$.
-- Is one a clear priority? (e.g., "prioritize tracking, but also be efficient") -> This implies a priority offset, `["tracking"]_delta and_p "efficiency"`.
-- Are they alternative paths to success? (e.g., "use GPS or SLAM for localization") -> This implies an OR, $or_p$.
+- Is one a hard constraint? (e.g., "safety must always be satisfied") $->$ This implies a strict AND, $and^(-infinity)$.
+- Do they represent a balanced trade-off? (e.g., "balance speed and efficiency") $->$ This implies a balanced AND, $and^0$.
+- Is one a clear priority? (e.g., "prioritize tracking, but also be efficient") $->$ This implies a priority offset, $["tracking"]_delta and^p "efficiency"$.
+- Are they alternative paths to success? (e.g., "use GPS or SLAM for localization") $->$ This implies an OR, $or_p$.
 
 Note the distinction from calibration: Priority offsets change *which objectives get attention first* in a composition, while calibration (done in Phase 1) changes *what fulfillment values mean* for individual objectives. Both may appear in your final formula, serving their distinct purposes.
 

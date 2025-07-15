@@ -101,7 +101,7 @@ Neither derived specification is complete for our true intent. The simulation ha
 
 Once we recognize we have two valid derived specifications, the fulfillment framework provides a principled way to compose them:
 
-$ phi_("adapt") = f"Q"_("sim") and_p f"Q"_("real") $
+$ phi_("adapt") = f"Q"_("sim") and^p f"Q"_("real") $
 
 This formula precisely captures our intent: satisfy *both* derived specifications. The conjunction ensures high value only when performing well according to both contexts—maintaining the comprehensive behavioral repertoire from simulation while adapting to real dynamics.
 
@@ -133,7 +133,7 @@ We call the simulation critic an "anchor" because it anchors the policy to the c
   3. For each update:
      - Update $Q_("real")$ on real transitions
      - Update $Q_("sim")$ on simulation transitions  
-     - Update $pi$ to maximize: $f"Q"_("sim")(state(s),action(pi(state(s)))) and_0 f"Q"_("real")(state(s),action(pi(state(s))))$
+     - Update $pi$ to maximize: $f"Q"_("sim")(state(s),action(pi(state(s)))) and^0 f"Q"_("real")(state(s),action(pi(state(s))))$
 ] <algo:comp-adapt>
 
 === Theoretical Guarantees from Composition <chap:adaptation_anchors:solution:guarantees>
@@ -206,7 +206,7 @@ The compositional approach succeeded because it correctly specified our actual i
 
 Real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of FPL, we can seamlessly integrate these:
 
-$ phi_("complete") = (f"Q"_("sim") and_0 f"Q"_("real")) and_0 f_("smoothness") $
+$ phi_("complete") = (f"Q"_("sim") and^0 f"Q"_("real")) and^0 f_("smoothness") $
 
 This single formula captures the complete specification: maintain simulation capabilities, adapt to reality, and do so smoothly. Each component has clear meaning, and their composition is principled.
 

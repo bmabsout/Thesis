@@ -129,11 +129,13 @@ $ "Ab" = (2)/(n f_s) sum_(i=1)^n M_i f_i $
 where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ is the sampling frequency. This metric provides the mean weighted normalized frequency, with lower values indicating smoother control.
 
 // *Comprehensive Results*: Table 1 shows detailed results across all tested algorithms and environments. CAPS agents are smoother than their vanilla counterparts on all tested tasks, with smoothness improvements ranging from 2x to 7x. We observe nominal performance hits on pendulum and lunar-lander tasks due to agents being slower at achieving goal states as they strive for smoother behavior. However, with Reacher and Ant environments, the improved smoothness actually enabled higher rewards.
-
-#figure(
-  {set text(size: 0.5em)
-  table(
-    columns: 9,
+#pagebreak()
+#v(5cm)
+#rotate(-90deg, figure(
+  {
+    set text(size: 0.6em)
+  (table(
+    columns: (2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm),
     align: center,
     stroke: none,
     // Vertical lines
@@ -175,10 +177,10 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     [PPO], [-668.60 ± 551.85], [9.29 ± 5.51], [169.08 ± 56.59], [11.4 ± 1.36], [-4.37 ± 1.74], [4.49 ± 0.43], [3734.58 ± 988.29], [6.09 ± 1.19],
     [PPO+CAPS], table.cell(fill: rgb("#ccffcc"))[*-590.35 ± 295.86*], table.cell(fill: rgb("#ccffcc"))[*8.09 ± 2.13*], table.cell(fill: rgb("#ffcccc"))[140.71 ± 23.03], table.cell(fill: rgb("#ccffcc"))[*10.0 ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-4.69 ± 2.05], table.cell(fill: rgb("#ccffcc"))[*3.38 ± 0.36*], table.cell(fill: rgb("#ccffcc"))[*4256.93 ± 570.88*], table.cell(fill: rgb("#ccffcc"))[*1.60 ± 0.26*],
     table.hline(stroke: 1pt),
-  )},
+  ))},
   caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Ab values) across all algorithms and environments. Bold values indicate improvements over vanilla algorithms.]
-) <tab:caps_gym_benchmarks_results>
-
+)) <tab:caps_gym_benchmarks_results>
+#pagebreak()
 Interestingly, soft-policies such as PPO and SAC appear to learn relatively smoother policies on their own, which we hypothesize is due to stochasticity in the policies allowing for improved exploration of the state and action spaces.
 
 === Quadrotor Control Validation <chap:ubo:validation:quadrotor>
@@ -300,11 +302,11 @@ This involves transforming the smoothness penalties from CAPS into *Universal Be
 Here, the parameters $alpha_T$ and $alpha_S$ act as sensitivity knobs. They are not arbitrary weights but have a clear semantic role: they define how quickly the fulfillment value decays as the policy's output becomes less smooth. This allows a designer to tune the functions to match their intuitive judgment, as described in the fulfillment guide (@chap:encoding_intentionality:fulfillment_guide).
 
 These UBFs, provided directly by the policy architecture, can then be integrated into any FPL specification. We can define a single, composite smoothness fulfillment:
-$ phi_("smoothness") = phi_("temporal") and_0 phi_("spatial") $
+$ phi_("smoothness") = phi_("temporal") and^0 phi_("spatial") $
 
 This unified $phi_("smoothness")$ term can then be treated as a standard objective within a larger FPL formula, allowing a designer to specify its relationship to other task-specific goals. For instance, a common pattern would be to require smooth operation *while* achieving a task:
 
-$ phi_"total" = phi_("smoothness") and_p f_"task" $
+$ phi_"total" = phi_("smoothness") and^p f_"task" $
 
 This approach elevates smoothness from a simple penalty term to a first-class citizen in the objective specification. By using FPL's conjunctive operators (like the geometric mean, $p=0$), the optimization naturally encourages satisfying *both* objectives, avoiding the pitfalls of linear scalarization where one objective can be sacrificed for another. This directly aligns with the methodology presented in @chap:encoding_intentionality:fulfillment_guide, where multiplicative composition was shown to reduce training variance and improve performance by transforming a set of linearly-weighted penalties into a single, well-formed FPL objective. This reframing of CAPS is a powerful example of how universal behavioral objectives can be integrated into a principled design framework.
 
@@ -314,7 +316,7 @@ The principled reframing of smoothness penalties as fulfillments is not merely a
 
 To validate this, an ablation study was conducted comparing two methodologies for training a quadrotor flight controller:
 1.  *Linear Composition*: An agent trained using a standard DDPG approach where smoothness penalties were linearly subtracted from the task reward, akin to the original CAPS formulation.
-2.  *FPL Composition*: An agent trained using the *DDPG×* approach, where task and smoothness objectives were first transformed into fulfillments and then composed using the FPL geometric mean operator ($and_0$).
+2.  *FPL Composition*: An agent trained using the *DDPG×* approach, where task and smoothness objectives were first transformed into fulfillments and then composed using the FPL geometric mean operator ($and^0$).
 
 The results of this comparison are striking. As shown in the figure below, the agents trained with linear composition exhibited high variance across multiple independent training runs. Some seeds produced viable controllers, while others failed entirely, demonstrating the brittleness of tuning via linear weights. In contrast, the agents trained with FPL-based multiplicative composition showed significantly reduced variance, leading to a much more reliable and repeatable training process. Every agent consistently learned a high-performance policy.
 
@@ -390,7 +392,7 @@ With a bounded Lyapunov function, we can now design a set of robust fulfillment 
 
 Herein lies the "magic" of the FPL approach. We can now combine these individual fulfillments using a single, conjunctive FPL operator:
 
-$ f_"lyapunov" = f_"decreasing" and_p f_"positive" and_p f_"zero" $
+$ f_"lyapunov" = f_"decreasing" and^p f_"positive" and^p f_"zero" $
 
 By using a pessimistic, AND-like operator (e.g., the geometric mean, $p=0$, or harmonic mean, $p=-1$), we can leverage the *Minimum Fulfillment Bound* theorem (@thm:min-fulfillment-bound). This theorem provides a strict, computable lower bound on the worst-performing individual fulfillment, based on the overall composed value.
 
@@ -406,13 +408,13 @@ This objective is incredibly powerful. It represents the aggregate stability ful
 
 === Experimental Validation <chap:ubo:stability_fulfillment:validation>
 
-Our approach builds upon foundational research in neural Lyapunov control, which demonstrated the feasibility of learning-based methods for stability analysis, though often in simpler contexts like tuning the gains of an LQR controller. #todo[CITE: Neural Lyapunov Control] Our work extends this to the significantly more complex problem of training a full neural network controller from scratch.
+Our approach builds upon foundational research in neural Lyapunov control by @neural_lyapunov, which demonstrated the feasibility of learning-based methods for stability analysis, though often in simpler contexts like tuning the gains of an LQR controller. Our work extends this to the significantly more complex problem of training a full neural network controller from scratch.
 
 In doing so, we encountered a key practical challenge: the optimization landscape for a full neural network controller is fraught with local minima. We observed that an agent optimizing solely for the composed Lyapunov fulfillment ($f_"lyapunov"$) would often converge to sub-optimal but stable solutions—for example, learning to let the pendulum hang straight down without ever attempting to swing it up. While technically stable, this behavior fails to achieve the actual goal of the task.
 
 To overcome this, we introduced an additional "steering" objective, $f_"steering"$, designed to guide the controller out of these trivial local minima. This steering fulfillment was then composed with the others:
 
-$ J = pmean(p)(f_"lyapunov"^(1), ..., f_"lyapunov"^(N)) and_p f_"steering" $
+$ J = pmean(p)(f_"lyapunov"^(1), ..., f_"lyapunov"^(N)) and^p f_"steering" $
 
 This ability to seamlessly add another semantic objective to guide the learning process, without destabilizing the core stability guarantees, highlights the power and flexibility of the FPL framework.
 

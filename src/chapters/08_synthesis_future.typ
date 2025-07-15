@@ -1,146 +1,52 @@
 #import "../commands.typ": *
 
-= Synthesis and Future Directions <chap:synthesis>
+= Synthesis and Conclusion <chap:synthesis>
 
-This thesis has presented composable fulfillment as a unified framework for multi-objective robot learning that comprehensively addresses the intent-to-reality gap. Through the development of mathematical foundations for multi-fulfillment optimization, formal languages for expressing complex objective relationships, architectural principles for universal behavioral objectives, and adaptation frameworks for preserving multi-objective intent across domains, we have demonstrated how to transform robot learning from a brittle trial-and-error process into a principled engineering discipline. This final chapter synthesizes the key contributions, examines their broader implications, and outlines promising directions for future research.
+This thesis has presented a unified framework for bridging the *intent-to-reality gap* in robot learning. We began by deconstructing this gap into a cascade of three interconnected challenges: translating human intent into a formal language, optimizing a policy that adheres to that specification, and deploying that policy in the real world without losing its capabilities. By reframing robot learning from a paradigm of reward maximization to one of *fulfillment satisfaction*, we have developed a cohesive set of solutions that address each stage of this pipeline, transforming robot learning from a brittle art into a principled engineering discipline.
 
-The journey from crisis to solution has revealed fundamental insights about the nature of multi-objective optimization, the importance of semantic preservation in learning systems, and the power of principled mathematical frameworks for bridging human intent and machine behavior. These insights extend beyond robotics to influence broader questions in artificial intelligence, control theory, and human-machine interaction.
+This final chapter synthesizes these contributions into a single narrative, tracing the path from high-level human intent to robust, deployed robot behavior. It re-examines the broader implications of this fulfillment-centric perspective and concludes by reflecting on the journey that led to this reconceptualization of how we design and build intelligent systems.
 
-== Synthesis of Contributions <chap:synthesis:contributions>
+== A Unified Framework for Bridging the Gap <chap:synthesis:unified_framework>
 
-The thesis has made contributions across multiple dimensions, from theoretical foundations to practical implementation. These contributions work together to create a comprehensive framework that addresses both the expressivity and deployment components of the intent-to-reality gap.
+The core argument of this thesis is that the disparate challenges of objective specification, reward hacking, and catastrophic forgetting are not independent problems but symptoms of a single, underlying failure: the inability of traditional methods to preserve the semantic meaning of human intent throughout the learning process. Our framework provides an end-to-end solution by introducing mechanisms that explicitly encode, optimize, and preserve this intent.
 
-=== Theoretical Contributions <chap:synthesis:contributions:theoretical>
+=== From Intent to Specification: The Language of Fulfillment <chap:synthesis:unified_framework:intent_to_spec>
 
-*Mathematical Foundations*: The generalized mean framework provides a rigorous mathematical foundation for continuous logic operations in multi-objective optimization. By extending logical operators to continuous spaces while preserving their semantic meaning, this framework enables gradient-based optimization of logically structured objectives.
+The journey begins at the *intent-to-specification gap*, where the nuance of human goals is often lost in the restrictive language of scalar rewards. We addressed this with *Fulfillment Priority Logic (FPL)* (@chap:encoding_intentionality), a formal language that allows practitioners to express complex objective relationships—priorities, trade-offs, and logical dependencies—in a way that is both intuitive and mathematically precise.
 
-*Fulfillment Priority Logic*: FPL provides the first formal language for expressing complex objective relationships in reinforcement learning that preserves semantic meaning while enabling efficient optimization. The language's syntax and semantics bridge the gap between human logical reasoning and machine optimization.
+Built on the foundation of the generalized mean, FPL replaces the ambiguous process of weight tuning with a structured composition of *fulfillment functions*. These functions map system performance to a normalized $[0,1]$ score, providing an absolute measure of satisfaction for each objective. By composing these fulfillments with logical operators like `and` and `or`, FPL preserves the semantic meaning of objectives, enabling specifications like "prioritize safety above all else, and conditional on being safe, balance speed and efficiency." This provides the first pillar of our framework: a language that faithfully captures human intent.
 
-*Foundational Principles*: The identification of five foundational principles—semantic preservation, continuous logic, behavioral decomposition, compositional optimization, and semantic anchoring—provides theoretical understanding of why composable fulfillment succeeds where traditional approaches fail.
+=== From Specification to Behavior: Principled Optimization <chap:synthesis:unified_framework:spec_to_behavior>
 
-*Convergence Guarantees*: The framework provides theoretical guarantees about convergence, semantic preservation, and minimum fulfillment levels that are absent in traditional multi-objective RL approaches.
+With a semantically rich specification, the challenge shifts to the *specification-to-behavior gap*: ensuring the learning algorithm produces a policy that actually fulfills the specified intent. Our contributions here provide the necessary optimization machinery.
 
-=== Algorithmic Contributions <chap:synthesis:contributions:algorithmic>
+First, the *Balanced Policy Gradient (BPG)* algorithm (@chap:encoding_intentionality:optimizer:bpg_algorithm) extends actor-critic methods to directly optimize FPL formulas. By learning a vector of *fulfillment Q-values*—one for each objective—and composing them only at the actor update stage, BPG separates the learning of individual objective satisfaction from the trade-offs between them. This prevents the kind of "reward hacking" common in scalarized systems and leads to more stable and sample-efficient learning.
 
-*Balanced Policy Gradient*: The BPG algorithm extends actor-critic methods to handle FPL specifications while maintaining theoretical guarantees and computational efficiency.
+Second, we recognized that some objectives, like smoothness, are universal. *Conditioning for Action Policy Smoothness (CAPS)* (@chap:ubo) provides an architectural solution, baking these fundamental requirements directly into the policy optimization rather than cluttering the specification. This embodies the principle of *behavioral decomposition*, separating universal requirements from task-specific goals and ensuring a baseline of robust, smooth control without manual intervention.
 
-*CAPS Integration*: The architectural integration of universal behavioral objectives through CAPS demonstrates how fundamental requirements like smoothness can be encoded directly in policy architectures rather than through reward engineering.
+=== From Simulation to Reality: Preserving Intent Through Adaptation <chap:synthesis:unified_framework:sim_to_real>
 
-*Anchor Critics*: The multi-fulfillment adaptation framework enables robust domain transfer while preserving semantic relationships learned during training.
+The final challenge is the *simulation-to-reality gap*, where policies catastrophically forget their training when adapted to real-world data. We reframed this not as a technical failure but as a *specification failure*. Fine-tuning on limited real-world data implicitly tells the agent that the comprehensive behaviors learned in simulation no longer matter.
 
-*Compositional Optimization*: The development of optimization methods that encourage joint satisfaction rather than trade-offs represents a fundamental shift in multi-objective optimization thinking.
+Our solution, *compositional adaptation with Anchor Critics* (@chap:adaptation_anchors), makes this specification explicit. We treat the value function learned in simulation as a *derived specification* that encodes the full set of desired behaviors. During adaptation, we use FPL to compose this "anchor" specification with the new specification being learned from real-world data. The resulting policy is optimized to satisfy both: adapting to real dynamics while preserving the rich behavioral repertoire from simulation. This prevents catastrophic forgetting by design, completing the chain of semantic preservation from initial intent to final deployment.
 
-=== Empirical Contributions <chap:synthesis:contributions:empirical>
+=== From Theory to Reality: Architectural Foundations <chap:synthesis:unified_framework:architecture>
 
-*Cross-Domain Validation*: Comprehensive empirical validation across quadrotor control, manipulation tasks, and mobile robot navigation demonstrates the generality and effectiveness of the approach.
+Underpinning this entire framework is a suite of architectural contributions that make its deployment on resource-constrained hardware possible. Our work on *Asymmetric Actor-Critic* architectures demonstrated that policy networks can be dramatically smaller than value networks, a key enabler for the dual-critic design of Anchor Critics. The *SwaNNFlight* architecture (@chap:architecture:swannflight) provides the complete embedded system, enabling live, on-the-fly updates of neural policies on a real quadrotor without interrupting flight. These systems contributions are not merely implementation details; they are the crucial final link that allows our theoretical framework to have a practical impact, closing the loop from abstract mathematics to tangible, real-world behavior.
 
-*Sample Efficiency Improvements*: Consistent 6.4× and 5.6× speedups across domains demonstrate the practical value of semantic preservation and compositional optimization.
+== Broader Implications and Future Vision <chap:synthesis:implications>
 
-*Real-World Deployment*: Successful real-world deployment on quadrotor hardware with live adaptation capabilities demonstrates the practical viability of the approach.
+This work represents a fundamental departure from the dominant linear trade-off-based thinking in multi-objective optimization. By moving from the maximization of a scalar utility to the fulfillment of a structured logical formula, we address the core semantic limitations that have hindered the adoption of MORL in complex, real-world applications. The fulfillment-centric perspective naturally aligns with control theory's focus on satisfying constraints, creating a bridge between the data-driven flexibility of learning and the rigorous guarantees of control. These principles not only open new avenues for research in encoding robot behavior but also allow MORL to be a more practical and powerful tool. Outside of robotics, this framework can be applied to any domain where multiple objectives compete and a notion of fulfillment is important, with implications for broader machine learning problems, financial optimization, and decision-making in healthcare among other domains.
 
-*Comparative Analysis*: Systematic comparison with existing approaches demonstrates clear advantages in terms of specification efficiency, training robustness, and deployment reliability.
-
-=== Practical Contributions <chap:synthesis:contributions:practical>
-
-*Implementation Framework*: Complete implementation of the composable fulfillment framework with open-source tools and libraries.
-
-*Practitioner Guidelines*: Comprehensive guidance for practitioners on how to identify objectives, construct FPL formulas, and deploy composable fulfillment systems.
-
-*Design Patterns*: Identification of common design patterns and best practices for applying composable fulfillment across different domains.
-
-*Tool Development*: Development of specification interfaces, debugging tools, and performance analysis capabilities that make the framework accessible to practitioners.
-
-== Broader Implications <chap:synthesis:implications>
-
-The contributions of this thesis extend beyond robotics to influence several broader areas of research and practice.
-
-=== Implications for Multi-Objective Reinforcement Learning <chap:synthesis:implications:morl>
-
-*Paradigm Shift in MORL*: This thesis represents a fundamental paradigm shift in multi-objective reinforcement learning, moving from trade-off-based optimization to joint satisfaction through continuous logic. This addresses the core limitations that have prevented MORL from achieving widespread adoption in real-world applications.
-
-*Semantic Preservation in MORL*: The framework solves the semantic loss problem that has plagued MORL approaches, enabling practitioners to maintain clear understanding of individual objective satisfaction throughout learning and deployment.
-
-*Practical MORL Deployment*: By providing direct specification of logical objective relationships and single-policy optimization, the framework makes MORL practical for real-world robotics applications where traditional approaches have failed.
-
-*MORL Research Directions*: The success of fulfillment-centric learning opens new research directions in MORL, including automated specification discovery, dynamic objective adaptation, and hierarchical multi-objective decomposition.
-
-=== Implications for Artificial Intelligence <chap:synthesis:implications:ai>
-
-*Multi-Objective AI*: The composable fulfillment approach provides new methods for multi-objective optimization in AI systems that go beyond traditional trade-off thinking. This has implications for AI safety, where multiple objectives must be satisfied simultaneously.
-
-*Interpretable AI*: The semantic preservation properties of composable fulfillment contribute to the broader goal of interpretable AI by maintaining clear connections between system behavior and human-specified objectives.
-
-*Human-AI Alignment*: The framework's ability to preserve human intent through semantic preservation and logical composition addresses fundamental challenges in AI alignment and value learning.
-
-*Continual Learning*: The multi-fulfillment adaptation framework contributes to continual learning research by providing principled methods for preserving previously learned behaviors while adapting to new requirements.
-
-=== Implications for Control Theory <chap:synthesis:implications:control>
-
-*Multi-Objective Control*: The framework provides new tools for multi-objective control that avoid the limitations of traditional Pareto-based approaches. The emphasis on joint satisfaction rather than trade-offs aligns with control theory's emphasis on meeting all requirements simultaneously.
-
-*Robust Control*: The semantic anchoring and universal objective principles contribute to robust control by providing methods for maintaining critical behaviors across operating conditions.
-
-*Adaptive Control*: The multi-fulfillment adaptation framework provides new approaches to adaptive control that preserve stability and performance guarantees during adaptation.
-
-*Hierarchical Control*: The behavioral decomposition principle provides insights into hierarchical control design that separate universal and task-specific requirements.
-
-=== Implications for Human-Machine Interaction <chap:synthesis:implications:hmi>
-
-*Intent Specification*: The FPL language provides a more natural way for humans to specify their intentions to machines, bridging the gap between logical human reasoning and mathematical optimization.
-
-*Collaborative Systems*: The interpretability and semantic preservation properties enable more effective human-machine collaboration by maintaining clear connections between human intent and machine behavior.
-
-*Trust and Transparency*: The ability to monitor individual objective fulfillment and understand system behavior contributes to trust and transparency in human-machine systems.
-
-*Shared Autonomy*: The framework provides tools for shared autonomy systems where humans and machines must coordinate to achieve complex objectives.
-
-=== Implications for Software Engineering <chap:synthesis:implications:software>
-
-*Requirements Engineering*: The FPL approach provides new tools for requirements engineering in complex systems where multiple objectives must be balanced and maintained.
-
-*System Architecture*: The behavioral decomposition principle provides insights into system architecture design that separate universal and application-specific requirements.
-
-*Testing and Validation*: The semantic preservation properties enable more effective testing and validation by maintaining clear connections between requirements and system behavior.
-
-*Maintenance and Evolution*: The framework provides tools for system maintenance and evolution that preserve critical behaviors while adapting to new requirements.
+Furthermore, this new engineering discipline provides a concrete pathway toward solving the broader problem of AI alignment. The framework's ability to verifiably link machine behavior back to explicit human intent is a foundational component for building trustworthy autonomous systems. The vision is one where the specification of complex robot behaviors is a transparent, reliable process, enabling seamless human-machine collaboration and the widespread adoption of intelligent systems that are demonstrably aligned with human values. This transforms the relationship between designer and machine from one of unpredictability and frustration to one of clarity and confidence.
 
 == Limitations and Challenges <chap:synthesis:limitations>
 
-While the thesis has demonstrated significant advances, several limitations and challenges remain that point toward future research directions.
-
-=== Theoretical Limitations <chap:synthesis:limitations:theoretical>
-
-*Expressivity Boundaries*: While FPL is more expressive than linear scalarization, it cannot express all possible objective relationships. Temporal logic, stochastic relationships, and dynamic objectives remain challenging.
-
-*Scalability Limits*: The computational complexity of the framework grows with the number of objectives and the complexity of FPL formulas. Very large-scale problems may require approximation methods.
-
-*Approximation Errors*: The continuous approximations to discrete logic may introduce errors in some contexts, particularly when precise logical semantics are critical.
-
-*Convergence Conditions*: While the framework provides convergence guarantees under certain conditions, these conditions may not hold in all practical scenarios.
-
-=== Practical Limitations <chap:synthesis:limitations:practical>
-
-*Specification Complexity*: Very complex objective relationships may be difficult to specify correctly using FPL, requiring significant domain expertise and careful validation.
-
-*Tool Maturity*: While the thesis has developed initial tools and interfaces, more mature tooling is needed for widespread adoption.
-
-*Learning Curve*: Effective use of the framework requires understanding of both the domain and the mathematical foundations, which may limit adoption.
-
-*Integration Challenges*: Integrating composable fulfillment with existing systems and workflows may require significant engineering effort.
-
-=== Empirical Limitations <chap:synthesis:limitations:empirical>
-
-*Domain Coverage*: While the thesis has validated the approach across multiple domains, broader validation across more diverse applications is needed.
-
-*Long-Term Studies*: Most empirical validation has been conducted over relatively short time periods. Long-term studies of system behavior and adaptation are needed.
-
-*Human Factors*: Limited study of how humans interact with composable fulfillment systems and how effectively they can specify their intentions using FPL.
-
-*Failure Modes*: While the framework provides robustness properties, systematic study of failure modes and their mitigation is needed.
+While this framework provides a significant step forward, it is not without limitations that point toward important areas for future work. The expressive power of FPL, while greater than linear scalarization, does not yet encompass all desirable objective relationships, such as complex temporal logic or stochastic dependencies. From a practical standpoint, crafting complex FPL specifications still requires domain expertise, and the development of more mature, intuitive tooling is necessary for widespread adoption. Finally, broader empirical validation across more diverse domains and long-term deployments is needed to fully characterize the framework's performance and failure modes. These challenges, however, represent a rich landscape for future research building upon the fulfillment-centric foundation laid by this thesis.
 
 == Future Research Directions <chap:synthesis:future>
 
-The limitations and broader implications point toward several promising directions for future research.
+The limitations and broader implications point toward several promising avenues for future research.
 
 === Logical Extensions <chap:synthesis:future:logical>
 
@@ -152,13 +58,13 @@ Using the power mean as an aggregation operator is a more natural fit as the pow
 
 ==== Robust Fulfillments <chap:synthesis:future:logical:robust>
 Having a range of fulfillment values for each objective allows the generalization of fulfillment logic to cases where robustness or uncertainty needs to be represented over fulfillment values. We can extend fulfillment values to include ranges, for instance take the following equation:
-$ [0.5, 0.7] and_(-infinity) [0.3, 0.8] = [0.3, 0.7] $
+$ [0.5, 0.7] and^(-infinity) [0.3, 0.8] = [0.3, 0.7] $
 It describes the range of the outputs given a range of input fulfillments.
 Take noisy sensor readings as an example, if we are unsure how well we are fulfilling the objective, we can represent this as a range of values, then worry about the worst case or the average case.
 
 ==== Probabilistic Fulfillments <chap:synthesis:future:logical:probabilistic>
 We can also decorate fulfillments with probability distributions, probabilistic fulfillment formula can then represent notions such as the probability of fulfilling certain formulas.
-Take the following example where $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$ form uniform distributions, $f_c = f_a and_0 f_b$ builds a distribution $f_c$ represented by $f_c = sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
+Take the following example where $f_a = U(0.2, 0.8)$ and $f_b = U(0.3, 0.7)$ form uniform distributions, $f_c = f_a and^0 f_b$ builds a distribution $f_c$ represented by $f_c = sqrt(f_a*f_b) | f_a ~ U(0.2, 0.8), f_b ~ U(0.3, 0.7)$.
 
 What makes this construction especially powerful is that the power mean admits a central-limit-like theorem for each $p$, known as the generalized central limit theorem. Meaning that the distribution of the output of the power mean will converge to a generalization of normal distributions as the number of inputs increases. This family of distribution is known as the generalized normal distribution or exponential power distribution.
 
@@ -178,180 +84,32 @@ Due to the usage of the power mean, various existing loss functions used in ML c
 
 Another relation is the cross-entropy loss as it can be expressed as $- sum f_a log(f_b)$. Exponentiated it becomes $product f_b ^f_a$, this is equivalent to the FPL formula $vecand^0 f_b^f_a$. Unlike taking the log which is often used for its monotinicity property to allow for better numerical stability, we can instead use the geometric mean which will produce a value that is representative of performance allowing the composition with other losses while retaining the meaning of the range of values.
 
-==== Game Theoretical Studies
-The games that characterize the competition between multiple objectives can be made precise within game theoretical notions. This would allow one to study the games where the power mean is the optimal utility function to use, allowing us to reason about how the selection of the $p$ parameter affects the behavior of the optimization.
+=== Connections to other fields <chap:synthesis:future:connections>
+
+==== Game theory
+The games that characterize the competition between multiple objectives can be made precise within game theoretical notions. This would allow one to study the games where the power mean is the optimal utility function to use, allowing us to reason about how the selection of the $p$ parameter affects the behavior of the optimization. For example in a multiplicative trade-off game where we build competing fulfillments $f_c_1$ and $f_c_2$ from the fulfillments of the base, uncompetitive objectives $f_u_1$ and $f_u_2$.
+$ f_c_1 &= 1 - f_u_1(1-alpha f_u_2)\
+  f_c_2 &= 1 - f_u_2(1-alpha f_u_1) $
+
+You can notice that increasing $f_u_1$ increases $f_c_1$ but decreases $f_c_2$, and the opposite is true for $f_u_2$. In this case a linear utility yields optimization that causes the competing terms to diverge while a multiplicative one yields one that compromises both. This is what we consider optimizing for the $or$ vs $and$ of the objectives in the context of FPL.
+
 
 ==== Complexity theory
 One can also study the complexity class of finding formula that specify a given behavior. A conjecture put forth here is that the hardness of solving for linear scalarization is greater than the hardness of solving for FPL formulas in a general class of problems. The intuition is that competitive dynamics cause chaotic behavior in optimizing linear scalarization, while FPL formulas can be seperately optimized then composed.
 
-=== Application Domains <chap:synthesis:future:applications>
+==== System architecture
+The optimal spread of information that a fulfillment value can carry is a function of the operator that combines fulfilllments, for instance if $p = 1$ this forms a linear combination, implying the optimal spread of bits is linear, thus an integer representing the values between 0 and 1 can be considered optimal. However if we are combining fulfillments with $p = 0$, the optimal spread of bits is exponential, thus a floating point number with only mantissa bits representing the values between 0 and 1 can be considered optimal. This suggests that we can solve for how the circuits should be designed to optimize the spread of information.
 
-*Safety-Critical Systems*: Applying the framework to safety-critical domains such as autonomous vehicles, medical devices, and aerospace systems where the robustness and interpretability properties are particularly valuable.
+=== Driving Real-World Adoption <chap:synthesis:future:adoption>
 
-*Human-Robot Interaction*: Leveraging the interpretability and semantic preservation properties for more effective human-robot collaboration in manufacturing, healthcare, and service applications.
-
-*Multi-Agent Systems*: Extending the framework to multi-agent settings where coordination and communication are important, such as swarm robotics and distributed control systems.
-
-*Cyber-Physical Systems*: Applying the framework to broader cyber-physical systems where multiple objectives must be balanced across physical and computational domains.
-
-*Autonomous Systems*: Developing applications for fully autonomous systems that must operate independently while maintaining multiple objectives and adapting to changing conditions.
-
-=== Tool and Interface Development <chap:synthesis:future:tools>
-
-*Graphical Specification Interfaces*: Developing intuitive graphical interfaces that allow practitioners to construct FPL formulas without deep mathematical knowledge.
-
-*Natural Language Processing*: Developing methods for translating natural language specifications into FPL formulas, making the framework accessible to non-technical users.
-
-*Debugging and Visualization Tools*: Creating sophisticated debugging and visualization tools that help practitioners understand system behavior and diagnose problems.
-
-*Integration Frameworks*: Developing frameworks that make it easy to integrate composable fulfillment with existing robotics and AI systems.
-
-*Performance Analysis Tools*: Creating tools for analyzing the performance and trade-offs of different FPL specifications and optimization parameters.
-
-=== Empirical Studies <chap:synthesis:future:empirical>
-
-*Long-Term Deployment Studies*: Conducting long-term studies of composable fulfillment systems in real-world deployments to understand their behavior over extended periods.
-
-*Human Factors Research*: Studying how humans interact with composable fulfillment systems and how effectively they can specify their intentions using FPL.
-
-*Comparative Studies*: Conducting systematic comparative studies across a broader range of domains and applications to better understand the strengths and limitations of the approach.
-
-*Failure Mode Analysis*: Systematic study of failure modes and their mitigation to improve the robustness and reliability of composable fulfillment systems.
-
-*User Studies*: Conducting user studies to understand how practitioners learn to use the framework and what tools and training are most effective.
-
-== Broader Impact and Societal Implications <chap:synthesis:impact>
-
-The development of composable fulfillment has broader implications for society and the future of human-machine interaction.
-
-=== Economic Impact <chap:synthesis:impact:economic>
-
-*Reduced Development Costs*: By making robot learning more predictable and efficient, composable fulfillment could significantly reduce the cost of developing and deploying robotic systems.
-
-*Improved Reliability*: The robustness and interpretability properties could lead to more reliable robotic systems, reducing maintenance costs and improving productivity.
-
-*New Applications*: The ability to handle complex multi-objective requirements could enable new applications of robotics in areas where traditional approaches are insufficient.
-
-*Skill Requirements*: The framework may change the skill requirements for robotics practitioners, emphasizing logical reasoning and system design over trial-and-error tuning.
-
-=== Safety and Security <chap:synthesis:impact:safety>
-
-*Improved Safety*: The semantic preservation and robustness properties could lead to safer robotic systems that maintain critical safety requirements even during adaptation and deployment.
-
-*Interpretable Behavior*: The ability to understand and predict system behavior could improve safety by enabling better risk assessment and mitigation.
-
-*Formal Verification*: The mathematical foundations could enable formal verification of safety properties, providing stronger guarantees than traditional testing approaches.
-
-*Security Implications*: The interpretability properties could help detect and mitigate security threats by making it easier to understand when systems are behaving unexpectedly.
-
-=== Ethical Considerations <chap:synthesis:impact:ethics>
-
-*Value Alignment*: The framework's ability to preserve human intent through semantic preservation could contribute to better value alignment in AI systems.
-
-*Transparency and Accountability*: The interpretability properties could improve transparency and accountability in robotic systems by making their behavior more understandable.
-
-*Bias and Fairness*: The explicit representation of objectives could help identify and mitigate bias in robotic systems by making trade-offs and priorities explicit.
-
-*Human Agency*: The framework could help preserve human agency by providing better tools for humans to specify and control robotic behavior.
-
-=== Environmental Impact <chap:synthesis:impact:environment>
-
-*Energy Efficiency*: The ability to explicitly optimize for energy efficiency could lead to more environmentally friendly robotic systems.
-
-*Resource Optimization*: The multi-objective optimization capabilities could enable better optimization of resource usage in robotic systems.
-
-*Sustainable Development*: The framework could contribute to sustainable development by enabling robotic systems that balance economic, social, and environmental objectives.
-
-*Lifecycle Considerations*: The adaptability properties could extend the useful life of robotic systems by enabling them to adapt to changing requirements rather than requiring replacement.
-
-== Vision for the Future <chap:synthesis:vision>
-Looking forward, composable fulfillment represents a step toward a future where human intent and machine behavior are more closely aligned, where complex systems can be designed and deployed with confidence, and where the benefits of artificial intelligence and robotics can be realized more broadly and safely.
-
-=== Short-Term Vision (2-5 years) <chap:synthesis:vision:short>
-
-*Tool Maturation*: Development of mature tools and interfaces that make composable fulfillment accessible to practitioners without deep mathematical expertise.
-
-*Industry Adoption*: Initial adoption by industry for specific applications where the benefits are clear and the risks are manageable.
-
-*Academic Integration*: Integration of composable fulfillment into robotics and AI curricula, training the next generation of practitioners.
-
-*Standard Development*: Development of standards and best practices for applying composable fulfillment in different domains.
-
-=== Medium-Term Vision (5-10 years)
-
-*Widespread Deployment*: Broader deployment of composable fulfillment systems in real-world applications, with demonstrated benefits in terms of reliability, efficiency, and safety.
-
-*Theoretical Advances*: Significant theoretical advances that address current limitations and extend the framework to new domains and applications.
-
-*Integration with Other Technologies*: Integration with other emerging technologies such as large language models, quantum computing, and advanced sensors.
-
-*Regulatory Framework*: Development of regulatory frameworks that recognize and leverage the interpretability and safety properties of composable fulfillment systems.
-
-=== Long-Term Vision (10+ years)
-
-*Widespread Adoption*: Broader adoption of composable fulfillment principles in intelligent system design, with established best practices and mature tooling.
-
-*Human-Machine Collaboration*: Seamless human-machine collaboration enabled by shared understanding of objectives and transparent system behavior.
-
-*Autonomous Systems*: Fully autonomous systems that can operate independently while maintaining complex multi-objective requirements and adapting to changing conditions.
-
-*Societal Integration*: Broad societal integration of intelligent systems that are trusted, transparent, and aligned with human values.
-
-== Key Takeaways: 10-Point Summary
-
-#figure(
-  table(
-    columns: (auto, auto),
-    align: (center, left),
-    table.header(
-      [*\#*], [*Key Insight*],
-    ),
-    
-    [1], [The intent-to-reality gap stems from two interconnected crises: reward expressivity and deployment robustness, both reducible to multi-objective constraint satisfaction under uncertainty.],
-    
-    [2], [Traditional RL's maximization approach fundamentally misaligns with robotics objectives, which are constraints to be satisfied rather than scores to be maximized.],
-    
-    [3], [Generalized means provide the mathematical foundation for continuous logic operations that preserve semantic meaning while enabling gradient-based optimization.],
-    
-    [4], [Fulfillment Priority Logic (FPL) offers the first formal language for expressing complex objective relationships that maintains interpretability throughout learning.],
-    
-    [5], [Universal behavioral objectives like smoothness should be encoded architecturally (e.g., CAPS) rather than through brittle reward engineering.],
-    
-    [6], [Multi-fulfillment adaptation with Anchor Critics prevents catastrophic forgetting during domain transfer by preserving source domain behavioral relationships.],
-    
-    [7], [The geometric mean (p=0) naturally encourages joint satisfaction of all objectives, avoiding the trade-off thinking that plagues traditional multi-objective optimization.],
-    
-    [8], [Five foundational principles—semantic preservation, continuous logic, behavioral decomposition, compositional optimization, and semantic anchoring—explain the framework's success.],
-    
-    [9], [Empirical validation demonstrates up to 6.4× speedup, 5.6× speedup across domains, 50-80% power reduction, and 100% successful sim-to-real transfer in quadrotor control.],
-    
-    [10], [Composable fulfillment transforms robot learning from art to engineering discipline, providing principled tools for bridging human intent and machine behavior.],
-  ),
-  caption: [Ten key takeaways from this thesis that capture the essential contributions and insights of composable fulfillment.]
-) <tab:key_takeaways_table>
-
-== Personal Reflection: Lessons from the PhD Journey
-
-This thesis represents not just a technical contribution but a personal journey of discovery that began with a practical problem—oscillatory quadrotor control consuming excessive power—and evolved into a fundamental reconceptualization of robot learning. The path from identifying a specific engineering challenge to developing a comprehensive theoretical framework exemplifies how deep engagement with real-world problems can lead to transformative insights.
-
-The most profound lesson from this journey is that the best research often emerges from the tension between theory and practice. Each failed attempt to tune reward weights, each crashed quadrotor, and each sleepless night debugging policies contributed to the growing conviction that the problem wasn't in our implementation but in our fundamental approach. This realization—that we were solving the wrong problem by trying to maximize rewards rather than satisfy constraints—became the seed from which composable fulfillment grew.
-
-The interdisciplinary nature of this work, drawing from control theory, optimization, logic, and cognitive science, reinforced my belief that the most impactful contributions often occur at the boundaries between fields. The generalized mean framework existed in mathematics, continuous logic in fuzzy systems, and constraint satisfaction in classical control—but their synthesis for robot learning required seeing connections that disciplinary boundaries had obscured.
-
-Perhaps most importantly, this journey taught me that transformative research requires both the courage to challenge fundamental assumptions and the persistence to build rigorous alternatives. The transition from "this is how everyone does multi-objective RL" to "this is how it should be done" required not just theoretical insights but extensive empirical validation, practical tool development, and continuous refinement based on real-world feedback.
-
-As I reflect on the impact of this work, I'm most excited not by what we've accomplished but by what it enables others to build. Composable fulfillment is not an end but a beginning—a foundation upon which the next generation of roboticists can build systems that truly serve human needs while maintaining the safety, efficiency, and robustness that real-world deployment demands.
+The other major research thrust lies in driving the framework toward widespread, reliable deployment. This requires pushing into high-stakes application domains such as *safety-critical systems*, *human-robot interaction*, and *multi-agent systems*, where the benefits of interpretable, robust control are most needed. Success in these areas, however, is contingent on building a complete ecosystem for the practitioner. This involves creating a mature toolchain that moves beyond programmatic specification to include intuitive *graphical and natural-language interfaces* that lower the barrier to entry. Complemented by sophisticated *debugging, visualization, and performance analysis tools* that build operator trust is a key component. Crucially, the entire development process must be guided by rigorous *user studies* to address the critical *human-factors* challenge of how practitioners specify intent and diagnose system behavior. Finally, this ecosystem must be validated through *long-term deployment studies* on real robots to perform thorough *failure mode analysis* and build the foundation of trust and reliability necessary for broad adoption.
 
 == Conclusion
 
-This thesis has presented composable fulfillment as a comprehensive solution to the intent-to-reality gap in robot learning. Through the development of mathematical foundations, formal languages, architectural principles, and adaptation frameworks, we have demonstrated how to transform robot learning from a brittle trial-and-error process into a principled engineering discipline.
+This thesis has presented composable fulfillment as a comprehensive solution to the intent-to-reality gap in robot learning. By systematically deconstructing the gap into its core components—encoding, optimization, and deployment—we have developed a unified framework that preserves semantic meaning at every stage.
 
-The key insight underlying this work is that meaningful optimization requires semantic preservation—the maintenance of individual objective meaning throughout the learning process. By building on this insight through continuous logic, behavioral decomposition, compositional optimization, and semantic anchoring, we have created a framework that addresses the fundamental limitations of traditional reinforcement learning approaches.
+The key insight is that the long-standing challenges in robot learning are not isolated technical flaws but symptoms of a single, deeper problem: the loss of human intent in translation. By replacing the paradigm of reward maximization with one of fulfillment satisfaction, we have provided a language (FPL) to express intent, an optimization architecture (BPG, CAPS) to achieve it, and an adaptation mechanism (Anchor Critics) to preserve it.
 
-The empirical validation across multiple domains demonstrates the practical value of the approach, with consistent improvements in sample efficiency, specification efficiency, and deployment reliability. The theoretical analysis reveals why these improvements occur and provides guidance for future development.
+The empirical validation across multiple domains demonstrates the practical value of this fulfillment-centric approach, with consistent improvements in sample efficiency, specification clarity, and deployment robustness. Perhaps most importantly, this work demonstrates that the intent-to-reality gap is not an insurmountable barrier but a solvable engineering problem.
 
-Perhaps most importantly, this work demonstrates that the intent-to-reality gap is not an inevitable consequence of the complexity of robotic systems, but rather a solvable engineering problem. By providing practitioners with principled tools for expressing their intentions and robust methods for preserving those intentions throughout learning and deployment, composable fulfillment enables the development of robotic systems that truly serve human needs and values.
-
-The future of robotics and artificial intelligence depends on our ability to create systems that are not only capable but also trustworthy, interpretable, and aligned with human intent. Composable fulfillment provides a foundation for this future, transforming the relationship between human intent and machine behavior from one of frustration and unpredictability to one of clarity and confidence.
-
-As we stand at the threshold of an age of increasingly capable and autonomous systems, the principles and methods developed in this thesis provide a path toward ensuring that these systems serve humanity's best interests. The intent-to-reality gap need not be a permanent barrier to progress—with the right mathematical foundations, principled approaches, and careful engineering, we can build a future where human intent and machine behavior are truly aligned. 
+The future of artificial intelligence depends on our ability to create systems that are not only capable but also trustworthy, interpretable, and aligned with human intent. Composable fulfillments provide a principled foundation for this future, transforming the relationship between human and machine from one of frustration and unpredictability to one of clarity and confidence. As we stand at the threshold of an age of increasingly autonomous systems, the principles and methods developed in this thesis provide a path toward ensuring that these systems serve humanity's best interests, closing the gap between what we intend and what our creations truly do.
