@@ -52,43 +52,23 @@ These timing discrepancies mean that even with perfect dynamics simulation, poli
 
 === Core Innovations <chap:architecture:neuroflight:innovations>
 
-Neuroflight addressed these challenges through several key insights:
-
-+ *Deterministic Execution*: We modified the firmware to guarantee fixed execution order, minimizing jitter from 200μs to under 50μs.
-
-+ *Optimized Inference*: Custom fixed-point implementations and careful memory layout achieved consistent sub-millisecond inference (1.37ms worst-case).
-
-+ *Minimal Architecture*: Through systematic exploration, we found that networks with 2 hidden layers of 64 neurons each provided the best trade-off between expressiveness and timing predictability. The compiled network occupied just 12KB—small enough to fit in tightly-coupled memory for deterministic access times.
+Neuroflight addressed these challenges through several key insights. First, *deterministic execution* was achieved by modifying the firmware to guarantee fixed execution order, minimizing jitter from 200μs to under 50μs. Second, *optimized inference* was implemented through custom fixed-point implementations and careful memory layout, achieving consistent sub-millisecond inference (1.37ms worst-case). Finally, a *minimal architecture* was developed through systematic exploration, revealing that networks with 2 hidden layers of 64 neurons each provided the best trade-off between expressiveness and timing predictability. The compiled network occupied just 12KB—small enough to fit in tightly-coupled memory for deterministic access times.
 
 === Compilation Pipeline <chap:architecture:neuroflight:compilation>
 
-The path from TensorFlow model to embedded execution required careful engineering:
-
-+ *Graph Freezing*: Convert training graph to inference-only representation
-+ *Quantization*: 8-bit fixed-point conversion with minimal accuracy loss
-+ *AOT Compilation*: TensorFlow's XLA compiler generates position-independent ARM code
-+ *Firmware Integration*: Custom linker scripts place the network in CCM (Core-Coupled Memory) for predictable timing
+The path from TensorFlow model to embedded execution required careful engineering involving several steps. *Graph freezing* converts the training graph to an inference-only representation, while *quantization* performs 8-bit fixed-point conversion with minimal accuracy loss. *AOT compilation* uses TensorFlow's XLA compiler to generate position-independent ARM code, and finally *firmware integration* employs custom linker scripts to place the network in CCM (Core-Coupled Memory) for predictable timing.
 
 This pipeline ensures that the deployed network behaves identically to its quantized simulation counterpart, eliminating one source of reality gap.
 
 === Impact and Limitations <chap:architecture:neuroflight:impact>
 
-Neuroflight proved that neural network control on embedded platforms was viable, but revealed new challenges:
+Neuroflight proved that neural network control on embedded platforms was viable, but revealed new challenges. The system achieved several important milestones: it provided the first demonstration of learned control at 730Hz on embedded flight controllers, maintained consistent inference timing with less than 5% jitter, and enabled successful flights with neural attitude control.
 
-*Achievements*:
-- First demonstration of learned control at 730Hz on embedded flight controllers
-- Consistent inference timing with < 5% jitter
-- Successful flights with neural attitude control
-
-*Limitations*:
-- No adaptation capability—networks were fixed at deployment
-- The 730Hz control rate created an irreducible reality gap
-- Single reward optimization failed to capture complex objectives
-- High-frequency oscillations (330Hz) caused motor heating and power drain
+However, the system also exposed significant limitations that would guide future development. Networks were fixed at deployment with no adaptation capability, meaning the system could not learn or improve from new experiences. The 730Hz control rate itself created an irreducible reality gap compared to the 1000Hz simulation assumption. Single reward optimization proved inadequate for capturing the complex, multi-objective nature of flight control. Additionally, high-frequency oscillations at 330Hz caused motor heating and excessive power drain, reducing flight efficiency.
 
 These limitations, particularly the timing-induced reality gap, motivated our subsequent work on more sophisticated architectures.
 
-== Asymmetric Actor-Critic: Principled Network Minimization <chap:architecture:asymmetric_ac>
+== Asymmetric Actor-Critic: Policy Minimization <chap:architecture:asymmetric_ac>
 
 Having established feasibility with Neuroflight, we next addressed the challenge of deploying more complex policies within embedded constraints. A key insight came from questioning a fundamental assumption in actor-critic reinforcement learning: why do actors and critics use the same network architectures?
 
@@ -133,18 +113,9 @@ Across all experiments, asymmetric architectures achieved an average 64% reducti
 
 === Why This Works <chap:architecture:asymmetric_ac:why_it_works>
 
-The key insight is that critics and actors have fundamentally different computational requirements:
+The key insight is that critics and actors have fundamentally different computational requirements. Critics must model the value function $Q(s,a)$ or $V(s)$, understand environment dynamics, predict long-term returns, and generalize across the state-action space. This requires substantial representational capacity to capture the complex relationships between states, actions, and their long-term consequences.
 
-*Critics Must*:
-- Model the value function $Q(s,a)$ or $V(s)$
-- Understand environment dynamics
-- Predict long-term returns
-- Generalize across the state-action space
-
-*Actors Only Need To*:
-- Output actions that maximize the critic's estimates
-- Perform what amounts to arg max over a learned function
-- Execute a simpler input-output mapping
+Actors, in contrast, only need to output actions that maximize the critic's estimates, perform what amounts to arg max over a learned function, and execute a simpler input-output mapping. Rather than understanding the underlying value structure, actors can rely on the critic's guidance to make decisions.
 
 This difference in computational complexity naturally leads to different capacity requirements. The critic bears the burden of understanding, while the actor merely executes.
 
@@ -185,39 +156,16 @@ SwaNNFlight resolves these challenges through a carefully designed distributed a
 
 A fundamental design principle of SwaNNFlight is that the drone must be fully autonomous. Unlike many research systems that tether robots to powerful desktop computers—treating deployment as an afterthought—we designed for complete operational independence from day one.
 
-*The Flawed Research Paradigm*: Many academic systems assume:
-- Constant high-bandwidth connection to a ground station
-- Computation happens off-board with results streamed to the robot
-- Deployment constraints can be addressed "later"
-- WiFi/5G will always be available
+*Unrealistic Deployment Assumptions*: Many works assume constant high-bandwidth connection to a ground station, with computation happening off-board and results streamed to the robot. These systems treat deployment constraints as something that can be addressed "later" and rely on WiFi or 5G always being available.
 
-This approach fails in real-world deployment where:
-- Communication is unreliable (buildings block signals, interference is common)
-- Latency is unpredictable (WiFi jitter can exceed 100ms)
-- Bandwidth is limited (video streams compete with control signals)
-- Autonomous operation is often the primary requirement
+This approach fails in real-world deployment where communication is unreliable (buildings block signals, interference is common), latency is unpredictable (WiFi jitter can exceed 100ms), bandwidth is limited (video streams compete with control signals), and autonomous operation is often the primary requirement.
 
-*Our Design Philosophy*: SwaNNFlight inverts this relationship:
-- The drone is fully autonomous by default
-- All control decisions happen on-board in real-time
-- Adaptation is an optional enhancement when communication permits
-- The system gracefully degrades to baseline operation without connectivity
+*Our Design Philosophy*: SwaNNFlight inverts this relationship. The drone is fully autonomous by default, with all control decisions happening on-board in real-time. Adaptation is an optional enhancement when communication permits, and the system gracefully degrades to baseline operation without connectivity.
 
 === The Embedded-Ground Station Split <chap:architecture:swannflight:split>
+This autonomous-first philosophy leads to a specific architectural split between the embedded platform and ground station. The embedded platform serves as the always-required core, running complete neural network inference locally in under 1ms while maintaining both critics for compositional control. It operates indefinitely without external communication and buffers data for eventual adaptation when possible.
 
-This autonomous-first philosophy leads to a specific architectural split:
-
-*Embedded Platform (Always Required)*:
-- Runs complete neural network inference locally (< 1ms)
-- Maintains both critics for compositional control
-- Operates indefinitely without external communication
-- Buffers data for eventual adaptation when possible
-
-*Ground Station (Optional Enhancement)*:
-- Processes buffered data when communication allows
-- Computes improved policies using Anchor Critics
-- Sends updates that enhance—but never compromise—autonomous operation
-- Can disconnect at any time without affecting flight
+The ground station functions as an optional enhancement that processes buffered data when communication allows and computes improved policies using Anchor Critics. It sends updates that enhance—but never compromise—autonomous operation and can disconnect at any time without affecting flight.
 
 This architecture ensures that our fulfillment-centric policies work in real deployments, not just in laboratory demonstrations with hidden tethers to server racks.
 
@@ -226,12 +174,6 @@ This architecture ensures that our fulfillment-centric policies work in real dep
 Enabling neural network updates during flight without missing control cycles required developing several mechanisms:
 
 *Double Buffering*: The system maintains two complete neural network models in memory. While one executes, updates are written to the other. A single pointer swap atomically switches between them.
-
-*Update Window Analysis*: Through extensive profiling, we determined that a complete model update takes 134ms—approximately 13.4% of a 1-second window. During this time:
-- The previous model continues executing normally
-- Updates are scheduled during stable flight phases
-- The system maintains a 300ms performance buffer to detect anomalies
-- Rollback can occur within 5ms if issues are detected
 
 *CRC Validation*: All model updates include checksums verified at multiple stages. Corrupted updates are rejected before they can affect control.
 
@@ -272,18 +214,35 @@ In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the ex
 *Data Preservation*: The 1000-observation ring buffer ensures valuable flight data is preserved for eventual adaptation, even after hours of disconnected operation. No learning opportunity is lost due to communication issues.
 
 === Implementation and Performance <chap:architecture:swannflight:implementation>
-
 ==== Hardware Specifications <def:hw_specs>
-- *Flight Controller*: STM32F722 (216 MHz ARM Cortex-M7)
-- *Memory*: 512KB Flash, 256KB RAM
-- *Communication*: XBee PRO (2.4GHz, 250kbps effective throughput)
-- *Additional Hardware Cost*: < \$50 (XBee module only)
+
+#figure(
+  table(
+    columns: 2,
+    align: left,
+    [*Component*], [*Specification*],
+    [Flight Controller], [STM32F722 (216 MHz ARM Cortex-M7)],
+    [Memory], [512KB Flash, 256KB RAM],
+    [Communication], [XBee PRO (2.4GHz, 250kbps effective throughput)],
+    [Additional Hardware Cost], [< \$50 (XBee module only)]
+  ),
+  caption: [Hardware specifications for SwaNNFlight implementation.]
+)
 
 ==== Performance Metrics <def:performance_metrics>
-- *Inference Latency*: < 1ms for dual critic evaluation
-- *Model Update Time*: 134ms (atomic swap)
-- *Control Frequency*: 1kHz maintained during all operations
-- *Power Overhead*: < 100mW (5% of total system power)
+
+#figure(
+  table(
+    columns: 2,
+    align: left,
+    [*Metric*], [*Value*],
+    [Inference Latency], [< 1ms for dual critic evaluation],
+    [Model Update Time], [134ms (atomic swap)],
+    [Control Frequency], [1kHz maintained during all operations],
+    [Power Overhead], [< 100mW (5% of total system power)]
+  ),
+  caption: [Performance metrics demonstrating real-time capabilities and efficiency.]
+)
 
 ==== Software Architecture <def:sw_architecture>
 The implementation required overcoming several technical challenges:

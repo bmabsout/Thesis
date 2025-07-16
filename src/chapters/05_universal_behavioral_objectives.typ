@@ -130,13 +130,13 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
 
 // *Comprehensive Results*: Table 1 shows detailed results across all tested algorithms and environments. CAPS agents are smoother than their vanilla counterparts on all tested tasks, with smoothness improvements ranging from 2x to 7x. We observe nominal performance hits on pendulum and lunar-lander tasks due to agents being slower at achieving goal states as they strive for smoother behavior. However, with Reacher and Ant environments, the improved smoothness actually enabled higher rewards.
 #pagebreak()
-#v(5cm)
-#rotate(-90deg, figure(
+#figure(
   {
-    set text(size: 0.6em)
+    set text(size: 0.78em)
+    set par(leading: 0.5em)
   (table(
-    columns: (2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm, 2.5cm),
-    align: center,
+    columns: (auto,)*9,
+    align: center+horizon,
     stroke: none,
     // Vertical lines
     table.vline(x: 1, stroke: 0.5pt),
@@ -158,29 +158,28 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     table.cell(colspan: 2, align: center)[*Reacher-v2*],
     table.cell(colspan: 2, align: center)[*Ant-v2*],
     table.hline(start: 1, stroke: 0.5pt),
-    [], [Reward ↑], [Sm $dot 10^3$ ↓], [Reward ↑], [Sm $dot 10^3$ ↓], [Reward ↑], [Sm $dot 10^3$ ↓], [Reward ↑], [Sm $dot 10^3$ ↓],
+    [], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓],
     table.hline(stroke: 1pt),
     
     // Data rows
-    [DDPG], [-145.56 ± 10.64], [47.6 ± 10.64], [217.04 ± 51.61], [34.9 ± 1.36], [-4.26 ± 0.25], [4.56 ± 0.45], [225.23 ± 362.88], [2.73 ± 0.65],
-    [DDPG+CAPS], table.cell(fill: rgb("#ffcccc"))[-188.16 ± 22.53], table.cell(fill: rgb("#ccffcc"))[*7.09 ± 1.65*], table.cell(fill: rgb("#ffcccc"))[181.98 ± 87.18], table.cell(fill: rgb("#ccffcc"))[*16.7 ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-5.03 ± 1.89], table.cell(fill: rgb("#ccffcc"))[*3.69 ± 1.13*], table.cell(fill: rgb("#ccffcc"))[*253.30 ± 187.93*], table.cell(fill: rgb("#ccffcc"))[*1.31 ± 0.71*],
+    [DDPG], [-145.56 \ ± 10.64], [47.6 \ ± 10.64], [217.04 \ ± 51.61], [34.9 \ ± 1.36], [-4.26 \ ± 0.25], [4.56 \ ± 0.45], [225.23 \ ± 362.88], [2.73 \ ± 0.65],
+    [DDPG+CAPS], table.cell(fill: rgb("#ffcccc"))[-188.16 \ ± 22.53], table.cell(fill: rgb("#ccffcc"))[*7.09 \ ± 1.65*], table.cell(fill: rgb("#ffcccc"))[181.98 \ ± 87.18], table.cell(fill: rgb("#ccffcc"))[*16.7 \ ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-5.03 \ ± 1.89], table.cell(fill: rgb("#ccffcc"))[*3.69 \ ± 1.13*], table.cell(fill: rgb("#ccffcc"))[*253.30 \ ± 187.93*], table.cell(fill: rgb("#ccffcc"))[*1.31 \ ± 0.71*],
     table.hline(stroke: 1.5pt),
     
-    [SAC], [-139.86 ± 8.29], [9.32 ± 1.13], [277.62 ± 11.02], [8.14 ± 0.81], [-5.96 ± 0.47], [5.99 ± 0.91], [3366.07 ± 1522.45], [6.53 ± 2.26],
-    [SAC+CAPS], table.cell(fill: rgb("#ffcccc"))[-165.79 ± 9.22], table.cell(fill: rgb("#ccffcc"))[*4.93 ± 1.15*], table.cell(fill: rgb("#ccffcc"))[*281.94 ± 3.65*], table.cell(fill: rgb("#ccffcc"))[*7.62 ± 0.71*], table.cell(fill: rgb("#ffcccc"))[-6.25 ± 3.71], table.cell(fill: rgb("#ccffcc"))[*5.00 ± 0.71*], table.cell(fill: rgb("#ccffcc"))[*4209.08 ± 1367.18*], table.cell(fill: rgb("#ccffcc"))[*6.11 ± 2.93*],
+    [SAC], [-139.86 \ ± 8.29], [9.32 \ ± 1.13], [277.62 \ ± 11.02], [8.14 \ ± 0.81], [-5.96 \ ± 0.47], [5.99 \ ± 0.91], [3366.07 \ ± 1522.45], [6.53 \ ± 2.26],
+    [SAC+CAPS], table.cell(fill: rgb("#ffcccc"))[-165.79 \ ± 9.22], table.cell(fill: rgb("#ccffcc"))[*4.93 \ ± 1.15*], table.cell(fill: rgb("#ccffcc"))[*281.94 \ ± 3.65*], table.cell(fill: rgb("#ccffcc"))[*7.62 \ ± 0.71*], table.cell(fill: rgb("#ffcccc"))[-6.25 \ ± 3.71], table.cell(fill: rgb("#ccffcc"))[*5.00 \ ± 0.71*], table.cell(fill: rgb("#ccffcc"))[*4209.08 \ ± 1367.18*], table.cell(fill: rgb("#ccffcc"))[*6.11 \ ± 2.93*],
     table.hline(stroke: 1.5pt),
 
-    [TD3], [-152.71 ± 9.47], [43.9 ± 30.94], [271.06 ± 17.39], [37.9 ± 12.30], [-6.52 ± 1.12], [5.70 ± 0.98], [3087.86 ± 888.75], [9.09 ± 1.90],
-    [TD3+CAPS], table.cell(fill: rgb("#ffcccc"))[-172.82 ± 13.47], table.cell(fill: rgb("#ccffcc"))[*5.92 ± 1.52*], table.cell(fill: rgb("#ffcccc"))[270.32 ± 25.73], table.cell(fill: rgb("#ccffcc"))[*16.7 ± 3.26*], table.cell(fill: rgb("#ccffcc"))[*-6.34 ± 0.66*], table.cell(fill: rgb("#ccffcc"))[*4.63 ± 0.72*], table.cell(fill: rgb("#ccffcc"))[*3871.68 ± 1121.36*], table.cell(fill: rgb("#ccffcc"))[*7.89 ± 2.92*],
+    [TD3], [-152.71 \ ± 9.47], [43.9 \ ± 30.94], [271.06 \ ± 17.39], [37.9 \ ± 12.30], [-6.52 \ ± 1.12], [5.70 \ ± 0.98], [3087.86 \ ± 888.75], [9.09 \ ± 1.90],
+    [TD3+CAPS], table.cell(fill: rgb("#ffcccc"))[-172.82 \ ± 13.47], table.cell(fill: rgb("#ccffcc"))[*5.92 \ ± 1.52*], table.cell(fill: rgb("#ffcccc"))[270.32 \ ± 25.73], table.cell(fill: rgb("#ccffcc"))[*16.7 \ ± 3.26*], table.cell(fill: rgb("#ccffcc"))[*-6.34 \ ± 0.66*], table.cell(fill: rgb("#ccffcc"))[*4.63 \ ± 0.72*], table.cell(fill: rgb("#ccffcc"))[*3871.68 \ ± 1121.36*], table.cell(fill: rgb("#ccffcc"))[*7.89 \ ± 2.92*],
     table.hline(stroke: 1.5pt),
 
-    [PPO], [-668.60 ± 551.85], [9.29 ± 5.51], [169.08 ± 56.59], [11.4 ± 1.36], [-4.37 ± 1.74], [4.49 ± 0.43], [3734.58 ± 988.29], [6.09 ± 1.19],
-    [PPO+CAPS], table.cell(fill: rgb("#ccffcc"))[*-590.35 ± 295.86*], table.cell(fill: rgb("#ccffcc"))[*8.09 ± 2.13*], table.cell(fill: rgb("#ffcccc"))[140.71 ± 23.03], table.cell(fill: rgb("#ccffcc"))[*10.0 ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-4.69 ± 2.05], table.cell(fill: rgb("#ccffcc"))[*3.38 ± 0.36*], table.cell(fill: rgb("#ccffcc"))[*4256.93 ± 570.88*], table.cell(fill: rgb("#ccffcc"))[*1.60 ± 0.26*],
+    [PPO], [-668.60 \ ± 551.85], [9.29 \ ± 5.51], [169.08 \ ± 56.59], [11.4 \ ± 1.36], [-4.37 \ ± 1.74], [4.49 \ ± 0.43], [3734.58 \ ± 988.29], [6.09 \ ± 1.19],
+    [PPO+CAPS], table.cell(fill: rgb("#ccffcc"))[*-590.35 \ ± 295.86*], table.cell(fill: rgb("#ccffcc"))[*8.09 \ ± 2.13*], table.cell(fill: rgb("#ffcccc"))[140.71 \ ± 23.03], table.cell(fill: rgb("#ccffcc"))[*10.0 \ ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-4.69 \ ± 2.05], table.cell(fill: rgb("#ccffcc"))[*3.38 \ ± 0.36*], table.cell(fill: rgb("#ccffcc"))[*4256.93 \ ± 570.88*], table.cell(fill: rgb("#ccffcc"))[*1.60 \ ± 0.26*],
     table.hline(stroke: 1pt),
   ))},
-  caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Ab values) across all algorithms and environments. Bold values indicate improvements over vanilla algorithms.]
-)) <tab:caps_gym_benchmarks_results>
-#pagebreak()
+  caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Ab values) across all algorithms and environments. Bold values indicate improvements over the state of the art]
+) <tab:caps_gym_benchmarks_results>
 Interestingly, soft-policies such as PPO and SAC appear to learn relatively smoother policies on their own, which we hypothesize is due to stochasticity in the policies allowing for improved exploration of the state and action spaces.
 
 === Quadrotor Control Validation <chap:ubo:validation:quadrotor>
@@ -201,6 +200,8 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
 *Quantitative Flight Performance*: Table 2 compares performance metrics between different controllers on both simulated validation and real test flights.
 
 #figure(
+  {
+    set par(leading: 0.5em)
   table(
     columns: 4,
     align: center,
@@ -210,22 +211,22 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
     table.hline(),
     [PID], [11.41], [-NA-], [0.29],
     [Neuroflight], [7.30], [-NA-], [3.23],
-    [PPO + Temporal], [11.36 ± 2.19], [-NA-], [0.056 ± 0.007],
-    [PPO + Spatial], [16.66 ± 4.57], [-NA-], [0.021 ± 0.007],
-    [PPO + CAPS], [*9.26 ± 1.03*], [-NA-], [*0.021 ± 0.012*],
+    [PPO + Temporal], [11.36 \ ± 2.19], [-NA-], [0.056 \ ± 0.007],
+    [PPO + Spatial], [16.66 \ ± 4.57], [-NA-], [0.021 \ ± 0.007],
+    [PPO + CAPS], [*9.26 \ ± 1.03*], [-NA-], [*0.021 \ ± 0.012*],
     table.hline(),
     table.cell(colspan: 4, align: center)[*On-Platform Live Test-Flights*],
     table.hline(),
     [PID], [5.01], [8.07], [0.4],
     [Neuroflight], [5.19], [22.87], [4.3],
-    [PPO + Temporal], [7.82 ± 2.42], [7.59 ± 2.24], [1.10 ± 0.32],
-    [PPO + Spatial], [14.85 ± 6.85], [4.59 ± 2.70], [0.37 ± 0.22],
-    [PPO + CAPS], [*9.28 ± 2.31*], [*4.86 ± 2.32*], [*0.16 ± 0.02*]
-  ),
+    [PPO + Temporal], [7.82 \ ± 2.42], [7.59 \ ± 2.24], [1.10 \ ± 0.32],
+    [PPO + Spatial], [14.85 \ ± 6.85], [4.59 \ ± 2.70], [0.37 \ ± 0.22],
+    [PPO + CAPS], [*9.28 \ ± 2.31*], [*4.86 \ ± 2.32*], [*0.16 \ ± 0.02*]
+  )},
   caption: [Flight performance comparison showing Mean Absolute Error (MAE), current consumption, and abrasion (Ab). CAPS achieves the best balance of tracking accuracy, power efficiency, and smoothness. Variance statistics computed over 10 independently trained agents.]
 ) <tab:caps_quadrotor_quantitative_results>
 
-*Power Consumption Analysis*: CAPS-optimized agents consumed significantly less power (4.86 ± 2.32 Amps) compared to Neuroflight (22.87 Amps) and even outperformed the PID controller (8.07 Amps), demonstrating that neural network controllers can exceed classical control efficiency when properly regularized.
+*Power Consumption Analysis*: CAPS-optimized agents consumed significantly less power (4.86 \ ± 2.32 Amps) compared to Neuroflight (22.87 Amps) and even outperformed the PID controller (8.07 Amps), demonstrating that neural network controllers can exceed classical control efficiency when properly regularized.
 
 *Frequency Analysis*: Figure 3 shows the dramatic difference in control signal frequency content between CAPS and baseline approaches.
 
@@ -253,32 +254,17 @@ The success of CAPS demonstrates broader principles for integrating universal be
 ==== Direct Policy Conditioning vs. Reward Engineering <def:direct_vs_reward>
 CAPS represents a fundamental shift from reward engineering to direct policy conditioning. Rather than trying to encode desired behaviors through complex reward functions, we condition the policy optimization process directly.
 
-*Advantages of Direct Conditioning*:
-+ *Transparency*: The relationship between regularization terms and resulting behavior (and thus the UBF) is direct and interpretable
-+ *Robustness*: Architectural constraints promoting UBFs are less sensitive to domain shifts than reward-based approaches
-+ *Efficiency*: Simpler reward structures or FPL formulas can be used when UBFs for universal objectives are handled architecturally
-+ *Guarantees*: Direct constraints provide stronger guarantees about resulting behavior than indirect reward signals
+*Advantages of Direct Conditioning*: Direct policy conditioning offers several key advantages over traditional reward engineering approaches. The relationship between regularization terms and resulting behavior (and thus the UBF) is direct and interpretable, providing *transparency* in how the system achieves desired outcomes. This approach also demonstrates superior *robustness*, as architectural constraints promoting UBFs are less sensitive to domain shifts than reward-based approaches that may not transfer well between simulation and real-world deployment. From an *efficiency* perspective, simpler reward structures or FPL formulas can be used when UBFs for universal objectives are handled architecturally, reducing the complexity of the specification process. Finally, direct constraints provide stronger *guarantees* about resulting behavior than indirect reward signals, which may be subject to the vagaries of the optimization process.
 
 *When to Use Direct Conditioning*: Universal behavioral objectives that apply across tasks and domains are ideal candidates for architectural integration. Task-specific objectives are better handled through FPL formulations.
-
-=== The Fulfillment Treatment <chap:ubo:validation:fulfillment>
-We can express CAPS objectives as fulfillments as is done in @chap:encoding_intentionality:fulfillment_guide,
 
 === Design Guidelines for Universal Objectives <chap:ubo:validation:guidelines>
 
 Based on our experience with CAPS, we propose the following guidelines for identifying and integrating universal behavioral objectives (and their UBFs):
 
-*Identification Criteria*:
-1. The UBO applies across multiple tasks and domains
-2. The UBO can be expressed in terms of policy behavior (and thus quantified as a UBF) rather than environment state
-3. The UBO contributes to safety, efficiency, or robustness
-4. The UBO can be measured using only policy inputs and outputs
+*Identification Criteria*: To identify suitable universal behavioral objectives, several key criteria must be met. First, the UBO must apply across multiple tasks and domains, demonstrating its universal nature rather than being specific to particular applications. Second, the UBO should be expressible in terms of policy behavior (and thus quantifiable as a UBF) rather than environment state, ensuring it can be directly integrated into policy optimization. Third, the UBO must contribute meaningfully to generally important goals such as safety, efficiency, or robustness, providing clear value beyond task-specific performance. Finally, the UBO should be measurable using only policy inputs and outputs, avoiding dependencies on complex environmental measurements or external sensors.
 
-*Integration Strategies*:
-1. *Regularization*: Add penalty terms to the policy optimization objective
-2. *Architectural Constraints*: Build constraints directly into the network architecture
-3. *Preprocessing/Postprocessing*: Apply transformations to inputs or outputs
-4. *Hybrid Approaches*: Combine multiple integration strategies for complex objectives
+*Integration Strategies*: Several approaches can be employed to integrate universal behavioral objectives into policy architectures. *Regularization* involves adding penalty terms to the policy optimization objective, as demonstrated by CAPS. *Architectural constraints* build the desired behavior directly into the network architecture itself, ensuring it cannot be circumvented during optimization. *Preprocessing and postprocessing* approaches apply transformations to inputs or outputs to encourage desired behaviors without modifying the core optimization process. Finally, *hybrid approaches* combine multiple integration strategies for complex objectives that may benefit from multiple complementary mechanisms.
 
 === Current Limitations <chap:ubo:validation:limitations>
 
@@ -293,10 +279,10 @@ While CAPS identifies the correct quantities to regularize—temporal and spatia
 
 This involves transforming the smoothness penalties from CAPS into *Universal Behavioral Fulfillments* (UBFs). Instead of subtracting a penalty, we define fulfillment functions that map the degree of smoothness to the $[0,1]$ range, where 1 represents perfect smoothness. An exponential decay function is a natural fit for this transformation:
 
-- *Temporal Smoothness Fulfillment*:
+*Temporal Smoothness Fulfillment*:
   $ phi_("temporal")(st, stp1) = exp(-alpha_(T) ||pi_(theta)(st) - pi_(theta)(stp1)||) $
 
-- *Spatial Smoothness Fulfillment*:
+*Spatial Smoothness Fulfillment*:
   $ phi_("spatial")(st, state(overline(s)_t)) = exp(-alpha_(S) ||pi_(theta)(st) - pi_(theta)(state(overline(s)_t))||) $
 
 Here, the parameters $alpha_T$ and $alpha_S$ act as sensitivity knobs. They are not arbitrary weights but have a clear semantic role: they define how quickly the fulfillment value decays as the policy's output becomes less smooth. This allows a designer to tune the functions to match their intuitive judgment, as described in the fulfillment guide (@chap:encoding_intentionality:fulfillment_guide).
@@ -332,15 +318,12 @@ The results of this comparison are striking. As shown in the figure below, the a
 
 This evidence strongly supports the case for treating universal behavioral objectives like smoothness as fulfillments within the FPL framework. The use of principled composition operators like the geometric mean is not just more expressive; it leads to a more stable optimization landscape, reducing the reliance on brittle hyperparameter tuning and increasing the probability of successfully training a well-behaved agent.
 
-== Learning Stability as a Universal Behavioral Fulfillment <chap:ubo:stability_fulfillment>
+== Learning Stability as a UBF <chap:ubo:stability_fulfillment>
 
 Just as smoothness is a near-universal requirement for successful robotic control, stability tends to also be a common requirement. In an effort to present tracking a trajectory represented in a more fundamental fashion that a reward for tracking error, we found that stability was an adequate goal. A controller that performs its task but is unstable is not only unreliable but dangerous. This makes stability a prime candidate for treatment as a Universal Behavioral Objective. The journey to formalizing stability within the fulfillment framework is not just an academic exercise; it was the original discovery path that led to the development of Fulfillment Priority Logic itself.
 
 This section details how our attempts to learn controllers with formal stability guarantees, using tools from classical Lyapunov theory, revealed the limitations of traditional penalty-based methods and directly motivated the creation of the fulfillment-centric paradigm. This allowed us to learn Lyapunov functions and controllers with orders of magnitude less time than traditional methods.
 
-#notice[
-these findings are not published in a paper
-]
 
 === From Lyapunov Conditions to Optimization Objectives <chap:ubo:stability_fulfillment:lyapunov_to_opt>
 

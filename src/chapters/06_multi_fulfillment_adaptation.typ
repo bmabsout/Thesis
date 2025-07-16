@@ -9,8 +9,8 @@ This chapter addresses the final piece of the intent-to-reality gap by recognizi
 
 == The Hidden Specification Problem in Adaptation <chap:adaptation_anchors:spec_problem>
 
-=== What We Think We're Doing <chap:adaptation_anchors:spec_problem:think>
 
+=== Typical Adaptation Pipeline <chap:adaptation_anchors:spec_problem:typical>
 When practitioners adapt a simulation-trained policy to reality, the typical mental model is straightforward:
 1. Train a policy in simulation to satisfy a specification (reward function)
 2. Fine-tune it on real data to handle dynamics differences
@@ -18,7 +18,7 @@ When practitioners adapt a simulation-trained policy to reality, the typical men
 
 This framing treats adaptation as a technical problem of adjusting to new dynamics. But this view is incomplete and leads directly to catastrophic forgetting.
 
-=== What Actually Happens: The Missing Specification <chap:adaptation_anchors:spec_problem:missing>
+=== Missing Specification <chap:adaptation_anchors:spec_problem:missing>
 
 Consider what the standard adaptation process actually optimizes. When we fine-tune a policy $pi_("sim")$ on real-world data, we're implicitly asking it to maximize:
 
@@ -32,7 +32,7 @@ $ J_("adapt")(pi) = #text(size: 15pt,expect)_(
 
 $cal(I)_("real")$ defines the real-world distribution of initial states and $TT_("real")$ defines the distribution of real-world transitions, therefore it is severely limited by event rarity. A drone might spend 90% of its time hovering or flying gentle trajectories, even though we trained it to handle aggressive aerobatics in simulation. 
 
-This reveals the core problem: *we're optimizing an incomplete specification*. The reward function $R$ is just one component---the full specification includes the distribution of tasks, state initializations, and scenarios we encounter. In simulation, we deliberately crafted this distribution to include diverse tasks, edge cases, and emergency maneuvers. These design choices _are_ the specification, encoded in the learned Q-values. But during real-world adaptation, the optimization only sees the narrow slice of reality we can safely collect, missing the full behavioral specification we intended.
+This reveals the core problem: *we're optimizing an incomplete specification*. The reward function $R$ is just one component---the full specification includes the distribution of tasks, state initializations, and scenarios we encounter. In simulation, we deliberately crafted this distribution to include diverse tasks, edge cases, and emergency maneuvers. Notice that these design choices are part of the specification, encoded in the learned Q-values. But during real-world adaptation, the optimization only sees the narrow slice of reality we can safely collect, missing the full behavioral specification we intended.
 
 === Catastrophic Forgetting as Specification Failure <chap:adaptation_anchors:spec_problem:forgetting>
 
@@ -47,25 +47,17 @@ Once we recognize adaptation as a specification problem, the path forward become
 1. Performance on the real-world distribution (adaptation)
 2. Performance on the simulation distribution (preservation)
 
-This isn't about mixing data or averaging models. It's about recognizing that we have two distinct specifications that both matter. The fulfillment framework developed in this thesis gives us exactly the tools we need to compose them.
+This isn't about mixing data or averaging models. It's about recognizing that we have two distinct specifications that we must include in our optimization scheme. The fulfillment framework developed in this thesis gives us exactly the tools we need to build such a specification.
 
-=== Formalizing the Dual Specification <chap:adaptation_anchors:composing:dual>
+=== Formalizing the Derived Specification <chap:adaptation_anchors:composing:dual>
 
 As established in our taxonomy of the intent-to-reality gap in @chap:intent_to_reality, value functions are *derived specifications* (@def:derived_specs) that encode how good certain behavior is, affected by both the reward function and the specific trajectory distribution encountered. This insight is crucial for understanding adaptation and why catastrophic forgetting occurs.
 
-*The Simulation Specification*: The specification in simulation is far richer than just a reward function. It encompasses:
-- The reward function $R_("sim")$
-- The distribution of tasks (what goals appear and how often)
-- The state initialization distribution (where episodes begin)
-- The dynamics model
+*The Simulation Specification*: The specification in simulation is far richer than just a reward function. It encompasses the reward function $R_("sim")$, the distribution of tasks (what goals appear and how often), the state initialization distribution (where episodes begin), and the dynamics model forming the environment.
 
 The value function learned in simulation, $f"Q"_("sim")$, is a derived specification that integrates *all* of these design choices. It encodes how good behaviors are in the simulation context—combining our reward specification with the intentionally crafted distribution of experiences. When we choose to initialize episodes with aggressive maneuvers 30% of the time, or include emergency recovery scenarios, these aren't implementation details—they become part of the derived specification encoded in $f"Q"_("sim")$.
 
-*The Reality Specification*: Similarly, the real-world creates its own derived specification:
-- The same reward function $R$ (typically)
-- The naturally occurring task distribution (mostly gentle flights)
-- The constrained initialization distribution (safe starting states)
-- The true dynamics
+*The Reality Specification*: Similarly, the real-world creates its own derived specification encompassing the same reward function $R$ (typically), the naturally occurring task distribution (mostly gentle flights), the constrained initialization distribution (safe starting states), and the true dynamics.
 
 The value function $f"Q"_("real")$ learned on real data is a different derived specification—it encodes how good behaviors are in the real-world context. The limited variety isn't a bug—it accurately reflects what the robot will mostly encounter. But this derived specification is incomplete for our true intent.
 
@@ -81,9 +73,9 @@ Before showing the solution, let's understand why naive approaches fail:
 
 *Alternating Training*: Training alternately on each domain prevents consistent value estimates and can cause oscillation between behaviors rather than true composition.
 
-== The Natural Solution: Fulfillment Composition <chap:adaptation_anchors:solution>
+== Applying Fulfillment-Centric Thinking <chap:adaptation_anchors:solution>
 
-=== The Clarity of Derived Specifications <chap:adaptation_anchors:solution:clarity>
+=== Derived Specifications Guide Our Solution <chap:adaptation_anchors:solution:clarity>
 
 Understanding value functions as derived specifications (as introduced in @chap:intent_to_reality) makes the solution clear. Each value function combines:
 - A primary specification (the reward function $R$)  
@@ -91,9 +83,7 @@ Understanding value functions as derived specifications (as introduced in @chap:
 
 This produces a derived specification that encodes how good behaviors are in that specific context.
 
-In our case:
-- $f"Q"_("sim")$ encodes how good behaviors are in the rich simulation context
-- $f"Q"_("real")$ encodes how good behaviors are in the limited real-world context
+In our case, $f"Q"_("sim")$ encodes how good behaviors are in the rich simulation context while $f"Q"_("real")$ encodes how good behaviors are in the limited real-world context.
 
 Neither derived specification is complete for our true intent. The simulation has the behavioral diversity we designed but wrong dynamics. Reality has correct dynamics but incomplete behavioral coverage. We need both.
 
@@ -107,13 +97,7 @@ This formula precisely captures our intent: satisfy *both* derived specification
 
 === The Power of Compositional Thinking <chap:adaptation_anchors:solution:power>
 
-This compositional approach has several key advantages:
-
-1. *Semantic Clarity*: The specification directly states what we want—good performance in both domains—without obscure weights or mixing ratios.
-
-2. *No Forgetting by Design*: Poor performance on either specification directly reduces the overall value. The policy cannot forget simulation behaviors without penalty.
-
-3. *Principled Trade-offs*: The choice of conjunction operator (e.g., geometric mean with $p=0$) determines how we balance the specifications. Unlike arbitrary weights, this has clear semantic meaning.
+This compositional approach has several key advantages. First, it provides *semantic clarity* by directly stating what we want—good performance in both domains—without obscure weights or mixing ratios. Second, it ensures *no forgetting by design* since poor performance on either specification directly reduces the overall value, preventing the policy from forgetting simulation behaviors without penalty. Finally, it enables *principled trade-offs* through the choice of conjunction operator (e.g., geometric mean with $p=0$), which determines how we balance the specifications with clear semantic meaning, unlike arbitrary weights.
 
 === Implementation: The Emergence of Anchor Critics <chap:adaptation_anchors:solution:anchor>
 
@@ -166,9 +150,11 @@ The Reacher environment provides the clearest demonstration. Despite *identical 
 
 === The Cost of Missing Specifications <chap:adaptation_anchors:validation:cost>
 
+#let StoT(withPsi: false) = [S#text(size:0.4em, box(rotate(90deg, $triangle$))+(if withPsi {place(text(size: 1.3em, $psi$), dx: -1.3em, dy: -2.45em)}))T]
+
 #figure(
   image("/figures/sim2sim_violins.svg", width: 100%),
-  caption: [Performance comparison showing catastrophic forgetting with standard adaptation (red) versus preservation with compositional specification (green). The drop in source performance with naive adaptation demonstrates the cost of the missing specification.]
+  caption: [Comparitive violin plots showing the difference of the distribution of performance of the three polices $pi_"S"$ (middle violins), the policy trained on the source domain S,  $pi_#StoT()$ the policy trained on the source domain S and then fine tuned to the target domain T (left violins), and $pi_#StoT(withPsi: true)$ the policy trained on S and then fine tuned to T using anchor critics (right violins). Arrows indicate how the agents perform after fine tuning, with red indicating a loss of performance and green showing improvement. We observe catastrophic forgetting with standard adaptation versus preservation with compositional specification.]
 ) <fig:composition_results>
 
 Standard adaptation shows severe performance degradation on the original tasks—not because the algorithm failed, but because we never specified that we cared about preserving them. The compositional approach maintains performance on both domains, validating our thesis.
@@ -200,15 +186,13 @@ The compositional approach succeeded because it correctly specified our actual i
   caption: [Compositional adaptation achieves 50% power reduction through improved smoothness while maintaining tracking performance across the full operational envelope.]
 )
 
-== Completing the Framework <chap:adaptation_anchors:complete>
+== Integration with Universal Behavioral Fulfillments <chap:adaptation_anchors:ubf>
 
-=== Integration with Universal Behavioral Fulfillments <chap:adaptation_anchors:complete:integration>
-
-Real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of FPL, we can seamlessly integrate these:
+As discussed in @chap:ubo, real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of FPL, we can seamlessly integrate a criteria for smoothness:
 
 $ phi_("complete") = (f"Q"_("sim") and^0 f"Q"_("real")) and^0 f_("smoothness") $
 
-This single formula captures the complete specification: maintain simulation capabilities, adapt to reality, and do so smoothly. Each component has clear meaning, and their composition is principled.
+This single formula captures the complete specification: maintain simulation capabilities, adapt to reality, and learn smooth control to maximize power efficiency. Each component has clear meaning, and their composition is principled.
 
 === The Full Pipeline Realized <chap:adaptation_anchors:complete:pipeline>
 
@@ -222,13 +206,7 @@ At each stage, we maintain semantic clarity by treating objectives as specificat
 
 === Limitations and Extensions <chap:adaptation_anchors:complete:limitations>
 
-While compositional adaptation effectively prevents catastrophic forgetting, some challenges remain:
-
-*Specification Quality*: The approach assumes the simulation specification captures important behaviors. Poor simulation design cannot be overcome by composition alone.
-
-*Adaptation Speed*: Strong composition may slow adaptation in cases of large domain gaps. The priority weight provides a tuning parameter, but selecting it requires domain knowledge.
-
-*Computational Cost*: Maintaining multiple critics increases memory and computation, though this is manageable on modern hardware.
+While compositional adaptation effectively prevents catastrophic forgetting, some challenges remain. First, the approach assumes the simulation specification captures important behaviors. Poor simulation design cannot be overcome by composition alone. Second, anchors can limit the ability for the policy to perform optimally in reality as it is limited by performing well in the simulation as well, learning a sort of common denominator behavior. Third, maintaining multiple critics increases memory and computation, though this is often manageable on modern hardware.
 
 == Summary <chap:adaptation_anchors:summary>
 

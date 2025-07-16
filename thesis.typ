@@ -123,6 +123,11 @@
 ], title: "Vita")
 
 
+#let dedic = [
+  #align(center+horizon, text(fill: action_color, style: "italic")[Dedicated to Yasser Karout])
+]
+
+
 // ===== Assemble the Document =====
 #show: (template.assemble_thesis_document).with(
   // Pass metadata
@@ -133,8 +138,8 @@
   title_page: title_page,
   copyright_page: copyright_page,
   approval_page: approval_page,
-  // acknowledgments: ack, // Optional, if generated
-  // dedication: dedic, // Optional, if generated
+  acknowledgments: include "src/acknowledgments.typ",
+  dedication: dedic,
   abstract: abstract,
   table_of_contents: table_of_contents,
   // list_of_figures: list_of_figures, // Optional
@@ -142,6 +147,6 @@
   main: main_body,
   // appendices: appendices, // Optional
   bibliography: bibliography_content,
-  vita: vita,
+  // vita: vita,
   local_outlines: true,
 )
