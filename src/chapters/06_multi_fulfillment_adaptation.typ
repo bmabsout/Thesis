@@ -87,7 +87,7 @@ In our case, $f"Q"_("sim")$ encodes how good behaviors are in the rich simulatio
 
 Neither derived specification is complete for our true intent. The simulation has the behavioral diversity we designed but wrong dynamics. Reality has correct dynamics but incomplete behavioral coverage. We need both.
 
-=== Applying FPL to Adaptation <chap:adaptation_anchors:solution:fpl>
+=== Applying #abbrv.FPL to Adaptation <chap:adaptation_anchors:solution:fpl>
 
 Once we recognize we have two valid derived specifications, the fulfillment framework provides a principled way to compose them:
 
@@ -122,7 +122,7 @@ We call the simulation critic an "anchor" because it anchors the policy to the c
 
 === Theoretical Guarantees from Composition <chap:adaptation_anchors:solution:guarantees>
 
-By framing adaptation as FPL composition, we inherit the theoretical guarantees from @chap:encoding_intentionality:
+By framing adaptation as #abbrv.FPL composition, we inherit the theoretical guarantees from @chap:encoding_intentionality:
 
 From the *Minimum Fulfillment Bound* (@thm:min-fulfillment-bound): Achieving high composed value guarantees minimum performance on both specifications. We can't achieve high overall fulfillment while failing on either domain.
 
@@ -188,7 +188,7 @@ The compositional approach succeeded because it correctly specified our actual i
 
 == Integration with Universal Behavioral Fulfillments <chap:adaptation_anchors:ubf>
 
-As discussed in @chap:ubo, real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of FPL, we can seamlessly integrate a criteria for smoothness:
+As discussed in @chap:ubo, real robotic systems often have additional universal requirements beyond task performance. Using the compositional nature of #abbrv.FPL, we can seamlessly integrate a criteria for smoothness:
 
 $ phi_("complete") = (f"Q"_("sim") and^0 f"Q"_("real")) and^0 f_("smoothness") $
 

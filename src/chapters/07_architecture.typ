@@ -1,8 +1,10 @@
+#import "/src/commands.typ": *
+
 = Architectural Considerations <chap:architecture>
 
-Throughout this thesis, we have developed a principled framework for bridging the intent-to-reality gap through fulfillment-centric design. We have shown how to encode complex intentions, compose them using FPL, incorporate universal behavioral objectives, and prevent catastrophic forgetting through specification composition. However, none of these theoretical advances matter if we cannot deploy them on real robotic hardware with its severe computational and memory constraints.
+Throughout this thesis, we have developed a principled framework for bridging the intent-to-reality gap through fulfillment-centric design. We have shown how to encode complex intentions, compose them using #abbrv.FPL, incorporate universal behavioral objectives, and prevent catastrophic forgetting through specification composition. However, none of these theoretical advances matter if we cannot deploy them on real robotic hardware with its severe computational and memory constraints.
 
-This chapter addresses the critical systems architecture challenges that arise when transitioning from theory to practice. Real robotic platforms—particularly aerial vehicles—operate under extreme constraints: limited computational power (often just ARM Cortex-M processors), minimal memory (measured in kilobytes, not gigabytes), strict real-time requirements (sub-millisecond control loops), and the need for absolute reliability. These constraints fundamentally shape how we implement fulfillment-centric policies.
+This chapter addresses the critical systems architecture challenges that arise when transitioning from theory to practice. Real robotic platforms—particularly aerial vehicles—operate under extreme constraints: limited computational power (often just Arm Cortex-M processors), minimal memory (measured in kilobytes, not gigabytes), strict real-time requirements (sub-millisecond control loops), and the need for absolute reliability. These constraints fundamentally shape how we implement fulfillment-centric policies.
 
 We present three complementary systems contributions that enable practical deployment:
 
@@ -18,9 +20,9 @@ Together, these contributions complete the path from theoretical framework to pr
 
 Deploying learned policies on real robotic platforms introduces constraints that are often overlooked in research settings. More critically, these constraints themselves become part of the reality gap that must be addressed:
 
-*Computational Constraints*: Flight controllers typically use ARM Cortex-M4/M7 processors running at 168-216 MHz. Compare this to the GPUs used for training, which offer thousands of times more computational power. Yet the control loop must run at 1kHz or faster for stable flight. As we discovered with Neuroflight, even achieving 730Hz creates a significant reality gap.
+*Computational Constraints*: Flight controllers typically use Arm Cortex-M4/M7 processors running at 168-216 MHz. Compare this to the #(abbrv.GPU)s used for training, which offer thousands of times more computational power. Yet the control loop must run at 1kHz or faster for stable flight. As we discovered with Neuroflight, even achieving 730Hz creates a significant reality gap.
 
-*Memory Constraints*: Embedded platforms have severe memory limitations—often just 512KB-1MB of flash and 128-256KB of RAM. A typical deep RL policy network can easily exceed these limits before considering the flight control software itself. Memory placement also affects timing—SRAM access is predictable, while flash access introduces variable latency.
+*Memory Constraints*: Embedded platforms have severe memory limitations—often just 512KB-1MB of flash and 128-256KB of #abbrv.RAM. A typical deep #abbrv.RL policy network can easily exceed these limits before considering the flight control software itself. Memory placement also affects timing—#abbrv.SRAM access is predictable, while flash access introduces variable latency.
 
 *Real-Time Requirements*: Control loops must execute with deterministic timing. A single missed deadline can cause catastrophic failure. Standard deep learning frameworks prioritize throughput over latency predictability, making them unsuitable for hard real-time systems. Variance in execution time—jitter—can be as damaging as slow average performance.
 
@@ -42,7 +44,7 @@ Before we could deploy sophisticated techniques like Anchor Critics, we needed t
 
 === The Timeliness Gap <chap:architecture:neuroflight:timeliness>
 
-A fundamental challenge we discovered is that the reality gap extends beyond dynamics to the control system itself. In simulation, neural network inference runs at a perfect 1000Hz. On real hardware (ARM Cortex-M4 at 216MHz), the same network achieves only 730Hz. This 27% frequency reduction has profound implications:
+A fundamental challenge we discovered is that the reality gap extends beyond dynamics to the control system itself. In simulation, neural network inference runs at a perfect 1000Hz. On real hardware (Arm Cortex-M4 at 216MHz), the same network achieves only 730Hz. This 27% frequency reduction has profound implications:
 
 + *Delay*: The controller responds 370μs later than simulated, accumulating phase errors
 + *Jitter*: Real inference time varies by ±50μs due to cache effects and interrupts
@@ -56,7 +58,7 @@ Neuroflight addressed these challenges through several key insights. First, *det
 
 === Compilation Pipeline <chap:architecture:neuroflight:compilation>
 
-The path from TensorFlow model to embedded execution required careful engineering involving several steps. *Graph freezing* converts the training graph to an inference-only representation, while *quantization* performs 8-bit fixed-point conversion with minimal accuracy loss. *AOT compilation* uses TensorFlow's XLA compiler to generate position-independent ARM code, and finally *firmware integration* employs custom linker scripts to place the network in CCM (Core-Coupled Memory) for predictable timing.
+The path from TensorFlow model to embedded execution required careful engineering involving several steps. *Graph freezing* converts the training graph to an inference-only representation, while *quantization* performs 8-bit fixed-point conversion with minimal accuracy loss. *#abbrv.AOT compilation* uses TensorFlow's #abbrv.XLA compiler to generate position-independent Arm code, and finally *firmware integration* employs custom linker scripts to place the network in #abbrv.CCM for predictable timing.
 
 This pipeline ensures that the deployed network behaves identically to its quantized simulation counterpart, eliminating one source of reality gap.
 
@@ -70,7 +72,7 @@ These limitations, particularly the timing-induced reality gap, motivated our su
 
 == Asymmetric Actor-Critic: Policy Minimization <chap:architecture:asymmetric_ac>
 
-Having established feasibility with Neuroflight, we next addressed the challenge of deploying more complex policies within embedded constraints. A key insight came from questioning a fundamental assumption in actor-critic reinforcement learning: why do actors and critics use the same network architectures?
+Having established feasibility with Neuroflight, we next addressed the challenge of deploying more complex policies within embedded constraints. A key insight came from questioning a fundamental assumption in actor-critic #abbrv.RL: why do actors and critics use the same network architectures?
 
 === The Symmetry Assumption <chap:architecture:asymmetric_ac:symmetry>
 
@@ -82,7 +84,7 @@ We hypothesized that this symmetry wastes precious embedded resources. Critics m
 
 To test this hypothesis, we designed experiments across multiple algorithms and environments:
 
-*Algorithms Tested*: DDPG, TD3, SAC, PPO
+*Algorithms Tested*: #abbrv.DDPG, #abbrv.TD3, #abbrv.SAC, #abbrv.PPO
 *Environments*: Pendulum, Reacher, Ant, HalfCheetah, Acrobot
 *Network Sizes*: From $|1,1|$ to $|400,300|$
 
@@ -101,10 +103,10 @@ The results validated our hypothesis decisively:
     columns: 4,
     align: center,
     [*Environment*], [*Algorithm*], [*Symmetric Size*], [*Asymmetric Actor*],
-    [Pendulum-v0], [DDPG], [$|16,16|$], [$|4,4|$ (88% reduction)],
-    [Reacher-v2], [SAC], [$|128,128|$], [$|16,16|$ (97% reduction)],
-    [HalfCheetah-v2], [TD3], [$|64,64|$], [$|32,32|$ (68% reduction)],
-    [Ant-v2], [TD3], [$|256,256|$], [$|32,32|$ (95% reduction)]
+    [Pendulum-v0], [#abbrv.DDPG], [$|16,16|$], [$|4,4|$ (88% reduction)],
+    [Reacher-v2], [#abbrv.SAC], [$|128,128|$], [$|16,16|$ (97% reduction)],
+    [HalfCheetah-v2], [#abbrv.TD3], [$|64,64|$], [$|32,32|$ (68% reduction)],
+    [Ant-v2], [#abbrv.TD3], [$|256,256|$], [$|32,32|$ (95% reduction)]
   ),
   caption: [Actor size reductions through asymmetric architectures. Percentages show weight reduction compared to symmetric baselines.]
 )
@@ -121,9 +123,9 @@ This difference in computational complexity naturally leads to different capacit
 
 === Impact on Embedded Deployment <chap:architecture:asymmetric_ac:impact>
 
-These reductions have profound implications for embedded systems. Testing on the STM32F722RE microcontroller (216 MHz ARM Cortex-M7 with 512KB flash):
+These reductions have profound implications for embedded systems. Testing on the STM32F722RE microcontroller (216 MHz Arm Cortex-M7 with 512KB flash):
 
-- PID controller baseline: 1000 Hz
+- #abbrv.PID controller baseline: 1000 Hz
 - $|128,128|$ network: ~400 Hz (60% reduction from baseline)
 - $|256,128|$ network: ~250 Hz with high variance and intermittent failures
 - Networks $|256,256|$ and larger: exceed memory capacity
@@ -146,7 +148,7 @@ Implementing compositional adaptation (as developed in @chap:adaptation_anchors)
 
 + *Distributed Computation*: The computational demands of adaptation exceed embedded capabilities, requiring a distributed architecture that maintains real-time guarantees.
 
-+ *Compositional Inference*: The system must evaluate both critics and compose their outputs using FPL operators within the 1ms control deadline.
++ *Compositional Inference*: The system must evaluate both critics and compose their outputs using #abbrv.FPL operators within the 1ms control deadline.
 
 === System Architecture Overview <chap:architecture:swannflight:overview>
 
@@ -175,17 +177,17 @@ Enabling neural network updates during flight without missing control cycles req
 
 *Double Buffering*: The system maintains two complete neural network models in memory. While one executes, updates are written to the other. A single pointer swap atomically switches between them.
 
-*CRC Validation*: All model updates include checksums verified at multiple stages. Corrupted updates are rejected before they can affect control.
+*#abbrv.CRC Validation*: All model updates include checksums verified at multiple stages. Corrupted updates are rejected before they can affect control.
 
 === Communication Architecture <chap:architecture:swannflight:communication>
 
 The distributed architecture requires reliable communication between the embedded platform and ground station. The implementation uses:
 
-*Hardware*: Digi XBee ZigBee-PRO radio modules connected via UART, chosen for their reliability and minimal power consumption (< 100mW).
+*Hardware*: Digi XBee ZigBee-PRO radio modules connected via #abbrv.UART, chosen for their reliability and minimal power consumption (< 100mW).
 
-*Protocol*: A three-phase handshake with CRC validation ensures data integrity:
+*Protocol*: A three-phase handshake with #abbrv.CRC validation ensures data integrity:
 + Initial handshake establishes connection and synchronizes state
-+ Data transfer includes per-packet CRC checks
++ Data transfer includes per-packet #abbrv.CRC checks
 + Final acknowledgment confirms successful reception
 
 *Data Flow*: 
@@ -207,8 +209,8 @@ In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the ex
 
 *Robust to Real-World Conditions*: This design handles:
 - Flying beyond radio range (exploration missions)
-- Urban environments with heavy RF interference  
-- Indoor operation where GPS and communication are blocked
+- Urban environments with heavy #abbrv.RF interference  
+- Indoor operation where #abbrv.GPS and communication are blocked
 - Adversarial scenarios where communication is jammed
 
 *Data Preservation*: The 1000-observation ring buffer ensures valuable flight data is preserved for eventual adaptation, even after hours of disconnected operation. No learning opportunity is lost due to communication issues.
@@ -221,7 +223,7 @@ In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the ex
     columns: 2,
     align: left,
     [*Component*], [*Specification*],
-    [Flight Controller], [STM32F722 (216 MHz ARM Cortex-M7)],
+    [Flight Controller], [STM32F722 (Arm Cortex-M7)],
     [Memory], [512KB Flash, 256KB RAM],
     [Communication], [XBee PRO (2.4GHz, 250kbps effective throughput)],
     [Additional Hardware Cost], [< \$50 (XBee module only)]
@@ -247,7 +249,7 @@ In SwaNNFlight, communication loss isn't a "failure" to be handled—it's the ex
 ==== Software Architecture <def:sw_architecture>
 The implementation required overcoming several technical challenges:
 
-*TensorFlow Lite Integration*: Custom modifications to TFLite enabled running on STM32 processors without OS support. This included implementing memory allocation strategies compatible with embedded constraints.
+*#abbrv.TFLite Integration*: Custom modifications to #abbrv.TFLite enabled running on STM32 processors without #abbrv.OS support. This included implementing memory allocation strategies compatible with embedded constraints.
 
 *FPL Operator Implementation*: Efficient fixed-point implementations of conjunction operators enable real-time composition of critic outputs within the 1ms deadline.
 

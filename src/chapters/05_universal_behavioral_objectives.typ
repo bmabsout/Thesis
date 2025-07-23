@@ -5,21 +5,21 @@
 
 The previous chapters established that fulfillment logic can give us a language for composing various objectives. However, we deemed the building of fulfillment values as a task-specific process, but some objectives are so widely applicable in robotics to merit special treatment.
 
-==== Universal Behavioral Objectives <def:ubo>
-These are behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks, domains, or application contexts. These include smoothness, stability, and robustness. When these objectives are quantified by fulfillments, they become *Universal Behavioral Fulfillments*.
+==== #abbrv.UBO_full <def:ubo>
+These are behavioral objectives that are desirable across virtually all robotics applications, transcending specific tasks, domains, or application contexts. These include smoothness, stability, and robustness. When such an objective is quantified by a fulfillment, it becomes a *#abbrv.UBF*.
 
 By focusing on a general class of objectives and defining ways to compute and optimize them, we get to reuse them across different applications. With enough use, they will be part of popular implementations of such learning algorithms.
 
-This chapter presents Conditioning for Action Policy Smoothness (CAPS) as a paradigm for this architectural approach. CAPS demonstrates how smoothness (a UBO, represented by $f_("smoothness")$ UBF) can be encouraged directly into policy architectures rather than relying on reward engineering or constant FPL inclusion. We show how this architectural approach complements FPL by handling fundamental behavioral requirements (UBFs) at the policy level while allowing FPL to focus on task-specific behavioral objective relationships.
+This chapter presents #abbrv.CAPS as a paradigm for this architectural approach. #abbrv.CAPS demonstrates how smoothness can be encouraged directly into policy architectures rather than relying on reward engineering. We show how this approach adds fundamental behavioral requirements at the policy level while allowing #abbrv.FPL to focus on task-specific behavioral objective relationships.
 
-*The Architectural vs. Compositional Distinction*: This approach reflects a key insight from our objective taxonomy (and the Behavioral Decomposition Principle from Chapter 3): different types of objectives (and their fulfillments) require different treatment mechanisms. Task-specific behavioral objectives (and their fulfillments) benefit from explicit composition through FPL, allowing practitioners to express complex logical relationships. Universal Behavioral Objectives (and their UBFs, like $f_("smoothness")$ UBF) should typically be promoted via the architecture itself, ensuring they are automatically encouraged without burdening the specification process. However, UBFs *can* still be part of an FPL formula if their interaction with other fulfillments needs explicit logical management in a particular context.
+*The Architectural vs. Compositional Distinction*: This approach reflects a key insight: different types of objectives (and their fulfillments) require different treatment mechanisms. Task-specific behavioral objectives (and their fulfillments) benefit from explicit composition through #abbrv.FPL, allowing practitioners to express complex logical relationships. #abbrv.UBF, like one for control smoothness, should typically be promoted via the optimization process itself, ensuring they are automatically encouraged without burdening the specification process. We can complement #(abbrv.FPL)-based specification with multiple #(abbrv.UBF) and their interaction with other fulfillments needs explicit logical management in a particular context.
 
 == Smoothness as a Universal Behavioral Objective <chap:ubo:smoothness>
 
 
 === The Problem of Oscillatory Control in Neural Policies <chap:ubo:smoothness:problem>
 
-A critical problem with the practical utility of controllers trained with deep Reinforcement Learning is the notable lack of smoothness in the actions learned by RL policies. This trend often presents itself in the form of control signal oscillation and can result in poor control, high power consumption, and undue system wear.
+A critical problem with the practical utility of controllers trained with deep #abbrv.RL is the notable lack of smoothness in the actions learned by #abbrv.RL policies. This trend often presents itself in the form of control signal oscillation and can result in poor control, high power consumption, and undue system wear.
 
 ==== Manifestations of Non-Smooth Control <def:manifestations_non_smooth>
 The problem of oscillatory control responses is particularly pronounced in continuous control applications where controller response can vary infinitely within the limits of acceptable outputs. This issue is further accentuated by the domain gap in sim-to-real transfer, where policies trained in simulation exhibit erratic behavior when deployed on real hardware.
@@ -37,22 +37,22 @@ The black-box nature of neural network-based controllers limits mitigation of ba
 
 - *Filtering Incompatibility*: Neural network policies are not typically trained with integrated filters, so deploying them with a filter changes the dynamical response expected by the network and can result in anomalous behavior. Our experiments showed that naively introducing filters can cause complete loss of control.
 
-- *Reward Engineering Limitations*: Attempts to condition the behavior of RL agents largely focus on engineering rewards to induce the desired behavior. However, relying on reward engineering for behavior conditioning requires networks to learn through indirect information, which may or may not be easily relatable to the outputs of the network. The process is tedious, unintuitive, and ultimately provides no guarantees that the desired behavior would be learned.
+- *Reward Engineering Limitations*: Attempts to condition the behavior of #abbrv.RL agents largely focus on engineering rewards to induce the desired behavior. However, relying on reward engineering for behavior conditioning requires networks to learn through indirect information, which may or may not be easily relatable to the outputs of the network. The process is tedious, unintuitive, and ultimately provides no guarantees that the desired behavior would be learned.
 
-- *Surrogate Function Issues*: Research has shown that RL algorithms can be very sensitive to learning hyperparameters, input normalization, and reward scales. The surrogate optimization functions learned by policy gradient algorithms can present a very different optimization space compared to the true value function, making it difficult to trust nuanced information transfer from environment rewards to action policy optimization.
+- *Surrogate Function Issues*: Research has shown that #abbrv.RL algorithms can be very sensitive to learning hyperparameters, input normalization, and reward scales. The surrogate optimization functions learned by policy gradient algorithms can present a very different optimization space compared to the true value function, making it difficult to trust nuanced information transfer from environment rewards to action policy optimization.
 
 === Conditioning for Action Policy Smoothness (CAPS) <chap:ubo:smoothness:caps>
 
-Smoothness represents the paradigmatic example of a universal behavioral objective. Its corresponding UBF, $f_("smoothness")$, would quantify the degree of achieved smoothness. Smooth control policies exhibit two key properties:
+Smoothness represents the paradigmatic example of a universal behavioral objective. Its corresponding #abbrv.UBF, $f_("smoothness")$, would quantify the degree of achieved smoothness. Smooth control policies exhibit two key properties:
 
 - *Temporal Smoothness*: Actions taken should be similar to previous actions to preserve smooth transitions between controller outputs over time. This prevents rapid oscillations that can destabilize systems or waste energy.
 
 - *Spatial Smoothness*: Similar states should map to similar actions, thus mitigating measurement noise and modeling uncertainties. This improves robustness to perturbations and enhances generalization.
 
-These properties are desirable across virtually all robotics applications, making smoothness (and its $f_("smoothness")$ UBF) an ideal candidate for architectural integration rather than task-specific reward engineering or mandatory inclusion in all FPL formulas.
+These properties are desirable across virtually all robotics applications, making smoothness (and its $f_("smoothness")$ #abbrv.UBF) an ideal candidate for architectural integration rather than task-specific reward engineering or mandatory inclusion in all #abbrv.FPL formulas.
 
 
-We introduce Conditioning for Action Policy Smoothness (CAPS), an effective yet intuitive regularization approach that promotes the UBF of smoothness directly at the policy level. CAPS operates by adding regularization terms to the policy optimization objective that encourage both temporal and spatial smoothness, thereby promoting a high $f_("smoothness")$.
+We introduce #abbrv.CAPS, an effective yet intuitive regularization approach that promotes the #abbrv.UBF of smoothness directly at the policy level. #abbrv.CAPS operates by adding regularization terms to the policy optimization objective that encourage both temporal and spatial smoothness, thereby promoting a high $f_("smoothness")$.
 
 === Mathematical Formulation <chap:ubo:smoothness:math>
 
@@ -86,7 +86,7 @@ This term mitigates noise in system dynamics by ensuring that policies take simi
 
 === Theoretical Foundation: Lipschitz Regularization <chap:ubo:smoothness:theory>
 
-CAPS can be understood as approximating Lipschitz regularization for neural network policies. The regularization terms effectively minimize the temporal and spatial Lipschitz constants of the policy functions around regions of interest.
+#abbrv.CAPS can be understood as approximating Lipschitz regularization for neural network policies. The regularization terms effectively minimize the temporal and spatial Lipschitz constants of the policy functions around regions of interest.
 
 A function $g$ has Lipschitz constant $K$ if:
 $ ||g(x) - g(y)|| <= K ||x - y|| $
@@ -96,17 +96,17 @@ for all $x, y$ in the domain. While computing exact Lipschitz constants for neur
 
 === Integration with Existing RL Algorithms <chap:ubo:smoothness:integration>
 
-CAPS is designed to be algorithm-agnostic and can be integrated with any policy gradient method. The regularization terms are computed using only the policy network outputs and do not require additional information from the environment during training.
+#abbrv.CAPS is designed to be algorithm-agnostic and can be integrated with any policy gradient method. The regularization terms are computed using only the policy network outputs and do not require additional information from the environment during training.
 
-*Actor-Critic Integration*: For actor-critic methods like DDPG, SAC, and TD3, CAPS modifies only the actor loss function. The critic networks continue to learn value functions based on the original reward signals, while the actor is regularized for smooth behavior.
+*Actor-Critic Integration*: For actor-critic methods like #abbrv.DDPG, #abbrv.SAC, and #abbrv.TD3, #abbrv.CAPS modifies only the actor loss function. The critic networks continue to learn value functions based on the original reward signals, while the actor is regularized for smooth behavior.
 
-*Policy Gradient Integration*: For methods like PPO and TRPO, CAPS can be integrated into the policy gradient computation, providing additional gradients that encourage smooth action mappings.
+*Policy Gradient Integration*: For methods like #abbrv.PPO and #abbrv.TRPO, #abbrv.CAPS can be integrated into the policy gradient computation, providing additional gradients that encourage smooth action mappings.
 
-*Computational Efficiency*: The computational overhead of CAPS is minimal, requiring only additional forward passes through the policy network to compute the regularization terms. The gradient computation follows standard backpropagation rules.
+*Computational Efficiency*: The computational overhead of #abbrv.CAPS is minimal, requiring only additional forward passes through the policy network to compute the regularization terms. The gradient computation follows standard backpropagation rules.
 
 == Empirical Validation Across Domains <chap:ubo:validation>
 
-We validated CAPS across multiple robotics domains, demonstrating consistent improvements in smoothness without significant degradation in task performance.
+We validated #abbrv.CAPS across multiple robotics domains, demonstrating consistent improvements in smoothness without significant degradation in task performance.
 
 === Toy Problem Validation <chap:ubo:validation:toy>
 
@@ -114,21 +114,21 @@ To illustrate that issues related to smooth control are not limited to complex d
 
 #figure(
   image("/figures/ToyFig_plusStateAction_v4.svg", width: 100%),
-  caption: [Comparison of state response and normalized state-action histograms on the toy problem for TD3 policy (left) vs CAPS-regularized TD3 policy (right). Actions of the regularized agent are much closer to the ideal linear mapping (green dotted line) while vanilla agents learn binary-like policies (red dotted line) that cause high-frequency oscillations.]
+  caption: [Comparison of state response and normalized state-action histograms on the toy problem for #abbrv.TD3 policy (left) vs #(abbrv.CAPS)-regularized #abbrv.TD3 policy (right). Actions of the regularized agent are much closer to the ideal linear mapping (green dotted line) while vanilla agents learn binary-like policies (red dotted line) that cause high-frequency oscillations.]
 ) <fig:caps_toy_problem_results>
 
-Standard RL agents learned highly aggressive control policies, akin to binary step responses, which resulted in oscillations as they attempted to maintain tracking. This oscillatory behavior learned early in training acts as a local minimum that agents fail to escape. CAPS-regularized agents, however, learned behavior much closer to the ideal linear mapping, naturally yielding smoother control.
+Standard #abbrv.RL agents learned highly aggressive control policies, akin to binary step responses, which resulted in oscillations as they attempted to maintain tracking. This oscillatory behavior learned early in training acts as a local minimum that agents fail to escape. #(abbrv.CAPS)-regularized agents, however, learned behavior much closer to the ideal linear mapping, naturally yielding smoother control.
 
 === OpenAI Gym Benchmarks <chap:ubo:validation:gym>
 
-We evaluated CAPS on four continuous control benchmarks: Pendulum-v0, LunarLanderContinuous-v2, Reacher-v2, and Ant-v2. Results show that CAPS consistently produces smoother policies across all tested algorithms (DDPG, SAC, TD3, PPO) and environments.
+We evaluated #abbrv.CAPS on four continuous control benchmarks: Pendulum-v0, LunarLanderContinuous-v2, Reacher-v2, and Ant-v2. Results show that #abbrv.CAPS consistently produces smoother policies across all tested algorithms (#abbrv.DDPG, #abbrv.SAC, #abbrv.TD3, #abbrv.PPO) and environments.
 
-*Abrasion Metric*: We define an abrasion measure based on the Fast Fourier Transform (FFT) frequency spectrum:
+*#abbrv.Ab Metric*: We define an abrasion measure based on the #abbrv.FFT frequency spectrum:
 $ "Ab" = (2)/(n f_s) sum_(i=1)^n M_i f_i $
 
 where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ is the sampling frequency. This metric provides the mean weighted normalized frequency, with lower values indicating smoother control.
 
-// *Comprehensive Results*: Table 1 shows detailed results across all tested algorithms and environments. CAPS agents are smoother than their vanilla counterparts on all tested tasks, with smoothness improvements ranging from 2x to 7x. We observe nominal performance hits on pendulum and lunar-lander tasks due to agents being slower at achieving goal states as they strive for smoother behavior. However, with Reacher and Ant environments, the improved smoothness actually enabled higher rewards.
+// *Comprehensive Results*: Table 1 shows detailed results across all tested algorithms and environments. #abbrv.CAPS agents are smoother than their vanilla counterparts on all tested tasks, with smoothness improvements ranging from 2x to 7x. We observe nominal performance hits on pendulum and lunar-lander tasks due to agents being slower at achieving goal states as they strive for smoother behavior. However, with Reacher and Ant environments, the improved smoothness actually enabled higher rewards.
 #pagebreak()
 #figure(
   {
@@ -158,7 +158,7 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     table.cell(colspan: 2, align: center)[*Reacher-v2*],
     table.cell(colspan: 2, align: center)[*Ant-v2*],
     table.hline(start: 1, stroke: 0.5pt),
-    [], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓], [Reward ↑], [Ab $dot 10^3$ ↓],
+    [], [Reward ↑], [#abbrv.Ab $dot 10^3$ ↓], [Reward ↑], [#abbrv.Ab $dot 10^3$ ↓], [Reward ↑], [#abbrv.Ab $dot 10^3$ ↓], [Reward ↑], [#abbrv.Ab $dot 10^3$ ↓],
     table.hline(stroke: 1pt),
     
     // Data rows
@@ -178,7 +178,7 @@ where $M_i$ is the amplitude of the $i$-th frequency component $f_i$ and $f_s$ i
     [PPO+CAPS], table.cell(fill: rgb("#ccffcc"))[*-590.35 \ ± 295.86*], table.cell(fill: rgb("#ccffcc"))[*8.09 \ ± 2.13*], table.cell(fill: rgb("#ffcccc"))[140.71 \ ± 23.03], table.cell(fill: rgb("#ccffcc"))[*10.0 \ ± 2.92*], table.cell(fill: rgb("#ffcccc"))[-4.69 \ ± 2.05], table.cell(fill: rgb("#ccffcc"))[*3.38 \ ± 0.36*], table.cell(fill: rgb("#ccffcc"))[*4256.93 \ ± 570.88*], table.cell(fill: rgb("#ccffcc"))[*1.60 \ ± 0.26*],
     table.hline(stroke: 1pt),
   ))},
-  caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower Ab values) across all algorithms and environments. Bold values indicate improvements over the state of the art]
+  caption: [Comparing rewards and abrasion scores on OpenAI Gym benchmarks. CAPS consistently improves smoothness (lower #abbrv.Ab values) across all algorithms and environments. Bold values indicate improvements over the state of the art]
 ) <tab:caps_gym_benchmarks_results>
 Interestingly, soft-policies such as PPO and SAC appear to learn relatively smoother policies on their own, which we hypothesize is due to stochasticity in the policies allowing for improved exploration of the state and action spaces.
 
@@ -188,14 +188,14 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
 
 *Experimental Setup*: We trained controllers to follow pilot input desired rates of angular velocity on three axes of rotation. The main problem with baseline Neuroflight was that, despite achieving decent tracking in simulation, trained agents presented with significant high-frequency control signal oscillations, causing motors to overheat and making drones unflyable. Only a handful of baseline agents were flight-worthy, while most failed to transfer well to real hardware.
 
-*CAPS vs. Baseline Comparison*: By stripping training rewards down to basic tracking error components and comparing agents trained with CAPS against those without, we demonstrated clear improvements in motor actuation smoothness.
+*#abbrv.CAPS vs. Baseline Comparison*: By stripping training rewards down to basic tracking error components and comparing agents trained with #abbrv.CAPS against those without, we demonstrated clear improvements in motor actuation smoothness.
 
 #figure(
   image("/figures/withVSwoCAPS_v3.svg" ),
-  caption: [PPO trained for quadrotor control with just tracking error reward compared against the same algorithm with CAPS optimization. Note the significant reduction in motor signal amplitude and oscillation, despite maintaining similar tracking performance. CAPS agents were flight-worthy while vanilla agents posed significant risk.]
+  caption: [PPO trained for quadrotor control with just tracking error reward compared against the same algorithm with #abbrv.CAPS optimization. Note the significant reduction in motor signal amplitude and oscillation, despite maintaining similar tracking performance. #abbrv.CAPS agents were flight-worthy while vanilla agents posed significant risk.]
 ) <fig:caps_quadrotor_power>
 
-*Training Efficiency*: CAPS training completed successfully within 1 million time-steps, constituting a 90% reduction in data intensity and 8× wall-time speedup over baseline Neuroflight approaches.
+*Training Efficiency*: #abbrv.CAPS training completed successfully within 1 million time-steps, constituting a 90% reduction in data intensity and 8× wall-time speedup over baseline Neuroflight approaches.
 
 *Quantitative Flight Performance*: Table 2 compares performance metrics between different controllers on both simulated validation and real test flights.
 
@@ -204,80 +204,80 @@ The most compelling validation of CAPS comes from real-world quadrotor control e
     set par(leading: 0.5em)
   table(
     columns: 4,
-    align: center,
-    [*Agent*], [*MAE (deg/s) ↓*], [*Current (Amps) ↓*], [*Abrasion $(times 10^3)$ ↓ *],
+    align: center+horizon,
+    [*Agent*], [*#abbrv.MAE_short (deg/s) ↓*], [*Current (Amps) ↓*], [*#abbrv.Ab_long $(times 10^3)$ ↓ *],
     table.hline(),
     table.cell(colspan: 4, align: center)[*Simulated Validation*],
     table.hline(),
-    [PID], [11.41], [-NA-], [0.29],
+    [#abbrv.PID], [11.41], [-NA-], [0.29],
     [Neuroflight], [7.30], [-NA-], [3.23],
-    [PPO + Temporal], [11.36 \ ± 2.19], [-NA-], [0.056 \ ± 0.007],
-    [PPO + Spatial], [16.66 \ ± 4.57], [-NA-], [0.021 \ ± 0.007],
-    [PPO + CAPS], [*9.26 \ ± 1.03*], [-NA-], [*0.021 \ ± 0.012*],
+    [#abbrv.PPO + Temporal], [11.36 ± 2.19], [-NA-], [0.056 ± 0.007],
+    [#abbrv.PPO + Spatial], [16.66 ± 4.57], [-NA-], [0.021 ± 0.007],
+    [#abbrv.PPO + #abbrv.CAPS], [*9.26 ± 1.03*], [-NA-], [*0.021 ± 0.012*],
     table.hline(),
     table.cell(colspan: 4, align: center)[*On-Platform Live Test-Flights*],
     table.hline(),
-    [PID], [5.01], [8.07], [0.4],
+    [#abbrv.PID], [5.01], [8.07], [0.4],
     [Neuroflight], [5.19], [22.87], [4.3],
-    [PPO + Temporal], [7.82 \ ± 2.42], [7.59 \ ± 2.24], [1.10 \ ± 0.32],
-    [PPO + Spatial], [14.85 \ ± 6.85], [4.59 \ ± 2.70], [0.37 \ ± 0.22],
-    [PPO + CAPS], [*9.28 \ ± 2.31*], [*4.86 \ ± 2.32*], [*0.16 \ ± 0.02*]
+    [#abbrv.PPO + Temporal], [7.82 ± 2.42], [7.59 ± 2.24], [1.10 ± 0.32],
+    [#abbrv.PPO + Spatial], [14.85 ± 6.85], [4.59 ± 2.70], [0.37 ± 0.22],
+    [#abbrv.PPO + #abbrv.CAPS], [*9.28 ± 2.31*], [*4.86 ± 2.32*], [*0.16 ± 0.02*]
   )},
-  caption: [Flight performance comparison showing Mean Absolute Error (MAE), current consumption, and abrasion (Ab). CAPS achieves the best balance of tracking accuracy, power efficiency, and smoothness. Variance statistics computed over 10 independently trained agents.]
+  caption: [Flight performance comparison showing #abbrv.MAE, current consumption, and abrasion (Ab). #abbrv.CAPS achieves the best balance of tracking accuracy, power efficiency, and smoothness. Variance statistics computed over 10 independently trained agents.]
 ) <tab:caps_quadrotor_quantitative_results>
 
-*Power Consumption Analysis*: CAPS-optimized agents consumed significantly less power (4.86 \ ± 2.32 Amps) compared to Neuroflight (22.87 Amps) and even outperformed the PID controller (8.07 Amps), demonstrating that neural network controllers can exceed classical control efficiency when properly regularized.
+*Power Consumption Analysis*: #(abbrv.CAPS)-optimized agents consumed significantly less power (4.86 ± 2.32 Amps) compared to Neuroflight (22.87 Amps) and even outperformed the #abbrv.PID controller (8.07 Amps), demonstrating that neural network controllers can exceed classical control efficiency when properly regularized.
 
-*Frequency Analysis*: Figure 3 shows the dramatic difference in control signal frequency content between CAPS and baseline approaches.
+*Frequency Analysis*: @fig:fourier_caps_v_neuroflight shows the dramatic difference in control signal frequency content between #abbrv.CAPS and baseline approaches.
 
 #figure(
   image("/figures/fourier_vs_motors_v3.svg", width: 100%),
-  caption: [Comparison of motor usage during flight and corresponding FFTs demonstrate significant improvement in smoothness with CAPS. High frequency components are practically eliminated compared to Neuroflight, which falls victim to the domain gap between simulated training and real flight. CAPS demonstrates robustness to this shift, contributing to 100% flight-worthy agents versus cherry-picking required for baselines.]
-)
+  caption: [Comparison of motor usage during flight and corresponding #(abbrv.FFT)s demonstrate significant improvement in smoothness with #abbrv.CAPS. High frequency components are practically eliminated compared to Neuroflight, which falls victim to the domain gap between simulated training and real flight. #abbrv.CAPS demonstrates robustness to this shift, contributing to 100% flight-worthy agents versus cherry-picking required for baselines.]
+) <fig:fourier_caps_v_neuroflight>
 
-*Reproducibility Achievement*: Critically, CAPS enabled 100% repeatability in the training pipeline—all 10 agents trained with CAPS transferred successfully to the drone, demonstrating the added robustness offered by the regularization approach. This contrasts sharply with baseline approaches that required careful selection of viable controllers.
+*Reproducibility Achievement*: Critically, #abbrv.CAPS enabled 100% repeatability in the training pipeline—all 10 agents trained with #abbrv.CAPS transferred successfully to the drone, demonstrating the added robustness offered by the regularization approach. This contrasts sharply with baseline approaches that required careful selection of viable controllers.
 
 === Sim-to-Real Transfer Analysis <chap:ubo:validation:sim2real>
 
-CAPS demonstrates particular value in sim-to-real transfer scenarios, where the smoothness learned during simulation training transfers effectively to real-world deployment.
+#abbrv.CAPS demonstrates particular value in sim-to-real transfer scenarios, where the smoothness learned during simulation training transfers effectively to real-world deployment.
 
-*Domain Gap Robustness*: The architectural nature of CAPS regularization makes it robust to domain shifts. Unlike reward-based approaches that may not transfer well due to dynamics differences, CAPS constraints on policy smoothness remain relevant across domains.
+*Domain Gap Robustness*: The architectural nature of #abbrv.CAPS regularization makes it robust to domain shifts. Unlike reward-based approaches that may not transfer well due to dynamics differences, #abbrv.CAPS constraints on policy smoothness remain relevant across domains.
 
-*Consistent Performance*: All agents trained with CAPS successfully transferred to real hardware, demonstrating 100% repeatability compared to the cherry-picking required for baseline approaches.
+*Consistent Performance*: All agents trained with #abbrv.CAPS successfully transferred to real hardware, demonstrating 100% repeatability compared to the cherry-picking required for baseline approaches.
 
-*Power Efficiency*: The smooth control signals produced by CAPS-trained agents resulted in significantly lower power consumption on real hardware, extending flight times and reducing thermal stress on components.
+*Power Efficiency*: The smooth control signals produced by #(abbrv.CAPS)-trained agents resulted in significantly lower power consumption on real hardware, extending flight times and reducing thermal stress on components.
 
 === Integration Into Policy Optimization <chap:ubo:validation:integration_policy>
 
-The success of CAPS demonstrates broader principles for integrating universal behavioral objectives into policy architectures.
+The success of #abbrv.CAPS demonstrates broader principles for integrating universal behavioral objectives into policy architectures.
 
 ==== Direct Policy Conditioning vs. Reward Engineering <def:direct_vs_reward>
-CAPS represents a fundamental shift from reward engineering to direct policy conditioning. Rather than trying to encode desired behaviors through complex reward functions, we condition the policy optimization process directly.
+#abbrv.CAPS represents a fundamental shift from reward engineering to direct policy conditioning. Rather than trying to encode desired behaviors through complex reward functions, we condition the policy optimization process directly.
 
-*Advantages of Direct Conditioning*: Direct policy conditioning offers several key advantages over traditional reward engineering approaches. The relationship between regularization terms and resulting behavior (and thus the UBF) is direct and interpretable, providing *transparency* in how the system achieves desired outcomes. This approach also demonstrates superior *robustness*, as architectural constraints promoting UBFs are less sensitive to domain shifts than reward-based approaches that may not transfer well between simulation and real-world deployment. From an *efficiency* perspective, simpler reward structures or FPL formulas can be used when UBFs for universal objectives are handled architecturally, reducing the complexity of the specification process. Finally, direct constraints provide stronger *guarantees* about resulting behavior than indirect reward signals, which may be subject to the vagaries of the optimization process.
+*Advantages of Direct Conditioning*: Direct policy conditioning offers several key advantages over traditional reward engineering approaches. The relationship between regularization terms and resulting behavior (and thus the #abbrv.UBF) is direct and interpretable, providing *transparency* in how the system achieves desired outcomes. This approach also demonstrates superior *robustness*, as architectural constraints promoting #(abbrv.UBF)s are less sensitive to domain shifts than reward-based approaches that may not transfer well between simulation and real-world deployment. From an *efficiency* perspective, simpler reward structures or #abbrv.FPL formulas can be used when #(abbrv.UBF)s for universal objectives are handled architecturally, reducing the complexity of the specification process. Finally, direct constraints provide stronger *guarantees* about resulting behavior than indirect reward signals, which may be subject to the vagaries of the optimization process.
 
-*When to Use Direct Conditioning*: Universal behavioral objectives that apply across tasks and domains are ideal candidates for architectural integration. Task-specific objectives are better handled through FPL formulations.
+*When to Use Direct Conditioning*: Universal behavioral objectives that apply across tasks and domains are ideal candidates for architectural integration. Task-specific objectives are better handled through #abbrv.FPL formulations.
 
 === Design Guidelines for Universal Objectives <chap:ubo:validation:guidelines>
 
-Based on our experience with CAPS, we propose the following guidelines for identifying and integrating universal behavioral objectives (and their UBFs):
+Based on our experience with #abbrv.CAPS, we propose the following guidelines for identifying and integrating universal behavioral objectives (and their #(abbrv.UBF)s):
 
-*Identification Criteria*: To identify suitable universal behavioral objectives, several key criteria must be met. First, the UBO must apply across multiple tasks and domains, demonstrating its universal nature rather than being specific to particular applications. Second, the UBO should be expressible in terms of policy behavior (and thus quantifiable as a UBF) rather than environment state, ensuring it can be directly integrated into policy optimization. Third, the UBO must contribute meaningfully to generally important goals such as safety, efficiency, or robustness, providing clear value beyond task-specific performance. Finally, the UBO should be measurable using only policy inputs and outputs, avoiding dependencies on complex environmental measurements or external sensors.
+*Identification Criteria*: To identify suitable universal behavioral objectives, several key criteria must be met. First, the #abbrv.UBO must apply across multiple tasks and domains, demonstrating its universal nature rather than being specific to particular applications. Second, the #abbrv.UBO should be expressible in terms of policy behavior (and thus quantifiable as a #abbrv.UBF) rather than environment state, ensuring it can be directly integrated into policy optimization. Third, the #abbrv.UBO must contribute meaningfully to generally important goals such as safety, efficiency, or robustness, providing clear value beyond task-specific performance. Finally, the #abbrv.UBO should be measurable using only policy inputs and outputs, avoiding dependencies on complex environmental measurements or external sensors.
 
-*Integration Strategies*: Several approaches can be employed to integrate universal behavioral objectives into policy architectures. *Regularization* involves adding penalty terms to the policy optimization objective, as demonstrated by CAPS. *Architectural constraints* build the desired behavior directly into the network architecture itself, ensuring it cannot be circumvented during optimization. *Preprocessing and postprocessing* approaches apply transformations to inputs or outputs to encourage desired behaviors without modifying the core optimization process. Finally, *hybrid approaches* combine multiple integration strategies for complex objectives that may benefit from multiple complementary mechanisms.
+*Integration Strategies*: Several approaches can be employed to integrate universal behavioral objectives into policy architectures. *Regularization* involves adding penalty terms to the policy optimization objective, as demonstrated by #abbrv.CAPS. *Architectural constraints* build the desired behavior directly into the network architecture itself, ensuring it cannot be circumvented during optimization. *Preprocessing and postprocessing* approaches apply transformations to inputs or outputs to encourage desired behaviors without modifying the core optimization process. Finally, *hybrid approaches* combine multiple integration strategies for complex objectives that may benefit from multiple complementary mechanisms.
 
 === Current Limitations <chap:ubo:validation:limitations>
 
 *Parameter Sensitivity*: The regularization weights $lambda_T$ and $lambda_S$ require tuning for each domain, though this is generally easier than reward engineering.
 
-*Performance Trade-offs*: In some cases, CAPS may lead to slightly more conservative behavior, trading some performance for smoothness. This trade-off is usually acceptable but should be considered in performance-critical applications.
+*Performance Trade-offs*: In some cases, #abbrv.CAPS may lead to slightly more conservative behavior, trading some performance for smoothness. This trade-off is usually acceptable but should be considered in performance-critical applications.
 
 
 == Smoothness as a Universal Behavioral Fulfillment <chap:ubo:smoothness_fulfillment>
 
-While CAPS identifies the correct quantities to regularize—temporal and spatial continuity—its formulation as a linear penalty ($J - lambda_T L_T - lambda_S L_S$) falls short of the principled composition offered by FPL. A linear combination forces an often unintuitive and brittle trade-off, where the weights $lambda$ lack clear semantic meaning. We can reformulate the core ideas of CAPS within the fulfillment framework to create a more robust and interpretable measure of smoothness.
+While #abbrv.CAPS identifies the correct quantities to regularize—temporal and spatial continuity—its formulation as a linear penalty ($J - lambda_T L_T - lambda_S L_S$) falls short of the principled composition offered by #abbrv.FPL. A linear combination forces an often unintuitive and brittle trade-off, where the weights $lambda$ lack clear semantic meaning. We can reformulate the core ideas of #abbrv.CAPS within the fulfillment framework to create a more robust and interpretable measure of smoothness.
 
-This involves transforming the smoothness penalties from CAPS into *Universal Behavioral Fulfillments* (UBFs). Instead of subtracting a penalty, we define fulfillment functions that map the degree of smoothness to the $[0,1]$ range, where 1 represents perfect smoothness. An exponential decay function is a natural fit for this transformation:
+This involves transforming the smoothness penalties from #abbrv.CAPS into *#abbrv.UBF* (UBFs). Instead of subtracting a penalty, we define fulfillment functions that map the degree of smoothness to the $[0,1]$ range, where 1 represents perfect smoothness. An exponential decay function is a natural fit for this transformation:
 
 *Temporal Smoothness Fulfillment*:
   $ phi_("temporal")(st, stp1) = exp(-alpha_(T) ||pi_(theta)(st) - pi_(theta)(stp1)||) $
@@ -287,22 +287,22 @@ This involves transforming the smoothness penalties from CAPS into *Universal Be
 
 Here, the parameters $alpha_T$ and $alpha_S$ act as sensitivity knobs. They are not arbitrary weights but have a clear semantic role: they define how quickly the fulfillment value decays as the policy's output becomes less smooth. This allows a designer to tune the functions to match their intuitive judgment, as described in the fulfillment guide (@chap:encoding_intentionality:fulfillment_guide).
 
-These UBFs, provided directly by the policy architecture, can then be integrated into any FPL specification. We can define a single, composite smoothness fulfillment:
+These UBFs, provided directly by the policy architecture, can then be integrated into any #abbrv.FPL specification. We can define a single, composite smoothness fulfillment:
 $ phi_("smoothness") = phi_("temporal") and^0 phi_("spatial") $
 
-This unified $phi_("smoothness")$ term can then be treated as a standard objective within a larger FPL formula, allowing a designer to specify its relationship to other task-specific goals. For instance, a common pattern would be to require smooth operation *while* achieving a task:
+This unified $phi_("smoothness")$ term can then be treated as a standard objective within a larger #abbrv.FPL formula, allowing a designer to specify its relationship to other task-specific goals. For instance, a common pattern would be to require smooth operation *while* achieving a task:
 
 $ phi_"total" = phi_("smoothness") and^p f_"task" $
 
-This approach elevates smoothness from a simple penalty term to a first-class citizen in the objective specification. By using FPL's conjunctive operators (like the geometric mean, $p=0$), the optimization naturally encourages satisfying *both* objectives, avoiding the pitfalls of linear scalarization where one objective can be sacrificed for another. This directly aligns with the methodology presented in @chap:encoding_intentionality:fulfillment_guide, where multiplicative composition was shown to reduce training variance and improve performance by transforming a set of linearly-weighted penalties into a single, well-formed FPL objective. This reframing of CAPS is a powerful example of how universal behavioral objectives can be integrated into a principled design framework.
+This approach elevates smoothness from a simple penalty term to a first-class citizen in the objective specification. By using #abbrv.FPL's conjunctive operators (like the geometric mean, $p=0$), the optimization naturally encourages satisfying *both* objectives, avoiding the pitfalls of linear scalarization where one objective can be sacrificed for another. This directly aligns with the methodology presented in @chap:encoding_intentionality:fulfillment_guide, where multiplicative composition was shown to reduce training variance and improve performance by transforming a set of linearly-weighted penalties into a single, well-formed #abbrv.FPL objective. This reframing of #abbrv.CAPS is a powerful example of how universal behavioral objectives can be integrated into a principled design framework.
 
 === Empirical Validation: The Benefits of Compositional Smoothness <chap:ubo:smoothness_fulfillment:validation>
 
-The principled reframing of smoothness penalties as fulfillments is not merely a matter of theoretical elegance; it yields concrete, empirical benefits in training stability and performance. As demonstrated in @chap:encoding_intentionality:fulfillment_guide, moving from linear penalty combination to a multiplicative, FPL-based composition significantly improves the consistency of the learning process.
+The principled reframing of smoothness penalties as fulfillments is not merely a matter of theoretical elegance; it yields concrete, empirical benefits in training stability and performance. As demonstrated in @chap:encoding_intentionality:fulfillment_guide, moving from linear penalty combination to a multiplicative, #(abbrv.FPL)-based composition significantly improves the consistency of the learning process.
 
 To validate this, an ablation study was conducted comparing two methodologies for training a quadrotor flight controller:
-1.  *Linear Composition*: An agent trained using a standard DDPG approach where smoothness penalties were linearly subtracted from the task reward, akin to the original CAPS formulation.
-2.  *FPL Composition*: An agent trained using the *DDPG×* approach, where task and smoothness objectives were first transformed into fulfillments and then composed using the FPL geometric mean operator ($and^0$).
+1.  *Linear Composition*: An agent trained using a standard #abbrv.DDPG approach where smoothness penalties were linearly subtracted from the task reward, akin to the original #abbrv.CAPS formulation.
+2.  *FPL Composition*: An agent trained using the *#abbrv.DDPG* approach, where task and smoothness objectives were first transformed into fulfillments and then composed using the #abbrv.FPL geometric mean operator ($and^0$).
 
 The results of this comparison are striking. As shown in the figure below, the agents trained with linear composition exhibited high variance across multiple independent training runs. Some seeds produced viable controllers, while others failed entirely, demonstrating the brittleness of tuning via linear weights. In contrast, the agents trained with FPL-based multiplicative composition showed significantly reduced variance, leading to a much more reliable and repeatable training process. Every agent consistently learned a high-performance policy.
 
@@ -316,9 +316,9 @@ The results of this comparison are striking. As shown in the figure below, the a
   caption: [A comparison of learning curves for agents trained with linear vs. FPL-based composition. The linear approach (left) demonstrates high variance across multiple seeds. In contrast, the FPL-based approach using multiplicative composition (right) shows significantly lower variance, leading to more consistent and reliable training outcomes while achieving comparable or superior final performance.]
 ) <fig:fpl_vs_linear_composition>
 
-This evidence strongly supports the case for treating universal behavioral objectives like smoothness as fulfillments within the FPL framework. The use of principled composition operators like the geometric mean is not just more expressive; it leads to a more stable optimization landscape, reducing the reliance on brittle hyperparameter tuning and increasing the probability of successfully training a well-behaved agent.
+This evidence strongly supports the case for treating universal behavioral objectives like smoothness as fulfillments within the #abbrv.FPL framework. The use of principled composition operators like the geometric mean is not just more expressive; it leads to a more stable optimization landscape, reducing the reliance on brittle hyperparameter tuning and increasing the probability of successfully training a well-behaved agent.
 
-== Learning Stability as a UBF <chap:ubo:stability_fulfillment>
+== Learning Stability as a #abbrv.UBF <chap:ubo:stability_fulfillment>
 
 Just as smoothness is a near-universal requirement for successful robotic control, stability tends to also be a common requirement. In an effort to present tracking a trajectory represented in a more fundamental fashion that a reward for tracking error, we found that stability was an adequate goal. A controller that performs its task but is unstable is not only unreliable but dangerous. This makes stability a prime candidate for treatment as a Universal Behavioral Objective. The journey to formalizing stability within the fulfillment framework is not just an academic exercise; it was the original discovery path that led to the development of Fulfillment Priority Logic itself.
 
@@ -349,7 +349,7 @@ This fundamental issue leads to secondary problems:
 
 === The Solution: Stability as a Robust, Composable Fulfillment <chap:ubo:stability_fulfillment:solution>
 
-The solution was to develop a completely new formulation grounded in the principles of FPL. This approach replaces the opaque, penalty-based loss with a set of semantically meaningful and composable fulfillment functions, allowing us to directly optimize for stability in a way that provides formal guarantees.
+The solution was to develop a completely new formulation grounded in the principles of #abbrv.FPL. This approach replaces the opaque, penalty-based loss with a set of semantically meaningful and composable fulfillment functions, allowing us to directly optimize for stability in a way that provides formal guarantees.
 
 ==== Step 1: Architecting a Bounded Lyapunov Function <def:bounded_lyapunov>
 
@@ -373,7 +373,7 @@ With a bounded Lyapunov function, we can now design a set of robust fulfillment 
 
 ==== Step 3: Composition and the Minimum Fulfillment Guarantee <def:composition_guarantee>
 
-Herein lies the "magic" of the FPL approach. We can now combine these individual fulfillments using a single, conjunctive FPL operator:
+Herein lies the "magic" of the #abbrv.FPL approach. We can now combine these individual fulfillments using a single, conjunctive #abbrv.FPL operator:
 
 $ f_"lyapunov" = f_"decreasing" and^p f_"positive" and^p f_"zero" $
 
@@ -399,10 +399,10 @@ To overcome this, we introduced an additional "steering" objective, $f_"steering
 
 $ J = pmean(p)(f_"lyapunov"^(1), ..., f_"lyapunov"^(N)) and^p f_"steering" $
 
-This ability to seamlessly add another semantic objective to guide the learning process, without destabilizing the core stability guarantees, highlights the power and flexibility of the FPL framework.
+This ability to seamlessly add another semantic objective to guide the learning process, without destabilizing the core stability guarantees, highlights the power and flexibility of the #abbrv.FPL framework.
 
-With this complete formulation, we validated the approach on the classic `Pendulum-v1` environment. The results were remarkable. The FPL-based agent was able to learn a stable controller that successfully balanced the pendulum from a random starting position in approximately *one minute* of training time. This represents an order-of-magnitude improvement over traditional RL methods and demonstrates the power of combining principled objective composition with formal stability guarantees.// #figure(
+With this complete formulation, we validated the approach on the classic `Pendulum-v1` environment. The results were remarkable. The #(abbrv.FPL)-based agent was able to learn a stable controller that successfully balanced the pendulum from a random starting position in approximately *one minute* of training time. This represents an order-of-magnitude improvement over traditional RL methods and demonstrates the power of combining principled objective composition with formal stability guarantees.// #figure(
 //   image("/figures/pendulum_lyapunov.svg", width: 60%),
-//   caption: [A snapshot from the `Pendulum-v1` environment. Using the FPL-based Lyapunov formulation, the agent learns to robustly swing up and stabilize the pendulum in roughly one minute of training.]
+//   caption: [A snapshot from the `Pendulum-v1` environment. Using the #(abbrv.FPL)-based Lyapunov formulation, the agent learns to robustly swing up and stabilize the pendulum in roughly one minute of training.]
 // ) <fig:pendulum_lyapunov>
 

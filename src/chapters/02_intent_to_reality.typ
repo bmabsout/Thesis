@@ -13,7 +13,7 @@ This chapter introduces a formal taxonomy to deconstruct this gap. By dissecting
 
 == Defining Behavior: Trajectory Sets and Enrichments <chap:intent_to_reality:behavior>
 
-Before describing the gaps, we must first formalize what we mean by "behavior". While the term is often left undefined in the literature, it is fruitful to define it precisely within the context of MDPs.
+Before describing the gaps, we must first formalize what we mean by "behavior". While the term is often left undefined in the literature, it is fruitful to define it precisely within the context of #(abbrv.MDP)s.
 
 ==== Behavior <def:behavior>
 We define a *behavior* $beta$ as a set of trajectories, where each trajectory $tau$ is a sequence of state-action tuples:
@@ -23,9 +23,9 @@ This definition allows us to treat behavior as a formal mathematical object. The
 
 + *Behavioral Metrics:* By attaching a *metric* $d(beta_1, beta_2)$ to pairs of behaviors, we can quantify the difference between them. This is crucial for measuring the simulation-to-reality gap, where we compare the behavior in simulation $beta_"sim"$ to the behavior in reality $beta_"real"$. Many imitation learning approaches can be understood as minimizing different kinds of metrics between the learned policy's behavior and an expert's. Instead of simple per-action losses, modern methods minimize sophisticated trajectory-level metrics such as Chamfer distance @chamfer_distance or distributional divergences like f-divergences @fdivergence to better capture behavioral similarity
 
-+ *Probabilistic Views:* By enriching a behavior with a *probability distribution* $P(tau | pi)$, we can model the likelihood of different trajectories occurring under a given policy $pi$. This perspective is the foundation of methods like Behavioral Cloning (BC), which seeks to learn a policy that reproduces the trajectory distribution from a set of expert demonstrations.
++ *Probabilistic Views:* By enriching a behavior with a *probability distribution* $P(tau | pi)$, we can model the likelihood of different trajectories occurring under a given policy $pi$. This perspective is the foundation of methods like #abbrv.BC, which seeks to learn a policy that reproduces the trajectory distribution from a set of expert demonstrations.
 
-+ *Value-Centric RL:* For any non-trivial robotic task, defining the set of all "good" behaviors is computationally intractable. The dominant paradigm in Reinforcement Learning provides a powerful, practical solution to this problem. Instead of defining the set of good behaviors directly, it creates a tractable proxy: enriching each potential trajectory $tau$ with a scalar *value*, defined via a function of a transition tuple forming the expected discounted return $expect [sum gamma^t rt | tau]$. The goal of an RL algorithm is then to find a policy whose behavior $beta$ maximizes this value. This reduces the intractable problem of enumerating good behaviors to the tractable one of finding a reward function that induces the desired behavior. However, because this structure leaves the value unbounded, it provides only a *relative* measure of performance; it can tell us if one behavior is better than another, but not whether a given behavior is good or bad at following our objectives in an absolute sense.
++ *Value-Centric #abbrv.RL:* For any non-trivial robotic task, defining the set of all "good" behaviors is computationally intractable. The dominant paradigm in #abbrv.RL provides a powerful, practical solution to this problem. Instead of defining the set of good behaviors directly, it creates a tractable proxy: enriching each potential trajectory $tau$ with a scalar *value*, defined via a function of a transition tuple forming the expected discounted return $expect [sum gamma^t rt | tau]$. The goal of an #abbrv.RL algorithm is then to find a policy whose behavior $beta$ maximizes this value. This reduces the intractable problem of enumerating good behaviors to the tractable one of finding a reward function that induces the desired behavior. However, because this structure leaves the value unbounded, it provides only a *relative* measure of performance; it can tell us if one behavior is better than another, but not whether a given behavior is good or bad at following our objectives in an absolute sense.
 
 + *Fulfillment-Centric Design:* This thesis introduces a new enrichment: the *fulfillment function* $F(beta)$, which we formally define and develop in @chap:encoding_intentionality. In contrast to an unbounded value, fulfillment maps a behavior to a normalized score in $[0, 1]$, capturing the degree to which it satisfies a structured, logical objective. This provides a richer, more semantically grounded representation of policy performance, enabling absolute judgments about whether a behavior is satisfactory.
 
@@ -35,8 +35,8 @@ By defining behavior in this way, we create a unified lens from which to analyze
 
 We can formalize the *Intent-to-Reality Gap* by treating the development pipeline as a sequence of functional transformations. This allows us to precisely define each gap as an error introduced by these transformations.
 
-Let's define the core Encode-Optimize-Execute (EOE) operators in the pipeline:
-#note(gradient: primary_gradient, title: [==== EOE Operators <def:eoe_operators>])[ 
+Let's define the core #abbrv.EOE_full operators in the pipeline:
+#note(gradient: primary_gradient, title: [==== #abbrv.EOE_full Operators <def:eoe_operators>])[ 
   #table(
     columns: (auto, auto, auto),
     row-gutter: 2em,
@@ -55,9 +55,9 @@ Let's define the core Encode-Optimize-Execute (EOE) operators in the pipeline:
   )
 ] 
 
-=== Instantiating EOE with Reinforcement Learning <chap:intent_to_reality:gaps:eoe_rl>
+=== Instantiating #abbrv.EOE with Reinforcement Learning <chap:intent_to_reality:gaps:eoe_rl>
 
-When we instantiate the `opt` operation to be RL optimization, `Spec` becomes the set of reward functions. Setting the context to a simulator, the operation is in that case the familiar RL pipeline, with $pi = #`RL`_("sim")("reward function")$.
+When we instantiate the `opt` operation to be #abbrv.RL optimization, `Spec` becomes the set of reward functions. Setting the context to a simulator, the operation is in that case the familiar #abbrv.RL pipeline, with $pi = #`RL`_("sim")("reward function")$.
 
 ==== Value Functions as Derived Specifications <def:derived_specs>
 Crucially, we can understand value functions themselves as *derived specifications*. While a reward function $R$ provides the primary specification of what we want, the value function $V^(pi)(state(s)) = expect[sum_(t=0)^oo gamma^t rt]$ is fundamentally shaped by the data distribution $p(s_0)$ and dynamics $p(s' | s, a)$ of the context in which it's computed. The expectation operator makes the value function inherently dependent on:
@@ -70,14 +70,14 @@ Thus, the value function encodes how good certain behavior is, which is affected
 This insight becomes particularly important in @chap:adaptation_anchors, where we show how changing contexts (from simulation to reality) fundamentally changes the derived specification creating problems of catastrophic forgetting!
 
 ==== Composing Encodings <def:composing_encodings>
-Modern approaches like Eureka @eureka demonstrate how the `enc` operator can be instantiated as a composition of functions within the RL paradigm. The high-level `enc` operation is composed of two sub-stages: a human translating their intent into a textual prompt ($"text" = #`enc`_1("intent")$), and an LLM which acts as a second encoder to produce the final specification ($"spec" = #`enc`_2("text")$). This compositional encoding helps bridge the intent-to-specification gap by leveraging language models' semantic understanding.
+Modern approaches like Eureka @eureka demonstrate how the `enc` operator can be instantiated as a composition of functions within the #abbrv.RL paradigm. The high-level `enc` operation is composed of two sub-stages: a human translating their intent into a textual prompt ($"text" = #`enc`_1("intent")$), and an #abbrv.LLM which acts as a second encoder to produce the final specification ($"spec" = #`enc`_2("text")$). This compositional encoding helps bridge the intent-to-specification gap by leveraging language models' semantic understanding.
 
 ==== Reward Engineers as Optimizers <def:reward_eng_as_optimizer>
-Notice that the `opt` operator does not just have to be RL optimization. It can be instantiated with any optimization algorithm that takes a specification and produces a policy. This can include taking human intuition to be specification, turning reward engineering into derived specification. Part of the optimization process is to observe the policy output from the RL algorithm and editing the reward function, thereby optimizing the reward function. From this perspective, the `opt` operator is composition of the reward engineer and the RL algorithm. This makes the choice of how to choose good specifications a key part of the optimization process.
+Notice that the `opt` operator does not just have to be #abbrv.RL optimization. It can be instantiated with any optimization algorithm that takes a specification and produces a policy. This can include taking human intuition to be specification, turning reward engineering into derived specification. Part of the optimization process is to observe the policy output from the #abbrv.RL algorithm and editing the reward function, thereby optimizing the reward function. From this perspective, the `opt` operator is composition of the reward engineer and the #abbrv.RL algorithm. This makes the choice of how to choose good specifications a key part of the optimization process.
 
-=== Instantiating EOE with Imitation Learning <chap:intent_to_reality:gaps:eoe_il>
+=== Instantiating #abbrv.EOE with Imitation Learning <chap:intent_to_reality:gaps:eoe_il>
 
-If we instantiate `Spec` to be an expert behavior $beta_"expert"$, we can see how this frames the problem for imitation learning. Given that the behavior of any policy $pi$ is $beta_pi = #`exec`_("sim")(pi)$, various imitation learning algorithms can be seen as operators that minimize some behavioral divergence $d(beta_pi, beta_"expert")$ to find the optimal policy: $pi^* = #`IL`\(beta_"expert")$.
+If we instantiate `Spec` to be an expert behavior $beta_"expert"$, we can see how this frames the problem for #abbrv.IL. Given that the behavior of any policy $pi$ is $beta_pi = #`exec`_("sim")(pi)$, various #abbrv.IL algorithms can be seen as operators that minimize some behavioral divergence $d(beta_pi, beta_"expert")$ to find the optimal policy: $pi^* = #abbrv.IL\(beta_"expert")$.
 
 // #todo[Add a diagram of the pipeline]
 
@@ -123,7 +123,7 @@ Prior work has identified several sources of dynamical mismatch:
 
 While dynamical mismatches are a classic focus of sim-to-real transfer, the *distributional mismatch* becomes especially critical during long-term operation. The real world is not static, and an agent must be able to adapt as the distribution of tasks and conditions evolves. This problem of *ongoing adaptation* is a primary focus of this thesis, particularly in the chapter on Anchor Critics, which treats adaptation itself as a specification problem.
 
-*Example: Quadrotor Control*: A quadrotor policy trained in a simulation that assumes perfect state estimation, idealized motor responses, and simplified aerodynamics will inevitably produce a different behavior when deployed. In the real world, it must contend with noisy IMU data and true motor dynamics (dynamical mismatches), as well as unmodeled wind gusts that change over time (a distributional mismatch). These sources compound, creating a significant simulation-to-reality gap.
+*Example: Quadrotor Control*: A quadrotor policy trained in a simulation that assumes perfect state estimation, idealized motor responses, and simplified aerodynamics will inevitably produce a different behavior when deployed. In the real world, it must contend with noisy #abbrv.IMU data and true motor dynamics (dynamical mismatches), as well as unmodeled wind gusts that change over time (a distributional mismatch). These sources compound, creating a significant simulation-to-reality gap.
 
 == Empirical Validation and Relation to Prior Work <chap:intent_to_reality:validation-related>
 
@@ -137,4 +137,4 @@ These gaps manifest as failures arising from policy execution in novel environme
 By providing a structured decomposition, our framework helps to categorize these disparate failure modes, underscoring that the challenge of building reliable robotic systems extends far beyond just sim-to-real transfer.
 
 === Relation to Prior Work and Its Limitations <chap:intent_to_reality:validation-related:related>
-Existing taxonomies, while valuable, offer a fragmented view of the problem. Frameworks for sim-to-real transfer, for instance, provide a granular breakdown of the sources of the *Simulation-to-Reality Gap* but do not address the preceding intent-to-specification and specification-to-behavior gaps, which our analysis shows are often the largest source of failures. Likewise, taxonomies in Multi-Objective Reinforcement Learning tend to focus on algorithmic approaches (e.g., scalarization-based vs. Pareto-based) but treat the objective specification as a given, optimizing the formula they are handed without questioning if it correctly captures the original intent. Our unified framework addresses these limitations by providing an end-to-end view that captures the full pipeline from intent to deployment. It is the first to formally identify and prioritize the *Intent-to-Specification Gap* as a primary source of failure, and it explicitly models how the three gaps are interconnected, showing how errors cascade through the system.
+Existing taxonomies, while valuable, offer a fragmented view of the problem. Frameworks for sim-to-real transfer, for instance, provide a granular breakdown of the sources of the *Simulation-to-Reality Gap* but do not address the preceding intent-to-specification and specification-to-behavior gaps, which our analysis shows are often the largest source of failures. Likewise, taxonomies in #abbrv.MORL tend to focus on algorithmic approaches (e.g., scalarization-based vs. Pareto-based) but treat the objective specification as a given, optimizing the formula they are handed without questioning if it correctly captures the original intent. Our unified framework addresses these limitations by providing an end-to-end view that captures the full pipeline from intent to deployment. It is the first to formally identify and prioritize the *Intent-to-Specification Gap* as a primary source of failure, and it explicitly models how the three gaps are interconnected, showing how errors cascade through the system.

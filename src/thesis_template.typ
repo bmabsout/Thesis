@@ -1,4 +1,5 @@
 #import "style.typ": default_style, heading_style, long_line, local_outline, note
+#import "commands.typ": abbrv_table
 
 #let roman_numbering(content) = {
   counter(page).update(1)
@@ -159,6 +160,7 @@
         acknowledgments,
         abstract,
         table_of_contents,
+        abbrv_table,
         list_of_figures,
         list_of_tables
       ))

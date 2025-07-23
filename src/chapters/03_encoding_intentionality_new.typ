@@ -6,14 +6,14 @@
 == Introduction <chap:encoding_intentionality:intro>
 This chapter addresses the *intent-to-specification gap* (first defined in @chap:intent_to_reality:gaps:intent_to_spec): the challenge of translating a human's high-level goal into a formal specification that a machine can optimize. At its core, this gap arises from a fundamental mismatch. Humans think in terms of _requirements to be satisfied_---"the robot must move smoothly," "the drone must not crash"---while traditional machine learning frameworks think in terms of _scores to be maximized_. The process of converting nuanced, semantic requirements into a single, scalar reward function is often brittle, counter-intuitive, and the primary cause of "reward hacking," where an agent achieves a high score without fulfilling the human's actual intent. As motivated by @def:reward_eng_as_optimizer, it is important for the language we use for describing intent to be one where expressing one's intent is made easier. 
 
-This chapter introduces a framework designed to bridge this gap. We start by formalizing the concept of a *fulfillment function*, a mapping from any relevant aspect of the world to an interpretable $[0,1]$ value representing the degree of satisfaction with an objective. We then introduce *fulfillment Priority Logic* (FPL), a formal language that uses the mathematical foundation of the generalized mean to compose these individual fulfillment values. FPL allows a designer to express complex, hierarchical, and non-linear relationships between objectives in a way that preserves their semantic meaning, moving beyond the limitations of simple weighted sums. By doing so, we transform intent specification from a dark art of reward tuning into a principled engineering discipline.
+This chapter introduces a framework designed to bridge this gap. We start by formalizing the concept of a *fulfillment function*, a mapping from any relevant aspect of the world to an interpretable $[0,1]$ value representing the degree of satisfaction with an objective. We then introduce *#abbrv.FPL*, a formal language that uses the mathematical foundation of the generalized mean to compose these individual fulfillment values. #abbrv.FPL allows a designer to express complex, hierarchical, and non-linear relationships between objectives in a way that preserves their semantic meaning, moving beyond the limitations of simple weighted sums. By doing so, we transform intent specification from a dark art of reward tuning into a principled engineering discipline.
 
 == fulfillments <chap:encoding_intentionality:fulfillments>
 
 === Formalizing Intuitive Judgment <chap:encoding_intentionality:formalize>
 The core of our framework is the *fulfillment function*. A fulfillment function, $f$, is any mapping from a set of relevant system variables, $X$, to a continuous value in the range $[0,1]$:
 $ f: X -> [0,1] $
-This value represents the degree to which a specific objective is satisfied. A value of $1.0$ represents perfect fulfillment, while a value of $0.0$ represents complete failure. In the context of reinforcement learning, we often define these as *fulfillment Reward Functions* that map a state-action transition to a fulfillment value: $f(state(s), action(a), #sp) -> [0,1]$.
+This value represents the degree to which a specific objective is satisfied. A value of $1.0$ represents perfect fulfillment, while a value of $0.0$ represents complete failure. In the context of #abbrv.RL, we often define these as *fulfillment Reward Functions* that map a state-action transition to a fulfillment value: $f(state(s), action(a), #sp) -> [0,1]$.
 
 The key principle is *semantic alignment*: the function's output should align with the human designer's intuitive judgment. If a designer observes a behavior and judges it to be "about 70% successful," the corresponding fulfillment function should output a value close to 0.7.
 
@@ -36,13 +36,13 @@ Once individual objectives are defined as fulfillment functions, we need a way t
 - *Differentiability*: The logic must be differentiable, allowing for gradient-based optimization.
 - *Semantic Preservation*: The logic must preserve the semantic meaning of the connectors between objectives, therefore, at the limits it should generalized boolean logic.
 
-These desired properties are precisely what motivate the use of the generalized mean as the foundation for FPL, as we will show in the next section.
+These desired properties are precisely what motivate the use of the generalized mean as the foundation for #abbrv.FPL, as we will show in the next section.
 
-== fulfillment Priority Logic (FPL) <chap:encoding_intentionality:fpl>
+== #abbrv.FPL_full (FPL) <chap:encoding_intentionality:fpl>
 
 === The Generalized Mean As a Logic Operator <chap:encoding_intentionality:generalized_mean>
 
-The power of FPL comes from its use of the *generalized mean* (or power mean) as the basis for its logical operators. For a set of fulfillment values $f_1, ..., f_n$, the generalized mean is defined as:
+The power of #abbrv.FPL comes from its use of the *generalized mean* (or power mean) as the basis for its logical operators. For a set of fulfillment values $f_1, ..., f_n$, the generalized mean is defined as:
 
 $ pmean(p)(f_1, ..., f_n) = (1/n sum_(i=1)^n f_i^p)^(1/p) $ <eq:generalized-mean>
 
@@ -94,7 +94,7 @@ This joint continuity is essential for stable, gradient-based optimization, ensu
 
 === Formal Definition: Syntax and Semantics <chap:encoding_intentionality:formal>
 ==== Syntax <def:fpl_syntax>
-The syntax of FPL formulas is defined by the following grammar:
+The syntax of #abbrv.FPL formulas is defined by the following grammar:
 
 $ phi ::= f | phi and^p phi | phi or_p phi | not phi | [phi]_delta $
 
@@ -107,7 +107,7 @@ where:
 This grammar provides the building blocks for expressing complex yet well-defined objective relationships.
 
 ==== Semantics <def:fpl_semantics>
-The semantics of FPL define how each operator transforms fulfillment values. We define an evaluation function $u$ that maps an FPL formula $phi$ to its fulfillment value $u(phi) in [0,1]$.
+The semantics of #abbrv.FPL define how each operator transforms fulfillment values. We define an evaluation function $u$ that maps an FPL formula $phi$ to its fulfillment value $u(phi) in [0,1]$.
 
 #note(title: [*FPL Semantics*])[
   #table(
@@ -140,7 +140,7 @@ The semantics of FPL define how each operator transforms fulfillment values. We 
 ]
 === Theoretical Guarantees <chap:encoding_intentionality:guarantees>
 
-The mathematical properties of the generalized mean provide FPL with several strong theoretical guarantees. These ensure that specifications behave in a predictable and interpretable manner.
+The mathematical properties of the generalized mean provide #abbrv.FPL with several strong theoretical guarantees. These ensure that specifications behave in a predictable and interpretable manner.
 
 ==== Semantic Preservation <def:semantic_preservation>
 
@@ -148,7 +148,7 @@ The most fundamental guarantee is that of semantic preservation, which follows d
 
 #theorem( title: [Semantic Preservation])[
   
-  For any FPL formula $phi$ evaluated with fulfillment values $bold(arrow(f))$, improving any individual fulfillment value $f_i$ while keeping others constant will result in a monotonic improvement of the overall composed fulfillment $u(phi)$.
+  For any #abbrv.FPL formula $phi$ evaluated with fulfillment values $bold(arrow(f))$, improving any individual fulfillment value $f_i$ while keeping others constant will result in a monotonic improvement of the overall composed fulfillment $u(phi)$.
   $
   forall i: f_i <= f'_i ==> u(phi(..., f_i, ...)) <= u(phi(..., f'_i, ...))
   $
@@ -158,7 +158,7 @@ This guarantee is critical: it ensures that the process of optimizing an individ
 
 ==== Minimum fulfillment Bounds <def:min_fulfillment_bounds>
 
-For conjunctive compositions, FPL provides a powerful guarantee about the minimum level of fulfillment for all objectives. @thm:semantic-preservation
+For conjunctive compositions, #abbrv.FPL provides a powerful guarantee about the minimum level of fulfillment for all objectives. @thm:semantic-preservation
 
 #theorem( title: [Minimum fulfillment Bound])[
 
@@ -172,19 +172,19 @@ This theorem provides a concrete, quantifiable link between the overall performa
 
 === Example Specifications <chap:encoding_intentionality:example_specs>
 
-To build intuition for how FPL translates high-level intent into precise, computable formulas, we present two common scenarios from robotics.
+To build intuition for how #abbrv.FPL translates high-level intent into precise, computable formulas, we present two common scenarios from robotics.
 
 ==== Safety-First Composition <def:safety_first_composition>
 A common requirement is to enforce a strict safety constraint while optimizing for other performance metrics. For example: "The robot must always remain safe, and, conditioned on being safe, it should balance tracking a target and moving smoothly."
 
-This translates directly into an FPL formula:
+This translates directly into an #abbrv.FPL formula:
 
 $ phi = "safety" and^(-infinity) ["tracking" and^0 "smoothness"]_0.5 $
 
 Here's the breakdown:
-- The inner term, `["tracking" and^0 "smoothness"]_0.5`, composes the two performance objectives and then applies a priority offset.
+- The inner term, $["tracking" and^0 "smoothness"]_0.5$, composes the two performance objectives and then applies a priority offset.
 - According to the semantics, this offset term will always evaluate to a value in the range $[1/3, 1]$, since its minimum value is $(0 + 0.5) / 1.5 = 1/3$.
-- The outer $and^(-infinity)$ is the minimum operator. This means that if the `safety` fulfillment drops below $1/3$, it becomes the sole bottleneck for the entire expression, effectively creating a critical safety threshold.
+- The outer $and^(-infinity)$ is the minimum operator. This means that if the $"safety"$ fulfillment drops below $1/3$, it becomes the sole bottleneck for the entire expression, effectively creating a critical safety threshold.
 
 ==== Lexicographical-Style Priorities <def:lexicographical_priorities>
 The priority offset operator, $[phi]_delta$, allows for specifying "soft" priorities. It boosts the baseline fulfillment of an objective, ensuring it is prioritized. For instance: "Prioritize tracking performance, but also try to be efficient."
@@ -197,14 +197,14 @@ The breakdown:
 - The $and^(-1)$ (harmonic mean) creates a conservative trade-off. Because of the priority offset, the `efficiency` objective only becomes influential once the `tracking` objective is already well-fulfilled.
 
 ==== Optimistic Signals <def:optimistic_signals>
-Sometimes, an agent has multiple ways to achieve a goal, and success in any one of them is sufficient. This is common in systems with redundant components or multiple valid solutions. The FPL $or$ operator is designed for these scenarios.
+Sometimes, an agent has multiple ways to achieve a goal, and success in any one of them is sufficient. This is common in systems with redundant components or multiple valid solutions. The #abbrv.FPL $or$ operator is designed for these scenarios.
 
-Consider a robot equipped with two independent localization systems: a satellite-based GPS and a vision-based SLAM system. The robot is considered well-localized if *either* system is confident. We can express this as:
+Consider a robot equipped with two independent localization systems: a satellite-based #abbrv.GPS and a vision-based #abbrv.SLAM system. The robot is considered well-localized if *either* system is confident. We can express this as:
 
 $ phi_"localization" = "gps" or_0 "slam" $
 
 Here's the breakdown:
-- If the GPS has a strong signal ($"gps" = 0.95$) but the camera is occluded ($"slam" = 0.1$), the overall fulfillment $u(phi_"localization") approx 0.79$. The robot correctly assesses that it is well-localized.
+- If the #abbrv.GPS has a strong signal ($"gps" = 0.95$) but the camera is occluded ($"slam" = 0.1$), the overall fulfillment $u(phi_"localization") approx 0.79$. The robot correctly assesses that it is well-localized.
 - This allows the agent to opportunistically rely on whichever system is performing better at any given moment, without being penalized for the poor performance of the other.
 
 This sub-formula can then be part of a larger objective, such as navigating to a goal:
@@ -212,7 +212,7 @@ $ phi_"total" = phi_"localization" and^0 "navigate_to_goal" $
 
 === Semantic Calibration vs. Compositional Priority <chap:encoding_intentionality:calibration>
 
-FPL provides two fundamentally different types of refinements to specifications. Understanding their distinction is crucial for effective specification design.
+#abbrv.FPL provides two fundamentally different types of refinements to specifications. Understanding their distinction is crucial for effective specification design.
 
 ==== Semantic Calibration of Individual Fulfillments <def:semantic_calibration>
 
@@ -245,7 +245,7 @@ This separation—range-preserving semantic calibration versus range-breaking co
 
 == Building an Optimizer for FPL Specifications <chap:encoding_intentionality:optimizer>
 
-A formal language for specifying intent is only useful if we can build an agent that optimizes for it. The key insight of our approach is to apply FPL composition not to the immediate fulfillment rewards, but to their expected long-term values. This allows the agent to reason about and make complex temporal trade-offs, such as sacrificing immediate fulfillment for a greater long-term outcome. This section introduces the core components for building such an optimizer.
+A formal language for specifying intent is only useful if we can build an agent that optimizes for it. The key insight of our approach is to apply #abbrv.FPL composition not to the immediate fulfillment rewards, but to their expected long-term values. This allows the agent to reason about and make complex temporal trade-offs, such as sacrificing immediate fulfillment for a greater long-term outcome. This section introduces the core components for building such an optimizer.
 
 === fulfillment Q-Values ($f$Q-Values) <chap:encoding_intentionality:optimizer:fq_values>
 
