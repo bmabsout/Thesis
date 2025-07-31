@@ -35,7 +35,7 @@ In no particular order (in fact I randomized it), I would like to thank:
   [Patrick Carpanedo],
   [Yann Arif],
   [Parul Sohal],
-  [Golsana Gaemi],
+  [Golsana Ghaemi],
   [Shahin Roozkhosh],
   [Alp Yilmaz],
   [Ahmad Ahmad],
