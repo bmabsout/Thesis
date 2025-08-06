@@ -16,3 +16,6 @@
 [submodule "latex/AsymmetricAC"]
 	path = latex/AsymmetricAC
 	url = https://git@git.overleaf.com/60352f6eb6dfc55db789e083
+[submodule "resume_typst"]
+	path = resume_typst
+	url = https://github.com/bmabsout/resume_typst
