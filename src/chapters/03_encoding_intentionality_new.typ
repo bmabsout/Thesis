@@ -8,7 +8,7 @@ This chapter addresses the *intent-to-specification gap* (first defined in @chap
 
 This chapter introduces a framework designed to bridge this gap. We start by formalizing the concept of a *fulfillment function*, a mapping from any relevant aspect of the world to an interpretable $[0,1]$ value representing the degree of satisfaction with an objective. We then introduce *#abbrv.FPL*, a formal language that uses the mathematical foundation of the generalized mean to compose these individual fulfillment values. #abbrv.FPL allows a designer to express complex, hierarchical, and non-linear relationships between objectives in a way that preserves their semantic meaning, moving beyond the limitations of simple weighted sums. By doing so, we transform intent specification from a dark art of reward tuning into a principled engineering discipline.
 
-== fulfillments <chap:encoding_intentionality:fulfillments>
+== Fulfillments <chap:encoding_intentionality:fulfillments>
 
 === Formalizing Intuitive Judgment <chap:encoding_intentionality:formalize>
 The core of our framework is the *fulfillment function*. A fulfillment function, $f$, is any mapping from a set of relevant system variables, $X$, to a continuous value in the range $[0,1]$:

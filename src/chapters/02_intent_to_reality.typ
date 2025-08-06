@@ -36,7 +36,7 @@ By defining behavior in this way, we create a unified lens from which to analyze
 We can formalize the *Intent-to-Reality Gap* by treating the development pipeline as a sequence of functional transformations. This allows us to precisely define each gap as an error introduced by these transformations.
 
 Let's define the core #abbrv.EOE_full operators in the pipeline:
-#note(gradient: primary_gradient, title: [==== #abbrv.EOE_full Operators <def:eoe_operators>])[ 
+#note(title: [==== #abbrv.EOE_full Operators <def:eoe_operators>])[ 
   #table(
     columns: (auto, auto, auto),
     row-gutter: 2em,

@@ -5,10 +5,18 @@
 #let accent4_hue = 48deg
 #let ref_hue = -20deg
 
-#let primary_gradient = gradient.linear(
+#let main_gradient = gradient.linear(
   space: oklch,
   oklch(0%, 60%, primary_hue),
   oklch(100%, 5%, primary_hue+15deg)
+)
+
+
+// BU STUPID BLACK GRADIENT :((
+#let primary_gradient = gradient.linear(
+  space: oklch,
+  black,
+  black
 )
 
 #let accent1_gradient = gradient.linear(
@@ -283,7 +291,7 @@
 // #let changed(content) = highlight(content, fill: accent1_gradient.sample(80%))
 #let changed(content) = content
 
-#let note(content, gradient: primary_gradient, title: none, engine: seamless-block, kind: "note", supplement: [Note]) = figure(align(center, {
+#let note(content, gradient: main_gradient, title: none, engine: seamless-block, kind: "note", supplement: [Note]) = figure(align(center, {
   if title != none {
     engine = engine.with( 
       title: if title != none {

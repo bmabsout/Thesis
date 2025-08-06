@@ -139,11 +139,7 @@
       // long_line
     }
 
-    show outline.entry: it => {
-      set text(..heading_style(style, level: it.level - 1), size: 1em)
-      box(it)
-    }
-
+ 
 
     let build_pages = (pages) => {
       for page in pages.filter(page => page != none and page != []).intersperse(pagebreak()) {
@@ -165,6 +161,11 @@
         list_of_tables
       ))
     )
+    show outline.entry: it => {
+      set text(..heading_style(style, level: it.level - 1), size: 1em)
+      box(it)
+    }
+
     arabic_numbering(
       build_pages((
         main,
@@ -195,13 +196,13 @@
       #v(0.6fr)
       #degree_submission_text 
       #v(0.6fr)
-      *#text(size: 1.2em, title_text)*
+      *#text(size: 1.08em, upper(title_text))*
       #v(0.3fr)
-      By
+      by
       #v(0.3fr)
       #upper(author_name)
       #v(0.6fr)
-      #text(size: 0.8em, style: "italic")[
+      #text(size: 1em)[
         Submitted in Partial Fulfillment of the\
         Requirements for the Degree of\
         #degree_type
@@ -222,7 +223,7 @@
       sym.copyright,
       align(left,[
         #copyright_year by\
-        #author_name\
+        #upper(author_name)\
         all rights reserved
       ]),
       // h(0.3fr)
@@ -231,16 +232,16 @@
 
   let make_reader_block(reader) = [
     #v(5em)
-    #box(line(length: 100%, stroke: (thickness: 1pt, dash: "dashed", cap: "round")))\
+    #box(line(length: 100%, stroke: (thickness: 1pt, dash: "solid", cap: "round")))\
     #reader.name\
     #reader.title\
     #reader.institution
   ]
   
   let make_bu_approval_page(readers_list) = {
-    set text(..heading_style(style, level: 1), fill: black, weight: 400)
-    align(center)[*Approved by*]
-    set text(size: 0.8em)
+    // set text(..heading_style(style, level: 1), fill: black, weight: 400)
+    align(center)[Approved by]
+    // set text(size: 0.8em)
     block(width: 100%, height: 1fr,
     grid(
       column-gutter: 2.2em,
@@ -276,7 +277,7 @@
     align(center)[
       #heading(level: 3, numbering: none, outlined: false, text(fill: black, upper(thesis_title)))
       #v(1em)
-      #note(engine: block.with(width: 100%))[
+      #[
         #set align(center)
         #text(size: 1.2em)[#upper(author_name)]\
         #school_name_for_abstract, #grs_name_for_abstract, #submission_year
@@ -284,13 +285,13 @@
       ]
     ]
     align(center)[
-      #heading(numbering: none, level: 2, outlined: false)[ABSTRACT]
+      ABSTRACT
     ]
     abstract_body_content
   }
 
   let make_table_of_contents(title: "Contents", depth: 2) = {
-    heading(level: 2, numbering: none, outlined: false, title)
+    heading(level: 2, numbering: none, outlined: false, text(size: 1em, fill: black, title))
     long_line
     outline(title: none, indent: 3em, depth: depth)
     long_line
