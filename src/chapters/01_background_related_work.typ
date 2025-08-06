@@ -13,7 +13,7 @@
 ==== Discrete-Time Markov Decision Processes <def:mdp>
 The standard formalization in #abbrv.RL of sequential decision making @SuttonBarto @barto2017some, defined by a tuple $(#S, #A, TT, #R, gamma)$, where:
 
-#note(gradient: primary_gradient, title: [*Markov Decision Process*])[
+#note(gradient: main_gradient, title: [*Markov Decision Process*])[
   #table(
     columns: (auto, auto, auto),
     row-gutter: 2em,

@@ -115,12 +115,8 @@
   style: "apa"
 )
 
-
-#let vita = (template.format_vita)([
-  *Full Name:* Bassel El Mabsout \
-  *Year of Birth:* XXXX \
-  *Contact Address:* XXXX \
-], title: "Vita")
+#let vita = (template.format_vita)(
+  include "src/vita.typ", title: "Vita")
 
 
 #let dedic = [
@@ -147,6 +143,6 @@
   main: main_body,
   // appendices: appendices, // Optional
   bibliography: bibliography_content,
-  // vita: vita,
+  vita: vita,
   local_outlines: true,
 )
