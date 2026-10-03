@@ -1,7 +1,26 @@
 #import "style.typ": *
 #import "@local/typst-design:0.1.0" as design
-#import design.rlmath: state, action, reward, state-color as state_color, action-color as action_color, reward-color as reward_color, pmean, fbox, vecand, vecor, loss, expect, policy, todo, sigmoid, abbreviation-table
-#let (st, stp1, sp, S, a, at, A, R, rt, Q, V) = design.rlmath.rl
+#import design.rlmath: pmean, fbox, vecand, vecor, loss, expect, policy, todo, sigmoid, abbreviation-table
+
+// The role colours as the dissertation was set: each role ramp at 55%.
+#let state_color = accent1_gradient.sample(55%)
+#let action_color = accent2_gradient.sample(55%)
+#let reward_color = accent3_gradient.sample(55%)
+#let state(body) = text(fill: state_color, $#body$)
+#let action(body) = text(fill: action_color, $#body$)
+#let reward(body) = text(fill: reward_color, $#body$)
+
+#let st = state($s_t$)
+#let stp1 = state($s_(t+1)$)
+#let sp = state($s'$)
+#let S = state($S$)
+#let a = action($a$)
+#let at = action($a_t$)
+#let A = action($A$)
+#let R = reward($R$)
+#let rt = reward($r_t$)
+#let Q = reward($Q$)
+#let V = reward($V$)
 
 #let stack_math(..mathes) = design.stack-math(..mathes)
 #let make_abbrv = design.make-abbrv

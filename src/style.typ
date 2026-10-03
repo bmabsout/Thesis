@@ -35,8 +35,9 @@
 // #let changed(content) = highlight(content, fill: accent1_gradient.sample(80%))
 #let changed(content) = content
 
-// Callout titles are set at 1.2 × the default body size (Libertinus, 12.4pt).
-#let _callouts = callouts(title-size: font-options.libertinus_serif.size * 1.2)
+// The callouts as the dissertation was set (the original page-spanning
+// block and its tones); titles at 1.2 × the default body size (12.4pt).
+#let _callouts = callouts(title-size: font-options.libertinus_serif.size * 1.2, classic: true)
 #let note = _callouts.note
 #let theorem = _callouts.theorem
 #let algorithm = _callouts.algorithm
