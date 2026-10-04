@@ -1,5 +1,5 @@
 #import "src/commands.typ": state_color, action_color, reward_color
-#import "src/style.typ": default_style, font_options
+#import "src/style.typ": default_style, font_options, compliance
 #import "src/thesis_template.typ": (
   make_template,
 )
@@ -19,8 +19,11 @@
 
 #let template = make_template(style: custom_style)
 
-#let thesis_title_val = [
+#let thesis_title_val = if compliance == "bu" [
   Minimizing the Intent-to-Reality Gap in Robot Learning:\
+  A Fulfillment-Centric Perspective
+] else [
+  Minimizing the #text(style: "italic")[#text(fill: reward_color)[Intent]-to-#text(fill: action_color)[Reality] Gap] in Robot Learning:\
   A Fulfillment-Centric Perspective
 ]
 

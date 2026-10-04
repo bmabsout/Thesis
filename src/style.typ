@@ -18,8 +18,9 @@
 #let accent5_gradient = ramps.orange
 #let ref_gradient = ref-ramp
 
-// Boston University requires black headings; the identity is `ramps.maroon`.
-#let compliance = "bu"
+// The thesis in its colors. Set to "bu" for Boston University's black
+// headings and plain front matter.
+#let compliance = none
 #let colors = thesis-colors(compliance: compliance)
 #let primary_gradient = colors.primary
 
