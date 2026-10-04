@@ -2,10 +2,12 @@
 #import "@local/typst-design:0.1.0" as design
 #import design.rlmath: pmean, fbox, vecand, vecor, loss, expect, policy, todo, sigmoid, abbreviation-table
 
-// The role colors as the dissertation was set: each role ramp at 55%.
-#let state_color = accent1_gradient.sample(55%)
-#let action_color = accent2_gradient.sample(55%)
-#let reward_color = accent3_gradient.sample(55%)
+// The role colors: each role ramp from 55%, deepened until the symbols read
+// as small text. The submitted (BU) thesis keeps the 55% samples.
+#let role_color(g) = if compliance == "bu" { g.sample(55%) } else { design.readable(g, 55%) }
+#let state_color = role_color(accent1_gradient)
+#let action_color = role_color(accent2_gradient)
+#let reward_color = role_color(accent3_gradient)
 #let state(body) = text(fill: state_color, $#body$)
 #let action(body) = text(fill: action_color, $#body$)
 #let reward(body) = text(fill: reward_color, $#body$)
