@@ -5,9 +5,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     typix.url = "github:loqusion/typix";
+    typst-design.url = "github:bmabsout/typst-design";
+    typst-design.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { self, nixpkgs, flake-utils, typix }:
+  outputs = { self, nixpkgs, flake-utils, typix, typst-design }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -36,6 +38,10 @@
           inherit fontPaths;
           packages = [
           ];
+          # The design system, importable as "@local/typst-design:<version>".
+          shellHook = ''
+            export TYPST_PACKAGE_PATH=${typst-design.packages.${system}.default}
+          '';
         };
       }
     );

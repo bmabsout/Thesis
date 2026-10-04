@@ -1,16 +1,18 @@
 #import "style.typ": *
-// Color definitions for consistent visualization
+#import "@local/typst-design:0.1.0" as design
+#import design.rlmath: pmean, fbox, vecand, vecor, loss, expect, policy, todo, sigmoid, abbreviation-table
+
+// The role colours as the dissertation was set: each role ramp at 55%.
 #let state_color = accent1_gradient.sample(55%)
 #let action_color = accent2_gradient.sample(55%)
 #let reward_color = accent3_gradient.sample(55%)
-
 #let state(body) = text(fill: state_color, $#body$)
 #let action(body) = text(fill: action_color, $#body$)
 #let reward(body) = text(fill: reward_color, $#body$)
 
-// Define colored math variables
 #let st = state($s_t$)
 #let stp1 = state($s_(t+1)$)
+#let sp = state($s'$)
 #let S = state($S$)
 #let a = action($a$)
 #let at = action($a_t$)
@@ -19,42 +21,9 @@
 #let rt = reward($r_t$)
 #let Q = reward($Q$)
 #let V = reward($V$)
-#let pmean(p) = $overline(mu)_#p$
 
-#let fbox(p) = math.op(limits: true, box(inset: 0em, grid(line(length: 0.2em, stroke: 0.5pt), text(box(inset: 0.2em, $#p$), size: 0.75em, top-edge: "bounds", bottom-edge: "bounds"), line(length: 0.2em, stroke: 0.5pt), align: horizon+center, columns: 3), stroke: 0.5pt))
-
-#let vecand = math.and.big
-#let vecor = math.or.big
-#let loss = math.op($cal(L)$)
-#let expect = math.op($EE$, limits: true)
-#let policy = math.op($pi$, limits: true)
-#let todo(message) = {
-  text(red, [TODO: #message])
-}
-
-#let sigmoid(x) = $phi(x)$
-
-#let sp = state($s'$)
-
-#let stack_math(..mathes) = {
-  set text(size: 9pt)
-  stack(dir: ttb, spacing: 1em, ..mathes)
-}
-
-#let make_abbrv(short, full) = (
-  (short) : context box([
-    #let first_check = counter(full).get().first()
-    #if first_check == 0 {
-      [#full (#short)#counter(full).step()]
-    } else {
-      link(label(short), [#short])
-    }
-  ]),
-  (short+"_full"): link(label(short), box[#full (#short)]),
-  (short+"_long"): box(full),
-  (short+"_short"): link(label(short), box(short))
-)
-
+#let stack_math(..mathes) = design.stack-math(..mathes)
+#let make_abbrv = design.make-abbrv
 
 #let abbrv = (
   make_abbrv("Ab", "Abrasion")+
@@ -97,37 +66,4 @@
   make_abbrv("XLA", "Accelerated Linear Algebra")
 )
 
-#let abbrv_table_stroke = (
-  paint: primary_gradient.sample(95%),
-  thickness: 3pt,
-  dash: ("dot", 6.1pt),
-  cap: "round",
-)
-
-#let abbrv_table = {
-  let entries = ()
-  for (key, value) in abbrv {
-    if key.ends-with("_short") {
-      let short = key.slice(0, -6)
-      let full_key = short + "_long"
-      if full_key in abbrv {
-        entries.push([#value #label(short)])
-        entries.push([#abbrv.at(full_key)])
-      }
-    }
-  }
-  
-  table(
-    align: (left, left),
-    columns: (0.4fr, 1fr),
-    stroke:none,
-    fill: (_, y) => (
-      if calc.odd(y) {
-        white.darken(5%)
-      }
-    ),
-    
-    [*Abbreviation*], [*Full Form*#v(1em)],
-    .. entries,
-  )
-}
+#let abbrv_table = abbreviation-table(abbrv)

@@ -2,50 +2,10 @@
 #import "/src/commands.typ": *
 #import cetz.draw: *
 
-#let style = (
-  stroke: 0.8pt,
-  thin: 0.2pt,
-  delim: 0.15,
-  space: 2,
-)
-
-#let draw_bell(pos, color: black, name: "bell") = {
-  group(name: name, ctx => {
-    let (_, pos) = cetz.coordinate.resolve(ctx, pos)
-    let (x, y, z) = pos
-    
-    let curve(t) = 0.6*calc.exp(-7*t*t)
-    for i in range(40) {
-      let t1 = -style.space/2 + style.space*i/40
-      let t2 = -style.space/2 + style.space*(i+1)/40
-      // Outline
-      line(
-        (t1 + x, y + curve(t1)),
-        (t2 + x, y + curve(t2)),
-        stroke: (thickness: style.stroke, paint: color)
-      )
-      // line from bottom to top
-      line((t1 + x, y), (t1 + x, y + curve(t1)), 
-            stroke: (thickness: style.thin, paint: color))
-    }
-  })
-}
-
-#let draw_segment(pos, tick_pos: 0.5, color: black, name: "segment") = {
-  group(name: name, ctx => {
-    let (_, pos) = cetz.coordinate.resolve(ctx, pos)
-    let (x, y, z) = pos
-    set-style(stroke: (paint: color, cap: "round", thickness: style.stroke))
-    // Draw the segment
-    line((x, y), (x + style.space, y))
-    line((x, y - style.delim), (x, y + style.delim))
-    line((x + style.space, y - style.delim), (x + style.space, y + style.delim))
-    
-    // Draw tick and add anchor for it
-    let tick_x = x + style.space * tick_pos
-    circle((tick_x, y), radius: 0.07, fill: color, name: "tick", stroke: none)
-  })
-}
+#import "@local/typst-design:0.1.0": figures
+#let style = figures.figure-style
+#let draw_bell(pos, color: black, name: "bell") = figures.bell(cetz, pos, color: color, name: name)
+#let draw_segment(pos, tick_pos: 0.5, color: black, name: "segment") = figures.segment(cetz, pos, tick_pos: tick_pos, color: color, name: name)
     
 #let state = group(name: "state", {
   draw_segment((0, 0), tick_pos: 0.3, color: state_color, name: "segment")
