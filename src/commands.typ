@@ -2,7 +2,7 @@
 #import "@local/typst-design:0.1.0" as design
 #import design.rlmath: pmean, fbox, vecand, vecor, loss, expect, policy, todo, sigmoid, abbreviation-table
 
-// The role colours as the dissertation was set: each role ramp at 55%.
+// The role colors as the dissertation was set: each role ramp at 55%.
 #let state_color = accent1_gradient.sample(55%)
 #let action_color = accent2_gradient.sample(55%)
 #let reward_color = accent3_gradient.sample(55%)
@@ -66,4 +66,6 @@
   make_abbrv("XLA", "Accelerated Linear Algebra")
 )
 
-#let abbrv_table = abbreviation-table(abbrv)
+#let abbrv_table = if compliance == "bu" { abbreviation-table(abbrv) } else {
+  note(title: [Abbreviations], abbreviation-table(abbrv, stripe: main_gradient.sample(96%)))
+}
