@@ -1,7 +1,9 @@
-// The thesis's look, from the shared design system (bmabsout/typst-design).
-// This file only binds the names the chapters use.
+// The thesis's look: its template (design/thesis.typ) on the shared design
+// system (bmabsout/typst-design). This file only binds the names the
+// chapters use.
 #import "@local/typst-design:0.1.0" as design
-#import design: ramps, ref-ramp, hues, font-options, seamless-block, swatch, callouts, thesis-colors, thesis-style, heading-style, thesis-rule, local-outline
+#import design: ramps, ref-ramp, hues, font-options, seamless-block, swatch, callouts
+#import "design/thesis.typ": thesis-colors, thesis-style, heading-style, thesis-rule, local-outline
 
 #let primary_hue = hues.maroon
 #let accent1_hue = 140deg
