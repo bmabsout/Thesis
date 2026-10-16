@@ -2,7 +2,8 @@
 // system (bmabsout/typst-design). This file only binds the names the
 // chapters use.
 #import "@local/typst-design:0.1.0" as design
-#import design: ramps, ref-ramp, hues, font-options, seamless-block, swatch, callouts
+#import design: ramps, ref-ramp, hues, font-options, swatch
+#import "design/callouts.typ": seamless-block, callouts
 #import "design/thesis.typ": thesis-colors, thesis-style, heading-style, thesis-rule, local-outline
 
 #let primary_hue = hues.maroon
@@ -40,7 +41,7 @@
 
 // The callouts as the dissertation was set (the original page-spanning
 // block and its tones); titles at 1.2 × the default body size (12.4pt).
-#let _callouts = callouts(title-size: font-options.libertinus_serif.size * 1.2, classic: true)
+#let _callouts = callouts(title-size: font-options.libertinus_serif.size * 1.2)
 #let note = _callouts.note
 #let theorem = _callouts.theorem
 #let algorithm = _callouts.algorithm

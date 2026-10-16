@@ -6,7 +6,8 @@
 // `thesis-style(..)` is the whole look as data, and `make-template(style)`
 // returns the page builders and `assemble`, the show rule.
 
-#import "@local/typst-design:0.1.0": ramps, ref-ramp, stops, jobs, quiet, readable, text-needs, font-options, capsule-rule, callouts
+#import "@local/typst-design:0.1.0": ramps, ref-ramp, stops, jobs, quiet, readable, text-needs, font-options, capsule-rule
+#import "callouts.typ": callouts
 
 /// The colors a thesis is set in, by ramp. `compliance: "bu"` sets the
 /// headings black, as Boston University's thesis office requires, and keeps
@@ -86,7 +87,7 @@
   let long_line = thesis-rule(style)
   let plain = style.colors.at("compliance", default: none) == "bu"
   let framed = if framed != auto { framed } else if plain { body => body } else {
-    callouts(classic: true, figure: false, note-ramp: style.colors.primary).note.with(engine: block.with(width: 100%))
+    callouts(figure: false, note-ramp: style.colors.primary).note.with(engine: block.with(width: 100%))
   }
 
   let assemble(
