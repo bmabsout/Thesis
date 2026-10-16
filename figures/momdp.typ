@@ -2,7 +2,7 @@
 #import "/src/commands.typ": *
 #import cetz.draw: *
 
-#import "@local/typst-design:0.1.0": figures
+#import "../src/design/figures.typ" as figures
 #let style = figures.figure-style
 #let draw_bell(pos, color: black, name: "bell") = figures.bell(cetz, pos, color: color, name: name)
 #let draw_segment(pos, tick_pos: 0.5, color: black, name: "segment") = figures.segment(cetz, pos, tick_pos: tick_pos, color: color, name: name)

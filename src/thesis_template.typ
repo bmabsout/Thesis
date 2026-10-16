@@ -1,6 +1,5 @@
-// The thesis template lives in the shared design system; this file binds it
-// to the thesis's style.
-#import "@local/typst-design:0.1.0": make-template as _make-template
+// The thesis template (design/thesis.typ), bound to the thesis's style.
+#import "design/thesis.typ": make-template as _make-template
 #import "style.typ": default_style
 #import "commands.typ": abbrv_table
 
